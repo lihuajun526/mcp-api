@@ -1,0 +1,49 @@
+# Maven / Java build output
+/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+
+# Runtime temp files
+*.pid
+*.pid.lock
+*.seed
+*.tmp
+*.swp
+*.swo
+
+# Environment / local overrides
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/*
+.idea/
+*.iml
+
+# Node (if used for tooling)
+node_modules/
+
+# Python (if used for tooling)
+__pycache__/
+*.pyc
+
+# Test / coverage
+coverage/
+*.lcov
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
