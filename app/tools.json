@@ -1,0 +1,121 @@
+[
+  {
+    "name": "competitor_lookup",
+    "description": "查竞品：查询目标 ASIN 的销量、销额、BSR 排名、评论、利润等详细数据及历史趋势。当用户需要分析竞品表现、监控竞品销量、进行产品对比时调用。asins 支持一次查询多个 ASIN（建议不超过 100 个）。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 asin、title、price、monthlySalesUnits、monthlySalesRevenue、bsr、rating、reviews、profit、salesTrend 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": [
+            "US",
+            "CA",
+            "MX",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "JP",
+            "IN",
+            "AU"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "asins": {
+          "type": "array",
+          "description": "需要查询的 ASIN 列表，一次可查询多个，例如 [\"B0GYPQ75WH\", \"B00MNV8E0C\"]",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，默认 60，最大 100",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "orderField": {
+          "type": "string",
+          "description": "排序字段：amz_unit(变体销量)、total_amount(销售额)、total_units(销量)、bsr_rank、price、rating、reviews、profit、reviews_rate、available_date、total_units_growth、total_amount_growth、reviews_increasement、bsr_rank_cv、bsr_rank_cr",
+          "enum": [
+            "amz_unit",
+            "total_amount",
+            "total_units",
+            "bsr_rank",
+            "price",
+            "rating",
+            "reviews",
+            "profit",
+            "reviews_rate",
+            "available_date",
+            "total_units_growth",
+            "total_amount_growth",
+            "reviews_increasement",
+            "bsr_rank_cv",
+            "bsr_rank_cr"
+          ]
+        },
+        "orderDesc": {
+          "type": "boolean",
+          "description": "是否降序排序，默认 true"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asins"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "asin_detail_lookup",
+    "description": "查询单个 ASIN 的详情数据。仅当用户明确需要 ASIN 详情时调用。调用前必须确认 marketplace 与 asin 都已提供；若缺失请先追问。一次仅支持一个 asin。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 asin、asinUrl、badge、brand、price、rating、reviews、features、variationList 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": [
+            "US",
+            "CA",
+            "MX",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "JP",
+            "IN",
+            "AU"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "asin": {
+          "type": "string",
+          "description": "Amazon ASIN，长度通常为 10，例如 B08GHW4TBS",
+          "minLength": 10,
+          "maxLength": 10
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    }
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "name": "mcp-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCP API (Node.js) with MySQL + Redis",
+  "main": "app/server.js",
+  "scripts": {
+    "start:prod": "ENV_FILE=.env.prod node app/server.js",
+    "start:local": "ENV_FILE=.env.local nodemon app/server.js",
+    "crawl:category": "node scripts/collect_amz_category.js"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "ioredis": "^5.8.0",
+    "mysql2": "^3.14.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP 数据网关 · 业务架构流程图</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --border: #e3e6eb;
+    --text: #1f2329;
+    --text2: #646a73;
+    --text3: #8f959e;
+    --blue-50: #e6f1fb;
+    --blue-600: #185fa5;
+    --blue-800: #0c447c;
+    --teal-50: #e1f5ee;
+    --teal-600: #0f6e56;
+    --purple-50: #eeedfe;
+    --purple-600: #534ab7;
+    --amber-50: #faeeda;
+    --amber-600: #854f0b;
+    --coral-50: #faece7;
+    --coral-600: #993c1d;
+    --gray-50: #f1efe8;
+    --gray-600: #5f5e5a;
+    --red-50: #fcebeb;
+    --red-600: #a32d2d;
+    --green-50: #eaf3de;
+    --green-600: #3b6d11;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 32px 24px 60px;
+  }
+  .page { max-width: 1180px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 28px; }
+  .header h1 { font-size: 26px; font-weight: 600; letter-spacing: 1px; }
+  .header p { color: var(--text2); font-size: 14px; margin-top: 6px; }
+  .badge-row { margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; padding: 4px 14px; border-radius: 20px; background: var(--card);
+    border: 1px solid var(--border); color: var(--text2);
+  }
+  .section-title {
+    font-size: 15px; font-weight: 600; margin: 34px 0 14px; padding-left: 12px;
+    border-left: 4px solid var(--blue-600); display: flex; align-items: center; gap: 8px;
+  }
+  .section-title small { color: var(--text3); font-weight: 400; font-size: 12px; }
+
+  /* ===== 分层架构图 ===== */
+  .layer {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px 20px; margin-bottom: 10px;
+  }
+  .layer-title {
+    font-size: 13px; font-weight: 600; color: var(--text2);
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .layer-title .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .layer-body { display: flex; flex-wrap: wrap; gap: 12px; }
+  .node {
+    flex: 1 1 150px; min-width: 140px; border-radius: 10px; padding: 12px 14px;
+    border: 1px solid transparent;
+  }
+  .node h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .node p { font-size: 11.5px; color: var(--text2); line-height: 1.5; }
+  .node .tag {
+    display: inline-block; margin-top: 6px; font-size: 10.5px; padding: 2px 8px;
+    border-radius: 10px; background: rgba(255,255,255,.65);
+  }
+  .c-blue  { background: var(--blue-50);  border-color: #b5d4f4; } .c-blue h4 { color: var(--blue-800); }
+  .c-teal  { background: var(--teal-50);  border-color: #9fe1cb; } .c-teal h4 { color: var(--teal-600); }
+  .c-purple{ background: var(--purple-50);border-color: #cecbf6; } .c-purple h4 { color: var(--purple-600); }
+  .c-amber { background: var(--amber-50); border-color: #fac775; } .c-amber h4 { color: var(--amber-600); }
+  .c-coral { background: var(--coral-50); border-color: #f5c4b3; } .c-coral h4 { color: var(--coral-600); }
+  .c-gray  { background: var(--gray-50);  border-color: #d3d1c7; } .c-gray h4 { color: var(--gray-600); }
+  .c-red   { background: var(--red-50);   border-color: #f7c1c1; } .c-red h4 { color: var(--red-600); }
+  .c-green { background: var(--green-50); border-color: #c0dd97; } .c-green h4 { color: var(--green-600); }
+
+  .flow-arrow { text-align: center; color: var(--text3); font-size: 16px; line-height: 1; margin: 6px 0; }
+
+  /* ===== 请求时序 ===== */
+  .seq { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; overflow-x: auto; }
+  .seq-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  .seq-table th {
+    font-size: 12px; font-weight: 600; color: var(--text2); text-align: left;
+    padding: 8px 12px; border-bottom: 2px solid var(--border);
+  }
+  .seq-table td {
+    font-size: 12.5px; padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text);
+    vertical-align: top;
+  }
+  .seq-table td.code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11.5px; color: var(--purple-600); white-space: nowrap; }
+  .seq-table tr:last-child td { border-bottom: none; }
+  .step { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--blue-50);
+    color: var(--blue-600); font-size: 12px; font-weight: 600; text-align: center; line-height: 22px; }
+  .flag { font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+  .flag.cache { background: var(--green-50); color: var(--green-600); }
+  .flag.miss  { background: var(--red-50);   color: var(--red-600); }
+  .flag.pass  { background: var(--teal-50);  color: var(--teal-600); }
+
+  /* ===== 数据存储 ===== */
+  .store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+  .store { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .store h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .store ul { list-style: none; }
+  .store li {
+    font-size: 12.5px; color: var(--text2); padding: 6px 0; border-bottom: 1px dashed var(--border);
+    display: flex; justify-content: space-between; gap: 12px;
+  }
+  .store li:last-child { border-bottom: none; }
+  .store li .k { color: var(--text); font-weight: 500; }
+  .store li .v { color: var(--text3); font-size: 11.5px; text-align: right; }
+
+  .note { background: var(--amber-50); border: 1px solid #fac775; border-radius: 10px; padding: 12px 16px;
+    font-size: 12.5px; color: var(--amber-600); margin-top: 14px; }
+  .note strong { font-weight: 600; }
+  .foot { text-align: center; color: var(--text3); font-size: 12px; margin-top: 36px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>跨境选品 MCP 数据网关 · 业务架构</h1>
+    <p>面向跨境卖家的大模型数据分析基础设施 — 统一 MCP 协议接入，聚合多家选品软件数据</p>
+    <div class="badge-row">
+      <span class="badge">Spring Boot / Node.js</span>
+      <span class="badge">MySQL</span>
+      <span class="badge">Redis</span>
+      <span class="badge">MCP 协议</span>
+      <span class="badge">限流 5 QPS</span>
+      <span class="badge">点数计费</span>
+    </div>
+  </div>
+
+  <!-- ============ 分层架构 ============ -->
+  <div class="section-title">分层架构总览 <small>自上而下的调用链路</small></div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="dot" style="background:#185fa5"></span>L1 客户端接入层</div>
+    <div class="layer-body">
+      <div class="node c-blue">
+        <h4>跨境卖家</h4>
+        <p>通过大模型（Claude / GPT 等）以自然语言提问，无需直接接触 API</p>
+        <span class="tag">自然语言</span>
+      </div>
+      <div class="node c-blue">
+        <h4>大模型 / AI Agent</h4>
+        <p>MCP Client 侧：根据任务自动选择工具（competitor_lookup / asin_detail_lookup）</p>
+        <span class="tag">MCP Client</span>
+      </div>
+      <div class="node c-gray">
+        <h4>官网 / 管理后台</h4>
+        <p>密钥管理、使用量统计、充值购买点数、订单记录、管理员用户管理</p>
+        <span class="tag">Web</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">▼</div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="dot" style="background:#534ab7"></span>L2 网关接入层（MCP Gateway）</div>
+    <div class="layer-body">
+      <div class="node c-purple">
+        <h4>MCP 协议端点 <code style="font-size:11px">/mcp</code></h4>
+        <p>initialize / tools/list / tools/call，JSON-RPC 2.0，支持 SSE 流式响应</p>
+        <span class="tag">MCP Server</span>
+      </div>
+      <div class="node c-purple">
+        <h4>HTTP API 端点 <code style="font-size:11px">/api/v1/mcp/*</code></h4>
+        <p>面向系统集成的 RESTful 接口，与 MCP 共享同一套网关逻辑</p>
+        <span class="tag">REST</span>
+      </div>
+      <div class="node c-purple">
+        <h4>工具注册表 tools.json</h4>
+        <p>集中维护 MCP 工具定义（名称 / 描述 / JSON Schema 参数）</p>
+        <span class="tag">Schema</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">▼</div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="dot" style="background:#993c1d"></span>L3 网关核心服务（横切能力，每个请求必经）</div>
+    <div class="layer-body">
+      <div class="node c-coral">
+        <h4>① API Key 认证</h4>
+        <p>校验 X-API-Key，查询 user_account，未激活 / 非法 Key 直接拒绝</p>
+        <span class="tag">鉴权</span>
+      </div>
+      <div class="node c-coral">
+        <h4>② 限流（默认 5 QPS）</h4>
+        <p>Redis 滑动窗口计数，管理后台可按会员调整 qps_limit</p>
+        <span class="tag">Redis</span>
+      </div>
+      <div class="node c-coral">
+        <h4>③ 缓存查询</h4>
+        <p>按 provider+接口+请求参数哈希命中缓存则直接返回（不扣点、不调第三方）</p>
+        <span class="tag">命中即返回</span>
+      </div>
+      <div class="node c-coral">
+        <h4>④ 扣点计数</h4>
+        <p>按 api_endpoint_pricing 定价扣减余额并写入 usage_record，事务保证一致性</p>
+        <span class="tag">计费</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">▼</div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="dot" style="background:#0f6e56"></span>L4 数据处理层（Data Processing）</div>
+    <div class="layer-body">
+      <div class="node c-teal">
+        <h4>第三方请求构造</h4>
+        <p>将 MCP 参数翻译为选品软件原生请求（market/asins/monthName/order...）</p>
+        <span class="tag">Adapter</span>
+      </div>
+      <div class="node c-teal">
+        <h4>会话轮询调度</h4>
+        <p>按 provider 从 Redis list 轮询多账号登录态（cookie），负载均衡、故障隔离</p>
+        <span class="tag">Round-Robin</span>
+      </div>
+      <div class="node c-teal">
+        <h4>响应数据转换</h4>
+        <p>将第三方异构响应重组织为标准 MCP 结构（transformers）</p>
+        <span class="tag">Transformer</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">▼</div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="dot" style="background:#5f5e5a"></span>L5 第三方选品软件（数据源，挂 cookie 模拟登录态）</div>
+    <div class="layer-body">
+      <div class="node c-gray"><h4>卖家精灵</h4><p>SellerSprite · competing-lookup 等</p><span class="tag">SELLERSPRITE</span></div>
+      <div class="node c-gray"><h4>SIF</h4><p>关键词 / 流量数据</p><span class="tag">SIF</span></div>
+      <div class="node c-gray"><h4>西柚找词</h4><p>xiyouzhaoci · 关键词数据</p><span class="tag">XIYOU</span></div>
+      <div class="node c-gray"><h4>Helium10</h4><p>H10 · 选品与关键词数据</p><span class="tag">H10</span></div>
+    </div>
+  </div>
+
+  <!-- ============ 请求时序 ============ -->
+  <div class="section-title">MCP 请求完整时序 <small>一次工具调用的生命周期</small></div>
+
+  <div class="seq">
+    <table class="seq-table">
+      <thead>
+        <tr><th style="width:44px">步骤</th><th style="width:230px">环节</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="step">1</span></td>
+          <td class="code">MCP Client → /mcp</td>
+          <td>大模型发起 <b>tools/call</b>，携带工具名与参数（如 competitor_lookup：marketplace=US、asins=[...]）</td>
+        </tr>
+        <tr>
+          <td><span class="step">2</span></td>
+          <td class="code">认证</td>
+          <td>读取 X-API-Key → 查询 user_account（状态必须为 ACTIVE）<span class="flag pass">未过即拒绝</span></td>
+        </tr>
+        <tr>
+          <td><span class="step">3</span></td>
+          <td class="code">限流</td>
+          <td>Redis ZSET 滑动窗口：同一 userId 1 秒窗口内 ≤ qps_limit（默认 5）<span class="flag miss">超限返回 429</span></td>
+        </tr>
+        <tr>
+          <td><span class="step">4</span></td>
+          <td class="code">缓存查询</td>
+          <td>cacheService 计算缓存键（provider + endpoint + 参数 SHA1）→ Redis GET
+            <span class="flag cache">命中：直接返回，不扣点不调第三方</span></td>
+        </tr>
+        <tr>
+          <td><span class="step">5</span></td>
+          <td class="code">会话轮询</td>
+          <td>缓存未命中 → pickSession(SELLERSPRITE) 从 Redis list 轮询选择一个账号登录态（cookie）</td>
+        </tr>
+        <tr>
+          <td><span class="step">6</span></td>
+          <td class="code">转发第三方</td>
+          <td>构造卖家精灵原生请求，携带所选会话的 Cookie / UA / Referer 发送 HTTP 请求</td>
+        </tr>
+        <tr>
+          <td><span class="step">7</span></td>
+          <td class="code">数据转换</td>
+          <td>transformers 将第三方响应重组织为标准 MCP 结构（字段重命名 / 类型转换 / 趋势数组化）</td>
+        </tr>
+        <tr>
+          <td><span class="step">8</span></td>
+          <td class="code">扣点 + 落库</td>
+          <td>读取接口定价（如 COMPETING_LOOKUP=10 点）→ 事务内扣减余额 + 写 usage_record</td>
+        </tr>
+        <tr>
+          <td><span class="step">9</span></td>
+          <td class="code">写缓存</td>
+          <td>转换结果写入 Redis，TTL 默认 300s，供后续请求命中</td>
+        </tr>
+        <tr>
+          <td><span class="step">10</span></td>
+          <td class="code">MCP Server → Client</td>
+          <td>返回 JSON-RPC 结果：structuredContent 携带标准化数据，模型组织成自然语言答案</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ 数据存储 ============ -->
+  <div class="section-title">数据存储设计 <small>MySQL 持久化 + Redis 高速层</small></div>
+
+  <div class="store-grid">
+    <div class="store">
+      <h4>🛢 MySQL（持久化）</h4>
+      <ul>
+        <li><span class="k">user_account</span><span class="v">用户 / 密钥 / 余额 / QPS / 角色</span></li>
+        <li><span class="k">api_endpoint_pricing</span><span class="v">接口定价（每接口点数）</span></li>
+        <li><span class="k">usage_record</span><span class="v">调用明细 / 扣点流水</span></li>
+        <li><span class="k">amz_category</span><span class="v">亚马逊类目树（采集脚本写入）</span></li>
+        <li><span class="k">订单 / 充值记录</span><span class="v">官网后台（规划）</span></li>
+      </ul>
+    </div>
+    <div class="store">
+      <h4>⚡ Redis（高速层）</h4>
+      <ul>
+        <li><span class="k">mcp:ratelimit:{uid}</span><span class="v">限流滑动窗口 ZSET</span></li>
+        <li><span class="k">mcp:cache:{provider}:{api}:{hash}</span><span class="v">第三方响应缓存（TTL 300s）</span></li>
+        <li><span class="k">mcp:session:{provider}</span><span class="v">多账号登录态 LIST（轮询池）</span></li>
+        <li><span class="k">mcp:session:cursor:{provider}</span><span class="v">轮询游标计数器</span></li>
+        <li><span class="k">amz:category:crawl:*</span><span class="v">类目采集任务队列</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>缓存优先级说明：</strong>同一查询条件（marketplace + asins 集合）只取最新结果入缓存；用户量增大后大部分热查询直接命中缓存，显著降低对第三方选品软件的调用量。缓存键已对 ASIN 大小写 / 顺序做归一化，分页参数不影响缓存命中。
+  </div>
+
+  <div class="foot">mcp-api 业务架构 · 依据《项目需求.md》与 open.sellersprite.com 开放接口规范绘制</div>
+</div>
+</body>
+</html>

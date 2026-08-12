@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SellerData MCP · 跨境电商数据接口平台</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --border: #e5e8ee;
+    --text: #1c2330;
+    --text2: #5b6472;
+    --text3: #9aa3b0;
+    --primary: #2f6bff;
+    --primary-weak: #eaf0ff;
+    --primary-deep: #1f52d8;
+    --success: #16a34a;
+    --success-weak: #e8f7ee;
+    --warning: #d97706;
+    --warning-weak: #fdf3e3;
+    --danger: #dc2626;
+    --danger-weak: #fdecec;
+    --purple: #7c3aed;
+    --purple-weak: #f1ebfe;
+    --teal: #0d9488;
+    --teal-weak: #e3f7f5;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(16, 24, 40, .06), 0 8px 24px rgba(16, 24, 40, .05);
+    --font: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; }
+  a { text-decoration: none; color: inherit; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+  input, select { font-family: inherit; }
+
+  /* ============ 导航 ============ */
+  .navbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1180px; margin: 0 auto; padding: 0 24px; height: 62px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+  .logo-mark {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--primary);
+    color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .logo small { color: var(--text3); font-weight: 400; font-size: 11px; margin-left: 2px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; font-size: 14px; color: var(--text2); }
+  .nav-links a:hover { color: var(--primary); }
+  .nav-actions { display: flex; align-items: center; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 14px; font-weight: 500; padding: 9px 18px; border-radius: 9px;
+    transition: all .15s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-deep); }
+  .btn-outline { border: 1px solid var(--border); color: var(--text); background: #fff; }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-ghost { color: var(--text2); }
+  .btn-ghost:hover { color: var(--primary); }
+  .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
+  .btn-danger-weak { background: var(--danger-weak); color: var(--danger); }
+  .btn-success-weak { background: var(--success-weak); color: var(--success); }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--primary-weak); color: var(--primary);
+    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;
+  }
+
+  /* ============ 首页 ============ */
+  .hero {
+    max-width: 1180px; margin: 0 auto; padding: 72px 24px 48px; text-align: center;
+  }
+  .hero .pill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--primary);
+    background: var(--primary-weak); padding: 5px 14px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .hero h1 { font-size: 40px; font-weight: 700; letter-spacing: .5px; }
+  .hero h1 span { color: var(--primary); }
+  .hero p { max-width: 620px; margin: 16px auto 0; color: var(--text2); font-size: 16px; }
+  .hero .cta { margin-top: 30px; display: flex; gap: 14px; justify-content: center; }
+  .hero .stats { margin-top: 48px; display: flex; justify-content: center; gap: 60px; }
+  .hero .stats .num { font-size: 26px; font-weight: 700; }
+  .hero .stats .lbl { font-size: 13px; color: var(--text3); }
+
+  /* 接口列表 */
+  .section { max-width: 1180px; margin: 0 auto; padding: 56px 24px; }
+  .section-head { margin-bottom: 24px; }
+  .section-head h2 { font-size: 24px; font-weight: 700; }
+  .section-head p { color: var(--text2); font-size: 14px; margin-top: 6px; }
+  .api-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .api-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; transition: box-shadow .15s, transform .15s;
+  }
+  .api-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+  .api-card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .api-card .name { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .api-card .code { font-size: 11px; color: var(--text3); font-family: "SF Mono", Menlo, monospace; }
+  .api-card .desc { font-size: 13px; color: var(--text2); min-height: 40px; }
+  .api-card .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .price-tag { font-size: 18px; font-weight: 700; color: var(--text); }
+  .price-tag small { font-size: 12px; font-weight: 400; color: var(--text3); }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; }
+  .tag.online { background: var(--success-weak); color: var(--success); }
+  .tag.plan { background: var(--warning-weak); color: var(--warning); }
+  .tag.mcp { background: var(--purple-weak); color: var(--purple); }
+  .badge-symbol { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0; }
+  .symbol-blue { background: #2f6bff; }
+  .symbol-teal { background: #0d9488; }
+  .symbol-purple { background: #7c3aed; }
+  .symbol-amber { background: #d97706; }
+
+  /* 价格版块 */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .pricing-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; position: relative;
+  }
+  .pricing-card.hot { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary), var(--shadow); }
+  .pricing-card .hot-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--primary); color: #fff; font-size: 11px; padding: 2px 12px; border-radius: 20px;
+  }
+  .pricing-card h3 { font-size: 16px; }
+  .pricing-card .amount { font-size: 30px; font-weight: 700; margin: 12px 0 4px; }
+  .pricing-card .amount small { font-size: 13px; color: var(--text3); font-weight: 400; }
+  .pricing-card ul { list-style: none; margin: 16px 0 20px; }
+  .pricing-card li { font-size: 13px; color: var(--text2); padding: 5px 0; display: flex; gap: 8px; align-items: flex-start; }
+  .pricing-card li::before { content: "✓"; color: var(--success); font-weight: 700; }
+  .pricing-card .btn { width: 100%; }
+
+  .footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 32px 24px; text-align: center; color: var(--text3); font-size: 13px; }
+
+  /* ============ 认证页 ============ */
+  .auth-wrap { min-height: calc(100vh - 62px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+  .auth-card { width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 36px; box-shadow: var(--shadow); }
+  .auth-card h2 { font-size: 22px; font-weight: 700; }
+  .auth-card .sub { color: var(--text2); font-size: 13px; margin: 6px 0 24px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text2); }
+  .field input {
+    width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 9px;
+    font-size: 14px; background: #fbfcfe; transition: border-color .15s;
+  }
+  .field input:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .auth-card .btn-primary { width: 100%; padding: 12px; font-size: 15px; margin-top: 6px; }
+  .auth-foot { text-align: center; font-size: 13px; color: var(--text2); margin-top: 20px; }
+  .auth-foot a { color: var(--primary); font-weight: 500; }
+  .auth-divider { display: flex; align-items: center; gap: 12px; color: var(--text3); font-size: 12px; margin: 18px 0; }
+  .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .back-link:hover { color: var(--primary); }
+
+  /* ============ 工作台 ============ */
+  .dash { max-width: 1180px; margin: 0 auto; padding: 32px 24px 60px; }
+  .dash-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .dash-head h1 { font-size: 22px; font-weight: 700; }
+  .dash-head .welcome { color: var(--text2); font-size: 14px; margin-top: 2px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .stat-card .lbl { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+  .stat-card .val { font-size: 28px; font-weight: 700; margin-top: 8px; }
+  .stat-card .val small { font-size: 13px; font-weight: 400; color: var(--text3); }
+  .stat-card .trend { font-size: 12px; margin-top: 6px; color: var(--text3); }
+  .stat-card .trend.up { color: var(--success); }
+  .stat-card.balance { background: linear-gradient(135deg, #2f6bff, #1f52d8); color: #fff; border: none; }
+  .stat-card.balance .lbl, .stat-card.balance .val small { color: rgba(255,255,255,.8); }
+  .stat-card.balance .btn { margin-top: 14px; background: rgba(255,255,255,.16); color: #fff; backdrop-filter: blur(4px); }
+  .stat-card.balance .btn:hover { background: rgba(255,255,255,.26); }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .panel-head h3 { font-size: 15px; font-weight: 600; }
+  .panel-head .hint { font-size: 12px; color: var(--text3); font-weight: 400; }
+  .panel-body { padding: 20px; }
+
+  table.tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; font-size: 12px; color: var(--text3); font-weight: 500; padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .tbl td { font-size: 13px; padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: #fafbfd; }
+  .tbl .mono { font-family: "SF Mono", Menlo, monospace; font-size: 12px; }
+  .key-val { display: flex; align-items: center; gap: 6px; }
+  .key-full { font-family: "SF Mono", Menlo, monospace; font-size: 12px; background: #f4f6f9; padding: 4px 8px; border-radius: 6px; color: var(--text2); }
+  .copy-btn { color: var(--primary); font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+  .copy-btn:hover { background: var(--primary-weak); }
+
+  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+  .status-active { background: var(--success); }
+  .status-disabled { background: var(--text3); }
+
+  /* 条形图 */
+  .bar-row { display: grid; grid-template-columns: 120px 1fr 90px; align-items: center; gap: 14px; padding: 9px 0; font-size: 13px; }
+  .bar-row .name { color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { background: #eef1f6; border-radius: 20px; height: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 20px; background: var(--primary); transition: width .6s ease; }
+  .bar-row .val { text-align: right; font-weight: 600; font-size: 13px; }
+  .legend { display: flex; gap: 18px; font-size: 12px; color: var(--text2); margin-top: 14px; flex-wrap: wrap; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 3px; display: inline-block; margin-right: 5px; }
+
+  /* 充值弹窗 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, .45); z-index: 100;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; width: 100%; max-width: 460px;
+    padding: 28px; animation: pop .18s ease;
+  }
+  @keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .modal .sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .modal .close { position: absolute; }
+  .recharge-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .recharge-option {
+    border: 1.5px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;
+    cursor: pointer; transition: all .15s;
+  }
+  .recharge-option:hover { border-color: var(--primary); }
+  .recharge-option.active { border-color: var(--primary); background: var(--primary-weak); }
+  .recharge-option .amt { font-size: 18px; font-weight: 700; }
+  .recharge-option .amt small { font-size: 12px; font-weight: 400; color: var(--text3); }
+  .recharge-option .give { font-size: 12px; color: var(--success); margin-top: 2px; }
+  .modal .btn-primary { width: 100%; padding: 12px; margin-top: 20px; font-size: 15px; }
+  .modal .tip { font-size: 12px; color: var(--text3); text-align: center; margin-top: 12px; }
+
+  .empty { text-align: center; color: var(--text3); padding: 32px 0; font-size: 13px; }
+
+  .toast {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-10px);
+    background: #1c2330; color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 13px;
+    opacity: 0; transition: all .25s; z-index: 200; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .view { display: none; }
+  .view.show { display: block; }
+  .section-alt { background: #fff; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .mobile-hide { }
+  @media (max-width: 860px) {
+    .nav-links { display: none; }
+    .hero h1 { font-size: 30px; }
+    .hero .stats { gap: 30px; flex-wrap: wrap; }
+    .dash-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .tbl-wrap { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 顶部导航 ============ -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-mark">S</div>
+      <div>SellerData<span style="color:var(--primary)">MCP</span><small>数据接口平台</small></div>
+    </div>
+    <div class="nav-links" id="guestLinks">
+      <a href="#apis">接口列表</a>
+      <a href="#pricing">价格</a>
+      <a href="#how">接入方式</a>
+    </div>
+    <div class="nav-actions" id="navActions">
+      <button class="btn btn-ghost" onclick="goLogin()">登录</button>
+      <button class="btn btn-primary btn-sm" onclick="goRegister()">免费注册</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ 视图1：首页 ============ -->
+<div class="view show" id="view-home">
+
+  <div class="hero">
+    <div class="pill">● MCP 协议原生支持 · 面向 AI 的电商数据接口</div>
+    <h1>为跨境卖家打造的<br><span>数据智能接口平台</span></h1>
+    <p>一站式聚合亚马逊选品软件数据，通过统一 MCP 接口提供给大模型与业务系统。查竞品、看 ASIN 详情、分析市场，按次计费，即充即用。</p>
+    <div class="cta">
+      <button class="btn btn-primary" onclick="goRegister()">免费注册 · 送 100 积分</button>
+      <button class="btn btn-outline" onclick="document.getElementById('apis').scrollIntoView()">查看接口文档</button>
+    </div>
+    <div class="stats">
+      <div><div class="num">2 亿+</div><div class="lbl">ASIN 数据覆盖</div></div>
+      <div><div class="num">10 个</div><div class="lbl">亚马逊站点</div></div>
+      <div><div class="num">40+</div><div class="lbl">数据接口</div></div>
+      <div><div class="num">5 QPS</div><div class="lbl">单会员限流</div></div>
+    </div>
+  </div>
+
+  <!-- 接口列表 -->
+  <div class="section" id="apis">
+    <div class="section-head">
+      <h2>接口列表与计费</h2>
+      <p>每个接口按调用次数扣减积分，消耗透明可查。已上线接口见下表，更多接口持续接入中。</p>
+    </div>
+    <div class="api-grid" id="apiGrid"></div>
+  </div>
+
+  <!-- 价格 -->
+  <div class="section section-alt" id="pricing">
+    <div class="section-head" style="text-align:center; max-width:600px; margin:0 auto 32px;">
+      <h2>充值方案</h2>
+      <p>按需充值，积分长期有效。充得越多，赠送越多。</p>
+    </div>
+    <div class="pricing-grid" id="pricingGrid"></div>
+  </div>
+
+  <!-- 接入 -->
+  <div class="section" id="how">
+    <div class="section-head"><h2>三步接入</h2><p>从注册到调用，最快 5 分钟完成。</p></div>
+    <div class="api-grid">
+      <div class="api-card">
+        <div class="head"><div class="name"><span class="badge-symbol symbol-blue">1</span>注册并创建密钥</div></div>
+        <div class="desc">注册账号后，在工作台「密钥管理」中创建 API Key，用于接口鉴权。</div>
+      </div>
+      <div class="api-card">
+        <div class="head"><div class="name"><span class="badge-symbol symbol-teal">2</span>配置 MCP Server</div></div>
+        <div class="desc">在 Claude 等 MCP 客户端中填写服务器地址与密钥，自动发现全部工具。</div>
+      </div>
+      <div class="api-card">
+        <div class="head"><div class="name"><span class="badge-symbol symbol-purple">3</span>自然语言调用数据</div></div>
+        <div class="desc">直接向 AI 提问，模型自动调用对应接口，返回结构化数据。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 SellerDataMCP · 跨境电商数据接口平台 · 原型演示</div>
+</div>
+
+<!-- ============ 视图2：登录 ============ -->
+<div class="view" id="view-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <a class="back-link" href="javascript:;" onclick="goHome()">← 返回首页</a>
+      <h2>欢迎回来</h2>
+      <div class="sub">登录 SellerDataMCP 数据接口平台</div>
+      <div class="field">
+        <label>邮箱</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" value="demo@sellerdata.cn">
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input type="password" id="loginPwd" placeholder="请输入密码" value="demo123456">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">登 录</button>
+      <div class="auth-divider">或</div>
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-outline" style="flex:1" onclick="doLogin()">使用演示账号登录</button>
+      </div>
+      <div class="auth-foot">还没有账号？<a href="javascript:;" onclick="goRegister()">免费注册</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 视图3：注册 ============ -->
+<div class="view" id="view-register">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <a class="back-link" href="javascript:;" onclick="goHome()">← 返回首页</a>
+      <h2>创建账号</h2>
+      <div class="sub">注册即赠送 100 积分，可直接体验全部接口</div>
+      <div class="field">
+        <label>邮箱</label>
+        <input type="email" id="regEmail" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input type="password" id="regPwd" placeholder="至少 8 位，含字母和数字">
+      </div>
+      <div class="field">
+        <label>确认密码</label>
+        <input type="password" id="regPwd2" placeholder="再次输入密码">
+      </div>
+      <button class="btn btn-primary" onclick="doRegister()">注 册</button>
+      <div class="auth-foot">已有账号？<a href="javascript:;" onclick="goLogin()">直接登录</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 视图4：工作台 ============ -->
+<div class="view" id="view-dash">
+  <div class="dash">
+
+    <div class="dash-head">
+      <div>
+        <h1>工作台</h1>
+        <div class="welcome" id="welcomeText">欢迎回来，Demo 卖家</div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-outline btn-sm" onclick="showRecharge()">⚡ 充值积分</button>
+        <button class="btn btn-ghost btn-sm" onclick="logout()">退出登录</button>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stat-grid">
+      <div class="stat-card balance">
+        <div class="lbl">积分余额</div>
+        <div class="val" id="balanceVal">12,850 <small>点</small></div>
+        <div class="trend" style="color:rgba(255,255,255,.8)">本月已消耗 2,560 点</div>
+        <button class="btn btn-sm" onclick="showRecharge()">立即充值</button>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">本月调用次数</div>
+        <div class="val" id="callCountVal">486 <small>次</small></div>
+        <div class="trend up">↑ 较上月 +23%</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">本月消耗积分</div>
+        <div class="val" id="costVal">2,560 <small>点</small></div>
+        <div class="trend">≈ ¥ 25.60</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">当前限流</div>
+        <div class="val">5 <small>QPS</small></div>
+        <div class="trend">会员等级：标准</div>
+      </div>
+    </div>
+
+    <!-- 积分消耗统计 -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>积分消耗统计 <span class="hint">按接口统计 · 本月</span></h3>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('已导出本月消耗明细')">导出明细</button>
+      </div>
+      <div class="panel-body">
+        <div id="costChart"></div>
+        <div class="legend">
+          <span><span class="dot" style="background:#2f6bff"></span>查竞品</span>
+          <span><span class="dot" style="background:#0d9488"></span>ASIN 详情</span>
+          <span><span class="dot" style="background:#7c3aed"></span>关键词挖掘</span>
+          <span><span class="dot" style="background:#d97706"></span>关键词反查</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 密钥管理 -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>密钥管理 <span class="hint">API Key 用于 MCP / HTTP 接口鉴权</span></h3>
+        <button class="btn btn-primary btn-sm" onclick="createKey()">+ 新建密钥</button>
+      </div>
+      <div class="panel-body">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr><th>名称</th><th>API Key</th><th>创建时间</th><th>状态</th><th style="text-align:right">操作</th></tr>
+            </thead>
+            <tbody id="keyTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 充值记录 -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>充值记录</h3>
+        <button class="btn btn-ghost btn-sm" onclick="showRecharge()">+ 充值</button>
+      </div>
+      <div class="panel-body">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr><th>订单号</th><th>时间</th><th>方式</th><th>实付金额</th><th>到账积分</th><th>状态</th></tr>
+            </thead>
+            <tbody id="rechargeTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ 充值弹窗 ============ -->
+<div class="modal-mask" id="rechargeModal">
+  <div class="modal">
+    <h3>充值积分</h3>
+    <div class="sub">选择充值方案，积分即时到账</div>
+    <div class="recharge-options" id="rechargeOptions"></div>
+    <button class="btn btn-primary" onclick="confirmRecharge()">确认充值</button>
+    <div class="tip">演示环境，点击后模拟充值成功</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 数据 ================= */
+const API_LIST = [
+  { name: '查竞品', code: 'competitor_lookup', icon: '📊', color: 'symbol-blue', desc: '查询目标 ASIN 的销量、销额、BSR、评论、利润及历史趋势，支持批量', points: 10, status: '已上线', mcp: true },
+  { name: 'ASIN 详情', code: 'asin_detail_lookup', icon: '🔍', color: 'symbol-teal', desc: 'ASIN 详情页全量信息：上架日期、BSR 排名、A+、变体、卖家等', points: 5, status: '已上线', mcp: true },
+  { name: '关键词挖掘', code: 'keyword_mining', icon: '🧩', color: 'symbol-purple', desc: '拓展衍生词与长尾关键词，查看搜索量与竞争度', points: 8, status: '规划中', mcp: false },
+  { name: '关键词反查', code: 'keyword_reverse', icon: '🔗', color: 'symbol-amber', desc: '反查为 ASIN 带来曝光的关键词及流量占比', points: 8, status: '规划中', mcp: false },
+  { name: '选产品', code: 'product_research', icon: '🎯', color: 'symbol-blue', desc: '按销量、增长、价格等多维度筛选潜力产品', points: 12, status: '规划中', mcp: false },
+  { name: '市场分析', code: 'market_analysis', icon: '🌍', color: 'symbol-teal', desc: '市场规模、竞争格局、垄断程度与进入门槛分析', points: 15, status: '规划中', mcp: false }
+];
+
+const PRICING = [
+  { name: '体验包', amount: 100, give: 0, features: ['100 积分', '适合接口试用', 'MCP / HTTP 接入', '7 天有效期'] },
+  { name: '入门包', amount: 1000, give: 100, features: ['1,100 积分（赠 100）', '查竞品 110 次', 'ASIN 详情 220 次', '30 天有效期'], hot: true },
+  { name: '进阶包', amount: 5000, give: 800, features: ['5,800 积分（赠 800）', '查竞品 580 次', '全部接口可用', '90 天有效期'] },
+  { name: '专业包', amount: 20000, give: 4000, features: ['24,000 积分（赠 4,000）', '查竞品 2,400 次', '专属客服支持', '365 天有效期'] }
+];
+
+const RECHARGE_OPTIONS = [
+  { amt: 100, give: 0 }, { amt: 1000, give: 100 }, { amt: 5000, give: 800 }, { amt: 20000, give: 4000 }
+];
+
+const COST_DATA = [
+  { name: '查竞品', code: 'competitor_lookup', points: 1500, calls: 150, color: '#2f6bff' },
+  { name: 'ASIN 详情', code: 'asin_detail_lookup', points: 750, calls: 150, color: '#0d9488' },
+  { name: '关键词挖掘', code: 'keyword_mining', points: 200, calls: 25, color: '#7c3aed' },
+  { name: '关键词反查', code: 'keyword_reverse', points: 110, calls: 14, color: '#d97706' }
+];
+
+const KEYS = [
+  { id: 1, name: '生产环境', key: 'sk_live_9f2c1a8e7b6d5c4e', created: '2026-07-12 10:24', status: '启用' },
+  { id: 2, name: '测试环境', key: 'sk_test_4d5e6f7a8b9c0d1e', created: '2026-07-18 16:40', status: '启用' },
+  { id: 3, name: '分析脚本', key: 'sk_test_1a2b3c4d5e6f7a8b', created: '2026-06-30 09:12', status: '停用' }
+];
+
+const RECHARGE_HISTORY = [
+  { id: 'R20260801001', time: '2026-08-01 14:30', method: '微信支付', amount: '¥ 500.00', points: '5,800', status: '成功' },
+  { id: 'R20260718002', time: '2026-07-18 11:05', method: '支付宝', amount: '¥ 100.00', points: '1,100', status: '成功' },
+  { id: 'R20260702003', time: '2026-07-02 20:48', method: '微信支付', amount: '¥ 50.00', points: '500', status: '成功' },
+  { id: 'R20260615004', time: '2026-06-15 09:20', method: '注册赠送', amount: '¥ 0.00', points: '100', status: '成功' }
+];
+
+let loggedIn = false;
+let selectedRecharge = RECHARGE_OPTIONS[1];
+
+/* ================= 工具 ================= */
+function $(id) { return document.getElementById(id); }
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+function fmt(n) { return Number(n).toLocaleString('zh-CN'); }
+
+/* ================= 路由 ================= */
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+  $('view-' + name).classList.add('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'home') renderHomeNav();
+  if (name === 'dash') renderDash();
+}
+function goHome() { switchView('home'); }
+function goLogin() { switchView('login'); }
+function goRegister() { switchView('register'); }
+function goDash() { loggedIn = true; switchView('dash'); }
+
+function renderHomeNav() {
+  const actions = $('navActions');
+  if (loggedIn) {
+    actions.innerHTML = `
+      <button class="btn btn-ghost btn-sm" onclick="goDash()">工作台</button>
+      <div class="avatar" style="cursor:pointer" onclick="goDash()" title="进入工作台">D</div>`;
+  } else {
+    actions.innerHTML = `
+      <button class="btn btn-ghost" onclick="goLogin()">登录</button>
+      <button class="btn btn-primary btn-sm" onclick="goRegister()">免费注册</button>`;
+  }
+}
+
+/* ================= 首页渲染 ================= */
+function renderApis() {
+  $('apiGrid').innerHTML = API_LIST.map(a => `
+    <div class="api-card">
+      <div class="head">
+        <div class="name"><span class="badge-symbol ${a.color}">${a.icon}</span>${a.name}</div>
+        <span class="tag ${a.status === '已上线' ? 'online' : 'plan'}">${a.status}</span>
+      </div>
+      <div class="desc">${a.desc}</div>
+      <div class="foot">
+        <div><span class="price-tag">${a.points}</span> <small>积分 / 次</small></div>
+        <div style="display:flex; gap:8px;">
+          ${a.mcp ? '<span class="tag mcp">MCP</span>' : ''}
+          <span class="code">${a.code}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderPricing() {
+  $('pricingGrid').innerHTML = PRICING.map(p => `
+    <div class="pricing-card ${p.hot ? 'hot' : ''}">
+      ${p.hot ? '<div class="hot-badge">最受欢迎</div>' : ''}
+      <h3>${p.name}</h3>
+      <div class="amount">¥ ${p.amount.toLocaleString()} <small>${p.amount >= 5000 ? '/ 90天起' : ''}</small></div>
+      <ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
+      <button class="btn ${p.hot ? 'btn-primary' : 'btn-outline'}" onclick="buyPackage(${p.amount})">立即充值</button>
+    </div>`).join('');
+}
+
+function buyPackage(amt) {
+  if (!loggedIn) { showToast('请先注册 / 登录后再充值'); goRegister(); return; }
+  selectedRecharge = RECHARGE_OPTIONS.find(r => r.amt === amt) || RECHARGE_OPTIONS[0];
+  showRecharge();
+}
+
+/* ================= 认证 ================= */
+function doLogin() {
+  showToast('登录成功，欢迎回来 👋');
+  setTimeout(() => goDash(), 300);
+}
+function doRegister() {
+  const e = $('regEmail').value, p = $('regPwd').value, p2 = $('regPwd2').value;
+  if (!e.includes('@')) { showToast('请输入正确的邮箱'); return; }
+  if (p.length < 8) { showToast('密码至少 8 位'); return; }
+  if (p !== p2) { showToast('两次输入的密码不一致'); return; }
+  showToast('注册成功，已赠送 100 积分 🎉');
+  setTimeout(() => goDash(), 300);
+}
+function logout() { loggedIn = false; showToast('已退出登录'); switchView('home'); }
+
+/* ================= 工作台 ================= */
+function renderDash() {
+  $('welcomeText').textContent = '欢迎回来，Demo 卖家 · 上次登录 2026-08-09 21:32';
+  renderCostChart();
+  renderKeys();
+  renderRechargeHistory();
+}
+
+function renderCostChart() {
+  const max = Math.max(...COST_DATA.map(d => d.points));
+  $('costChart').innerHTML = COST_DATA.map(d => `
+    <div class="bar-row">
+      <div class="name">${d.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.points / max * 100)}%; background:${d.color}"></div></div>
+      <div class="val">${fmt(d.points)} 点 <span style="color:var(--text3);font-weight:400;font-size:12px">(${d.calls}次)</span></div>
+    </div>`).join('');
+}
+
+function renderKeys() {
+  $('keyTable').innerHTML = KEYS.map(k => `
+    <tr>
+      <td style="font-weight:500">${k.name}</td>
+      <td>
+        <div class="key-val">
+          <span class="key-full">${k.key.slice(0, 12)}••••••••••${k.key.slice(-4)}</span>
+          <button class="copy-btn" onclick="copyKey('${k.key}')">复制</button>
+        </div>
+      </td>
+      <td style="color:var(--text2)">${k.created}</td>
+      <td><span class="status-dot ${k.status === '启用' ? 'status-active' : 'status-disabled'}"></span>${k.status}</td>
+      <td style="text-align:right">
+        <button class="btn btn-ghost btn-sm" onclick="toggleKey(${k.id})">${k.status === '启用' ? '停用' : '启用'}</button>
+      </td>
+    </tr>`).join('');
+}
+
+function createKey() {
+  const k = { id: Date.now(), name: '新密钥', key: 'sk_live_' + Math.random().toString(16).slice(2, 14), created: '2026-08-10 15:50', status: '启用' };
+  KEYS.unshift(k);
+  renderKeys();
+  showToast('已创建新密钥：' + k.key);
+}
+
+function copyKey(key) {
+  navigator.clipboard && navigator.clipboard.writeText(key).then(() => showToast('密钥已复制')).catch(() => showToast('密钥：' + key));
+}
+
+function toggleKey(id) {
+  const k = KEYS.find(x => x.id === id);
+  k.status = k.status === '启用' ? '停用' : '启用';
+  renderKeys();
+  showToast(`密钥「${k.name}」已${k.status}`);
+}
+
+function renderRechargeHistory() {
+  $('rechargeTable').innerHTML = RECHARGE_HISTORY.map(r => `
+    <tr>
+      <td class="mono" style="color:var(--text2)">${r.id}</td>
+      <td style="color:var(--text2)">${r.time}</td>
+      <td>${r.method}</td>
+      <td style="font-weight:500">${r.amount}</td>
+      <td style="color:var(--success);font-weight:500">+${r.points} 点</td>
+      <td><span class="status-dot status-active"></span><span style="color:var(--success)">${r.status}</span></td>
+    </tr>`).join('');
+}
+
+/* ================= 充值 ================= */
+function showRecharge() {
+  $('rechargeOptions').innerHTML = RECHARGE_OPTIONS.map((r, i) => `
+    <div class="recharge-option ${i === 1 ? 'active' : ''}" onclick="selectRecharge(${i}, this)">
+      <div class="amt">¥ ${r.amt.toLocaleString()}</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:2px">到账 ${fmt(r.amt + r.give)} 积分</div>
+      ${r.give ? `<div class="give">赠送 ${fmt(r.give)} 积分</div>` : ''}
+    </div>`).join('');
+  selectedRecharge = RECHARGE_OPTIONS[1];
+  $('rechargeModal').classList.add('show');
+}
+
+function selectRecharge(i, el) {
+  document.querySelectorAll('.recharge-option').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  selectedRecharge = RECHARGE_OPTIONS[i];
+}
+
+function confirmRecharge() {
+  $('rechargeModal').classList.remove('show');
+  showToast(`充值成功：到账 ${fmt(selectedRecharge.amt + selectedRecharge.give)} 积分 🎉`);
+}
+
+$('rechargeModal').addEventListener('click', function (e) {
+  if (e.target === this) this.classList.remove('show');
+});
+
+/* ================= 初始化 ================= */
+renderApis();
+renderPricing();
+renderHomeNav();
+</script>
+</body>
+</html>
