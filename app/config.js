@@ -26,6 +26,7 @@ module.exports = {
   sellerSprite: {
     baseUrl: process.env.SELLERSPRITE_BASE_URL || 'https://www.sellersprite.com',
     competingLookupPath: process.env.SELLERSPRITE_COMPETING_LOOKUP_PATH || '/v3/api/competing-lookup',
+    asinSalesPath: process.env.SELLERSPRITE_ASIN_SALES_PATH || '/v2/tools/sales-estimator/asin.json',
     bsrSalesPath: process.env.SELLERSPRITE_BSR_SALES_PATH || '/v2/tools/sales-estimator/bsr.json',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },

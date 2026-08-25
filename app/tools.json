@@ -119,6 +119,45 @@
     }
   },
   {
+    "name": "asin_sales",
+    "description": "ASIN销量预测：根据亚马逊 ASIN 预测商品月均销量，并返回历史日销售额、日价格、日BSR排名、月销售额及月度统计数据。当用户需要估算某个 ASIN 的销量趋势或历史销售数据时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、asin、category、categoryId、estMonSales、dailyAmounts、dailyPrices、bsrs、monsAmounts、monStats 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": [
+            "US",
+            "CA",
+            "MX",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "JP",
+            "IN",
+            "AU"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "asin": {
+          "type": "string",
+          "description": "Amazon ASIN，长度通常为 10，例如 B0BDRKG478",
+          "minLength": 10,
+          "maxLength": 10
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "bsr_sales",
     "description": "BSR销量预测：根据亚马逊一级类目节点ID(categoryId)与Best Sellers Rank(bsr)预测商品日均销量、月均销量以及不同排名的日均销量分布。当用户需要估算某个BSR排名对应的销量时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、categoryId、categoryLabel、bsr、estimatedDailySales、estimatedMonthlySales、rankSales 等。",
     "inputSchema": {

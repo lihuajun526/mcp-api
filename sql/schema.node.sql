@@ -52,5 +52,6 @@ ON DUPLICATE KEY UPDATE username = username;
 INSERT INTO api_endpoint_pricing (id, endpoint_code, cost_points, enabled)
 VALUES (1, 'ASIN_DETAIL', 5, true),
        (2, 'COMPETING_LOOKUP', 10, true),
-       (3, 'BSR_SALES', 5, true)
+       (3, 'BSR_SALES', 5, true),
+       (4, 'ASIN_SALES', 5, true)
 ON DUPLICATE KEY UPDATE endpoint_code = endpoint_code;

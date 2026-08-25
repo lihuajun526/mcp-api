@@ -6179,3 +6179,10 @@ curl --url 'https://www.sellersprite.com/v2/tools/sales-estimator/asin.json' \
         "cid": "165796011"
     }
 }
+
+三、还需要调整下面这些文件
+config.js
+httpRoutes.js
+index.js
+tools.json
+schema.node.sql

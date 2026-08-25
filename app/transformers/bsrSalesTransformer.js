@@ -49,7 +49,7 @@ function transformBsrSalesResponse(root, request) {
   return {
     marketplace: (request && request.marketplace) || null,
     categoryId: get(cidCode, 'cid'),
-    categoryLabel: get(cidCode, 'categoryLabel', 'category_label'),
+    category: get(cidCode, 'categoryLabel', 'category_label'),
     bsr: toInt(data.bsr),
     dailySales: toInt(get(data, 'estDailySales', 'estimated_daily_sales')),
     monthlySales: toInt(get(data, 'estMonSales', 'estimated_monthly_sales')),
