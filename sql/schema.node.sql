@@ -29,21 +29,19 @@ CREATE TABLE IF NOT EXISTS usage_record (
 );
 
 CREATE TABLE IF NOT EXISTS amz_category (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    node_id VARCHAR(512) NOT NULL PRIMARY KEY,
     site VARCHAR(32) NOT NULL,
     market_id INT NOT NULL,
-    node_id VARCHAR(32) NOT NULL,
     parent_node_id VARCHAR(32) NULL,
-    label VARCHAR(255) NULL,
-    node_label_locale VARCHAR(255) NULL,
-    node_label_path_locale VARCHAR(1024) NULL,
+    label VARCHAR(512) NULL,
+    node_label_locale VARCHAR(512) NULL,
+    node_label_path_locale VARCHAR(512) NULL,
     products BIGINT NULL,
     children_count INT NOT NULL DEFAULT 0,
     depth INT NOT NULL DEFAULT 0,
     leaf TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
-    UNIQUE KEY uk_amz_category_site_market_node (site, market_id, node_id),
     INDEX idx_amz_category_parent (site, market_id, parent_node_id)
 );
 
@@ -53,5 +51,6 @@ ON DUPLICATE KEY UPDATE username = username;
 
 INSERT INTO api_endpoint_pricing (id, endpoint_code, cost_points, enabled)
 VALUES (1, 'ASIN_DETAIL', 5, true),
-       (2, 'COMPETING_LOOKUP', 10, true)
+       (2, 'COMPETING_LOOKUP', 10, true),
+       (3, 'BSR_SALES', 5, true)
 ON DUPLICATE KEY UPDATE endpoint_code = endpoint_code;

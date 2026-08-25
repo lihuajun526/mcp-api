@@ -56,8 +56,9 @@ function transformAsinResponse(root) {
   const items = Array.isArray(data.items) ? data.items : [];
   const out = items.map((item) => ({
     asin: get(item, 'asin'),
-    asinUrl: get(item, 'asinUrl', 'asin_url'),
-    availableDate: toLong(get(item, 'availableDate', 'available_date', 'availableTime')),
+    asinUrl: get(item, 'asinUrl'),
+    // 上架日期
+    availableDate: toLong(get(item, 'availableDate')),
     badge: {
       bestSeller: toFlag(get(item.badge || item, 'bestSeller', 'best_seller')),
       amazonChoice: toFlag(get(item.badge || item, 'amazonChoice', 'amazon_choice')),
@@ -77,8 +78,8 @@ function transformAsinResponse(root) {
     lqs: toInt(get(item, 'lqs')),
     nodeId: get(item, 'nodeId', 'node_id'),
     nodeIdPath: get(item, 'nodeIdPath', 'node_id_path'),
-    nodeLabelPath: get(item, 'nodeLabelPath', 'node_label_path'),
-    nodeLabelPathLocale: get(item, 'nodeLabelPathLocale', 'node_label_path_locale'),
+    nodeLabelPath: get(item, 'nodeLabelPath'),
+    nodeLabelPathLocale: get(item, 'nodeLabelPathLocale'),
     parent: get(item, 'parent'),
     price: toFloat(get(item, 'price')),
     questions: toInt(get(item, 'questions')),

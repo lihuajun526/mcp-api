@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SellerData-MCP 项目开发需求文档</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --border: #e3e6eb;
+    --text: #1f2329;
+    --text2: #646a73;
+    --text3: #8f959e;
+    --primary: #185fa5;
+    --primary-weak: #e6f1fb;
+    --warn: #854f0b;
+    --warn-weak: #faeeda;
+    --danger: #a32d2d;
+    --danger-weak: #fcebeb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7; padding: 40px 24px;
+    font-size: 14px;
+  }
+  .page { max-width: 960px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px; padding: 48px 56px; }
+  h1 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: var(--text2); font-size: 13px; margin-bottom: 28px; }
+  h2 {
+    font-size: 17px; font-weight: 700; margin: 32px 0 12px; padding-left: 12px;
+    border-left: 4px solid var(--primary); color: var(--text);
+  }
+  h3 { font-size: 14.5px; font-weight: 600; margin: 20px 0 8px; color: var(--text); }
+  p { margin: 8px 0; color: var(--text); }
+  .lead { color: var(--text2); }
+  table {
+    width: 100%; border-collapse: collapse; margin: 10px 0 6px;
+    font-size: 13px; table-layout: fixed;
+  }
+  th {
+    background: var(--primary-weak); color: #0c447c; font-weight: 600; text-align: left;
+    padding: 9px 12px; border: 1px solid #c9ddf0; white-space: nowrap;
+  }
+  td {
+    padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; color: var(--text);
+    word-break: break-word;
+  }
+  tbody tr:nth-child(even) td { background: #fafbfd; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px;
+    background: #f1f3f7; padding: 1px 6px; border-radius: 5px; color: #534ab7;
+  }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 9px; border-radius: 10px; white-space: nowrap; }
+  .tag.online { background: #eaf3de; color: #3b6d11; }
+  .tag.plan { background: var(--warn-weak); color: var(--warn); }
+  .tag.risk { background: var(--danger-weak); color: var(--danger); font-weight: 600; }
+  .note {
+    background: var(--warn-weak); border: 1px solid #fac775; border-radius: 8px;
+    padding: 10px 14px; font-size: 12.5px; color: var(--warn); margin: 12px 0;
+  }
+  .flow {
+    background: #fafbfd; border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 18px; font-size: 13px; margin: 10px 0; color: var(--text2);
+  }
+  .flow b { color: var(--text); }
+  .seq-steps { list-style: none; counter-reset: s; }
+  .seq-steps li { position: relative; padding: 4px 0 4px 34px; color: var(--text2); }
+  .seq-steps li::before {
+    counter-increment: s; content: counter(s);
+    position: absolute; left: 0; top: 5px; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--primary-weak); color: var(--primary); font-size: 12px; font-weight: 600;
+    text-align: center; line-height: 22px;
+  }
+  .seq-steps b { color: var(--text); }
+  .foot { text-align: center; color: var(--text3); font-size: 12px; margin-top: 40px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { border: none; border-radius: 0; padding: 24px; max-width: none; }
+    h2 { break-after: avoid; }
+    table { break-inside: auto; }
+    tr { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>SellerData-MCP 项目开发需求文档</h1>
+  <div class="subtitle">版本 v0.1（草稿，待陈总确认） · 整理日期 2026-08-18 · 整理人：小项（项目经理）<br>依据：docs/官网原型.html、docs/业务架构流程图.html</div>
+
+  <h2>1. 项目定位</h2>
+  <p>面向亚马逊跨境卖家的 <b>MCP 数据网关平台</b>：统一以 MCP 协议（及等价 REST API）对外提供选品与市场数据接口，聚合多家第三方选品软件的数据能力，让大模型 / AI Agent 以自然语言方式调用电商数据（查竞品、看 ASIN 详情、分析市场等）。</p>
+  <p>商业模式：<b>点数（积分）计费</b> —— 用户注册送积分、按需充值，每次接口调用按定价扣点；缓存命中不扣点。</p>
+
+  <h2>2. 目录与系统组成</h2>
+  <table>
+    <colgroup><col style="width:18%"><col></colgroup>
+    <thead><tr><th>目录</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td><code>frontend/</code></td><td>官网 + 用户工作台（卖家侧 Web）</td></tr>
+      <tr><td><code>backend/</code></td><td>MCP 网关、业务 API、计费、数据采集等后端服务</td></tr>
+      <tr><td><code>admin/</code></td><td>后台管理系统（管理员侧）</td></tr>
+      <tr><td><code>docs/</code></td><td>项目文档（本目录）</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. 用户角色</h2>
+  <table>
+    <colgroup><col style="width:20%"><col style="width:20%"><col></colgroup>
+    <thead><tr><th>角色</th><th>说明</th><th>关键诉求</th></tr></thead>
+    <tbody>
+      <tr><td>跨境卖家（注册用户）</td><td>平台付费用户</td><td>注册/登录、创建管理 API Key、充值购买积分、查看用量与消耗、导出明细</td></tr>
+      <tr><td>大模型 / AI Agent</td><td>MCP Client</td><td>通过 <code>/mcp</code> 端点自动发现并调用工具，X-API-Key 鉴权</td></tr>
+      <tr><td>系统集成方</td><td>REST 调用方</td><td>通过 <code>/api/v1/mcp/*</code> HTTP 接口集成</td></tr>
+      <tr><td>管理员</td><td>平台运营人员</td><td>用户管理、QPS 配额调整、接口定价维护、第三方账号会话池维护、订单与充值管理、用量统计</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. 功能需求</h2>
+
+  <h3>4.1 官网（frontend）</h3>
+  <table>
+    <colgroup><col style="width:9%"><col style="width:20%"><col></colgroup>
+    <thead><tr><th>编号</th><th>功能</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>F-01</td><td>首页</td><td>平台介绍、核心数据展示（2 亿+ ASIN、10 个站点、40+ 接口、5 QPS）、注册/登录入口</td></tr>
+      <tr><td>F-02</td><td>接口列表与计费</td><td>展示全部接口的名称、描述、点数定价、状态（已上线/规划中）、是否支持 MCP</td></tr>
+      <tr><td>F-03</td><td>充值方案</td><td>展示充值档位与赠送规则</td></tr>
+      <tr><td>F-04</td><td>三步接入指引</td><td>注册建密钥 → 配置 MCP Server → 自然语言调用</td></tr>
+      <tr><td>F-05</td><td>注册 / 登录</td><td>邮箱 + 密码；注册送 100 积分；密码至少 8 位含字母和数字</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 用户工作台（frontend）</h3>
+  <table>
+    <colgroup><col style="width:9%"><col style="width:20%"><col></colgroup>
+    <thead><tr><th>编号</th><th>功能</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>F-06</td><td>数据概览</td><td>积分余额、本月调用次数、本月消耗点数（及折算金额）、当前 QPS 限额与会员等级</td></tr>
+      <tr><td>F-07</td><td>积分消耗统计</td><td>按接口统计本月消耗点数与调用次数，图表展示，支持导出明细</td></tr>
+      <tr><td>F-08</td><td>密钥管理</td><td>新建/复制/启用/停用 API Key（区分生产 <code>sk_live_</code> 与测试 <code>sk_test_</code> 前缀）</td></tr>
+      <tr><td>F-09</td><td>充值</td><td>选择档位（100 / 1000 / 5000 / 20000 元），支付后积分即时到账</td></tr>
+      <tr><td>F-10</td><td>充值记录</td><td>订单号、时间、支付方式、实付金额、到账积分、状态</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.3 后台管理（admin）</h3>
+  <table>
+    <colgroup><col style="width:9%"><col style="width:20%"><col></colgroup>
+    <thead><tr><th>编号</th><th>功能</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>F-11</td><td>用户管理</td><td>用户列表、状态（ACTIVE/禁用）、余额、角色、QPS 限额调整</td></tr>
+      <tr><td>F-12</td><td>接口定价管理</td><td>维护 <code>api_endpoint_pricing</code>（每接口点数定价），支持上下线接口</td></tr>
+      <tr><td>F-13</td><td>订单 / 充值管理</td><td>订单查询、异常单处理、对账</td></tr>
+      <tr><td>F-14</td><td>用量统计</td><td>平台级调用量、扣点流水、缓存命中率等运营指标</td></tr>
+      <tr><td>F-15</td><td>会话池管理</td><td>维护第三方选品软件多账号登录态（cookie）池，查看健康状态、上下线账号</td></tr>
+      <tr><td>F-16</td><td>管理员账号</td><td>管理员登录、角色权限（RBAC）、操作审计</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.4 MCP 网关（backend 核心）</h3>
+  <table>
+    <colgroup><col style="width:9%"><col style="width:24%"><col></colgroup>
+    <thead><tr><th>编号</th><th>功能</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>F-17</td><td>MCP 协议端点 <code>/mcp</code></td><td>JSON-RPC 2.0，支持 <code>initialize</code> / <code>tools/list</code> / <code>tools/call</code>，支持 SSE 流式响应</td></tr>
+      <tr><td>F-18</td><td>HTTP API 端点 <code>/api/v1/mcp/*</code></td><td>与 MCP 共享同一套网关逻辑的 RESTful 接口</td></tr>
+      <tr><td>F-19</td><td>工具注册表 <code>tools.json</code></td><td>集中维护 MCP 工具定义（名称/描述/JSON Schema 参数），新增工具免发版</td></tr>
+      <tr><td>F-20</td><td>API Key 认证</td><td>校验 <code>X-API-Key</code>，关联 <code>user_account</code>，未激活/非法 Key 拒绝</td></tr>
+      <tr><td>F-21</td><td>限流</td><td>Redis 滑动窗口（ZSET），默认 5 QPS/用户，可按会员等级调整；超限返回 429</td></tr>
+      <tr><td>F-22</td><td>缓存</td><td>键 = provider + 接口 + 参数归一化哈希（ASIN 大小写/顺序归一化，分页参数不参与）；命中即返回，不扣点不调第三方；TTL 默认 300s</td></tr>
+      <tr><td>F-23</td><td>扣点计费</td><td>按 <code>api_endpoint_pricing</code> 扣减余额并写 <code>usage_record</code>，事务保证一致性；余额不足拒绝</td></tr>
+      <tr><td>F-24</td><td>第三方请求适配</td><td>Adapter 将 MCP 参数翻译为选品软件原生请求（market/asins/monthName/order 等）</td></tr>
+      <tr><td>F-25</td><td>会话轮询调度</td><td>按 provider 从 Redis list 轮询多账号登录态（Round-Robin），负载均衡、故障隔离与熔断</td></tr>
+      <tr><td>F-26</td><td>响应转换</td><td>Transformers 将异构第三方响应重组织为标准 MCP 结构（字段重命名/类型转换/趋势数组化）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.5 数据与采集（backend）</h3>
+  <table>
+    <colgroup><col style="width:9%"><col style="width:24%"><col></colgroup>
+    <thead><tr><th>编号</th><th>功能</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>F-27</td><td>亚马逊类目树</td><td><code>amz_category</code> 表，由采集脚本写入；Redis 采集任务队列 <code>amz:category:crawl:*</code></td></tr>
+      <tr><td>F-28</td><td>数据源接入（首期）</td><td>卖家精灵（SellerSprite）：competitor_lookup、asin_detail_lookup 已上线口径</td></tr>
+      <tr><td>F-29</td><td>数据源扩展（规划）</td><td>SIF、西柚找词、Helium10；关键词挖掘、关键词反查、选产品、市场分析等接口</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.6 首期接口清单（含定价口径）</h3>
+  <table>
+    <colgroup><col style="width:22%"><col style="width:28%"><col style="width:16%"><col></colgroup>
+    <thead><tr><th>工具</th><th>code</th><th>点数/次</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td>查竞品</td><td><code>competitor_lookup</code></td><td>10</td><td><span class="tag online">已上线（首期）</span></td></tr>
+      <tr><td>ASIN 详情</td><td><code>asin_detail_lookup</code></td><td>5</td><td><span class="tag online">已上线（首期）</span></td></tr>
+      <tr><td>关键词挖掘</td><td><code>keyword_mining</code></td><td>8</td><td><span class="tag plan">规划中</span></td></tr>
+      <tr><td>关键词反查</td><td><code>keyword_reverse</code></td><td>8</td><td><span class="tag plan">规划中</span></td></tr>
+      <tr><td>选产品</td><td><code>product_research</code></td><td>12</td><td><span class="tag plan">规划中</span></td></tr>
+      <tr><td>市场分析</td><td><code>market_analysis</code></td><td>15</td><td><span class="tag plan">规划中</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.7 充值档位（原型口径）</h3>
+  <table>
+    <colgroup><col style="width:22%"><col style="width:19%"><col style="width:19%"><col style="width:20%"><col></colgroup>
+    <thead><tr><th>档位</th><th>实付</th><th>赠送</th><th>到账</th><th>有效期</th></tr></thead>
+    <tbody>
+      <tr><td>体验包</td><td>¥100</td><td>0</td><td>100</td><td>7 天</td></tr>
+      <tr><td>入门包</td><td>¥1,000</td><td>100</td><td>1,100</td><td>30 天</td></tr>
+      <tr><td>进阶包</td><td>¥5,000</td><td>800</td><td>5,800</td><td>90 天</td></tr>
+      <tr><td>专业包</td><td>¥20,000</td><td>4,000</td><td>24,000</td><td>365 天</td></tr>
+    </tbody>
+  </table>
+  <div class="note">注：原型中支付方式含微信支付、支付宝；点数与人民币折算口径约 100 点 = ¥10（工作台展示 ≈¥25.60 / 2,560 点），<b>该汇率口径需陈总确认</b>。</div>
+
+  <h2>5. 非功能需求</h2>
+  <table>
+    <colgroup><col style="width:16%"><col></colgroup>
+    <thead><tr><th>类别</th><th>要求（建议值，待确认）</th></tr></thead>
+    <tbody>
+      <tr><td>性能</td><td>网关单请求 P95 &lt; 500ms（缓存命中）；第三方透传请求 P95 &lt; 8s</td></tr>
+      <tr><td>可用性</td><td>网关服务 99.9%；第三方故障时降级返回明确错误，不影响平台整体</td></tr>
+      <tr><td>并发</td><td>首期支撑 200 并发调用；单用户默认 5 QPS，可配置</td></tr>
+      <tr><td>数据一致性</td><td>扣点与流水写入强一致（事务）；缓存与余额最终一致</td></tr>
+      <tr><td>可观测性</td><td>全链路请求追踪、调用量/扣点/缓存命中率/第三方成功率监控告警</td></tr>
+      <tr><td>合规</td><td>支付资金流合规、用户数据保护、内容安全；见《安全架构与技术选型》风险章节</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6. 数据存储设计（依据架构图）</h2>
+
+  <h3>MySQL（持久化）</h3>
+  <table>
+    <colgroup><col style="width:30%"><col></colgroup>
+    <thead><tr><th>表</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td><code>user_account</code></td><td>用户 / 密钥 / 余额 / QPS / 角色 / 状态</td></tr>
+      <tr><td><code>api_endpoint_pricing</code></td><td>接口定价（每接口点数）</td></tr>
+      <tr><td><code>usage_record</code></td><td>调用明细 / 扣点流水</td></tr>
+      <tr><td><code>amz_category</code></td><td>亚马逊类目树</td></tr>
+      <tr><td>订单 / 充值记录表</td><td>官网充值与订单（原型已规划）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Redis（高速层）</h3>
+  <table>
+    <colgroup><col style="width:40%"><col></colgroup>
+    <thead><tr><th>Key</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td><code>mcp:ratelimit:{uid}</code></td><td>限流滑动窗口 ZSET</td></tr>
+      <tr><td><code>mcp:cache:{provider}:{api}:{hash}</code></td><td>第三方响应缓存（TTL 300s）</td></tr>
+      <tr><td><code>mcp:session:{provider}</code></td><td>多账号登录态 LIST（轮询池）</td></tr>
+      <tr><td><code>mcp:session:cursor:{provider}</code></td><td>轮询游标计数器</td></tr>
+      <tr><td><code>amz:category:crawl:*</code></td><td>类目采集任务队列</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7. 关键业务流程</h2>
+
+  <h3>7.1 MCP 工具调用时序</h3>
+  <ol class="seq-steps">
+    <li><b>Client tools/call</b> → MCP 协议端点接收调用（工具名 + 参数）</li>
+    <li><b>API Key 认证</b>：校验 user_account 状态必须 ACTIVE，否则拒绝</li>
+    <li><b>限流</b>：Redis ZSET 滑动窗口，超限返回 429</li>
+    <li><b>缓存查询</b>：命中即返回，不扣点不调第三方</li>
+    <li><b>会话轮询</b>：按 provider 轮询选择登录态（cookie）</li>
+    <li><b>转发第三方</b>：构造原生请求并发送</li>
+    <li><b>Transformers 标准化</b>：响应重组织为标准 MCP 结构</li>
+    <li><b>事务扣点</b> + 写 <code>usage_record</code></li>
+    <li><b>写缓存</b>（TTL 300s）</li>
+    <li><b>返回 JSON-RPC <code>structuredContent</code></b>，模型组织成自然语言答案</li>
+  </ol>
+
+  <h3>7.2 充值流程</h3>
+  <div class="flow">用户选档 → 创建订单 → <b>微信支付 / 支付宝</b> → 回调验签 → <b>事务到账</b>（余额 + 赠送 + 有效期 + 充值记录）</div>
+
+  <h2>8. 假设与待决事项（Open Questions）</h2>
+  <table>
+    <colgroup><col style="width:8%"><col style="width:64%"><col></colgroup>
+    <thead><tr><th>#</th><th>事项</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td>Q1</td><td>积分有效期到期策略（过期清零 / 顺延 / 提醒）</td><td>待决</td></tr>
+      <tr><td>Q2</td><td>点数与金额折算比例、充值档位是否为最终定价</td><td>待确认</td></tr>
+      <tr><td>Q3</td><td>第三方数据源接入方式：当前为挂 cookie 模拟登录态，存在 ToS 与封号风险，是否评估官方开放接口 / 商务合作（如 open.sellersprite.com 开放接口）</td><td><span class="tag risk">待决策（高风险）</span></td></tr>
+      <tr><td>Q4</td><td>会员等级体系（标准/更高档）与 QPS 档位细则</td><td>待决</td></tr>
+      <tr><td>Q5</td><td>是否需要发票、对公转账等 B 端支付能力</td><td>待决</td></tr>
+      <tr><td>Q6</td><td>多站点（10 个亚马逊站点）首期覆盖范围</td><td>待决</td></tr>
+      <tr><td>Q7</td><td>管理员角色细分（运营/财务/超管）</td><td>待决</td></tr>
+      <tr><td>Q8</td><td>部署环境（云厂商、域名、备案）与上线时间目标</td><td>待确认</td></tr>
+    </tbody>
+  </table>
+
+  <div class="foot">sellerdata-mcp · 开发需求文档 v0.1 · 2026-08-18</div>
+</div>
+</body>
+</html>

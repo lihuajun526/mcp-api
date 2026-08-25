@@ -26,6 +26,7 @@ module.exports = {
   sellerSprite: {
     baseUrl: process.env.SELLERSPRITE_BASE_URL || 'https://www.sellersprite.com',
     competingLookupPath: process.env.SELLERSPRITE_COMPETING_LOOKUP_PATH || '/v3/api/competing-lookup',
+    bsrSalesPath: process.env.SELLERSPRITE_BSR_SALES_PATH || '/v2/tools/sales-estimator/bsr.json',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   cache: {
@@ -38,7 +39,7 @@ module.exports = {
     marketId: Number(process.env.SELLERSPRITE_CATEGORY_MARKET_ID || 1),
     site: process.env.SELLERSPRITE_CATEGORY_SITE || 'US',
     tableName: process.env.SELLERSPRITE_CATEGORY_TABLE || 'bsr_sales_nearly',
-    childNodeParam: process.env.SELLERSPRITE_CATEGORY_CHILD_NODE_PARAM || 'nodeId',
+    childNodeParam: process.env.SELLERSPRITE_CATEGORY_CHILD_NODE_PARAM || 'nodeIdPath',
     cookie: process.env.SELLERSPRITE_CATEGORY_COOKIE || '',
     referer: process.env.SELLERSPRITE_CATEGORY_REFERER || 'https://www.sellersprite.com/v3/competitor-lookup',
     accept: process.env.SELLERSPRITE_CATEGORY_ACCEPT || 'application/json, text/plain, */*',

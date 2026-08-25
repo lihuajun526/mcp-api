@@ -117,5 +117,50 @@
       ],
       "additionalProperties": false
     }
+  },
+  {
+    "name": "bsr_sales",
+    "description": "BSR销量预测：根据亚马逊一级类目节点ID(categoryId)与Best Sellers Rank(bsr)预测商品日均销量、月均销量以及不同排名的日均销量分布。当用户需要估算某个BSR排名对应的销量时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、categoryId、categoryLabel、bsr、estimatedDailySales、estimatedMonthlySales、rankSales 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": [
+            "US",
+            "CA",
+            "MX",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "JP",
+            "IN",
+            "AU"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "类目节点ID(cid)，例如 2619525011",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "bsr": {
+          "type": "integer",
+          "description": "Best Sellers Rank 排名，例如 1",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "marketplace",
+        "categoryId",
+        "bsr"
+      ],
+      "additionalProperties": false
+    }
   }
 ]

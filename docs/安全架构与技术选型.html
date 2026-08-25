@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SellerData-MCP 安全架构与技术选型</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --border: #e3e6eb;
+    --text: #1f2329;
+    --text2: #646a73;
+    --text3: #8f959e;
+    --primary: #185fa5;
+    --primary-weak: #e6f1fb;
+    --teal: #0f6e56;
+    --teal-weak: #e1f5ee;
+    --warn: #854f0b;
+    --warn-weak: #faeeda;
+    --danger: #a32d2d;
+    --danger-weak: #fcebeb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7; padding: 40px 24px;
+    font-size: 14px;
+  }
+  .page { max-width: 960px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px; padding: 48px 56px; }
+  h1 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: var(--text2); font-size: 13px; margin-bottom: 28px; }
+  h2 {
+    font-size: 17px; font-weight: 700; margin: 32px 0 12px; padding-left: 12px;
+    border-left: 4px solid var(--primary);
+  }
+  h3 { font-size: 14.5px; font-weight: 600; margin: 20px 0 8px; }
+  p { margin: 8px 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 10px 0 6px;
+    font-size: 13px; table-layout: fixed;
+  }
+  th {
+    background: var(--primary-weak); color: #0c447c; font-weight: 600; text-align: left;
+    padding: 9px 12px; border: 1px solid #c9ddf0; white-space: nowrap;
+  }
+  td {
+    padding: 8px 12px; border: 1px solid var(--border); vertical-align: top;
+    word-break: break-word;
+  }
+  tbody tr:nth-child(even) td { background: #fafbfd; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px;
+    background: #f1f3f7; padding: 1px 6px; border-radius: 5px; color: #534ab7;
+  }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 9px; border-radius: 10px; white-space: nowrap; font-weight: 600; }
+  .tag.high { background: var(--danger-weak); color: var(--danger); }
+  .tag.mid { background: var(--warn-weak); color: var(--warn); }
+  ol.design { padding-left: 22px; margin: 8px 0; }
+  ol.design li { padding: 3px 0; color: var(--text2); }
+  ol.design b { color: var(--text); }
+  .foot { text-align: center; color: var(--text3); font-size: 12px; margin-top: 40px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { border: none; border-radius: 0; padding: 24px; max-width: none; }
+    h2, h3 { break-after: avoid; }
+    tr { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>SellerData-MCP 安全架构与技术选型</h1>
+  <div class="subtitle">版本 v0.1（草稿，待陈总确认） · 整理日期 2026-08-18 · 整理人：小项（项目经理）<br>依据：docs/开发需求文档、docs/业务架构流程图.html</div>
+
+  <h2>一、技术选型</h2>
+
+  <h3>1.1 总体选型建议</h3>
+  <table>
+    <colgroup><col style="width:16%"><col style="width:38%"><col></colgroup>
+    <thead><tr><th>层</th><th>选型</th><th>理由</th></tr></thead>
+    <tbody>
+      <tr><td>后端主框架</td><td><b>Spring Boot 3.x（Java 17+）</b></td><td>架构图已标注；事务/计费一致性、连接池、生态成熟，适合网关+计费场景</td></tr>
+      <tr><td>MCP/HTTP 网关</td><td>Spring WebFlux 或 Spring MVC + SSE</td><td>支持 SSE 流式响应与高并发透传；JSON-RPC 2.0 可自行实现或用 <code>modelcontextprotocol/java-sdk</code></td></tr>
+      <tr><td>官网前端</td><td><b>Vue 3 + TypeScript + Vite + Pinia</b>（或 React，二选一待确认）</td><td>官网+工作台交互复杂度中等，SPA 合适；图表用 ECharts</td></tr>
+      <tr><td>管理后台</td><td>Vue 3 + 成熟 Admin 模板（如 vben / naive-ui-admin）</td><td>表格/表单密集，复用组件库提速</td></tr>
+      <tr><td>数据库</td><td><b>MySQL 8.0</b>（InnoDB）</td><td>计费流水需要事务与对账能力</td></tr>
+      <tr><td>缓存/限流/会话池</td><td><b>Redis 7</b>（ZSET / LIST / GET-SET）</td><td>架构图既定方案</td></tr>
+      <tr><td>ORM</td><td>MyBatis-Plus 或 Spring Data JPA</td><td>团队熟悉度决定，建议 MyBatis-Plus（报表类查询灵活）</td></tr>
+      <tr><td>第三方调用</td><td>异步 HTTP 客户端（Spring WebClient / OkHttp）+ Resilience4j</td><td>超时、重试、熔断隔离第三方故障</td></tr>
+      <tr><td>采集脚本</td><td>Node.js（原型图标注）或 Java 定时任务</td><td>类目树采集，写 Redis 队列 + MySQL</td></tr>
+      <tr><td>支付</td><td>微信支付 / 支付宝官方 SDK（服务端回调验签）</td><td>原型既定支付方式</td></tr>
+      <tr><td>部署</td><td>Docker + 单机/2 节点起步（云服务器），Nginx 反代 + TLS；预留 K8s 演进</td><td>首期规模小，控制成本</td></tr>
+      <tr><td>可观测性</td><td>结构化日志 + Prometheus + Grafana + 告警（链路追踪可选 SkyWalking / OTel）</td><td>调用量/扣点/缓存命中率/第三方成功率监控</td></tr>
+      <tr><td>CI/CD</td><td>Git 仓库 + GitHub Actions 或 Jenkins，镜像构建发布</td><td>基础工程化</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1.2 关键设计要点</h3>
+  <ol class="design">
+    <li><b>网关横切链顺序固定</b>：认证 → 限流 → 缓存 → 扣点 → 转发 → 转换 → 写缓存，全部实现为可插拔过滤器，MCP 与 REST 端点共享。</li>
+    <li><b>扣点一致性</b>：事务内执行「余额扣减（乐观锁/行锁）+ usage_record 写入」；失败回滚、不写缓存；幂等键防重复扣点。</li>
+    <li><b>缓存键归一化</b>：provider + api + 参数规范化（ASIN 大写去重排序、剔除分页参数）后 SHA-1 / SHA-256。</li>
+    <li><b>会话池调度</b>：Redis LIST + 游标轮询；单账号连续失败自动摘除并告警，冷却后恢复（熔断）。</li>
+    <li><b>工具注册表</b>：<code>tools.json</code> 落库 + 管理后台维护，<code>tools/list</code> 动态返回，新增接口免发版。</li>
+  </ol>
+
+  <h2>二、安全架构</h2>
+
+  <h3>2.1 分层安全设计</h3>
+  <table>
+    <colgroup><col style="width:16%"><col></colgroup>
+    <thead><tr><th>层</th><th>措施</th></tr></thead>
+    <tbody>
+      <tr><td>边界 / 传输</td><td>全站 HTTPS（TLS 1.2+，HSTS）；Nginx 统一入口；隐藏第三方源站细节</td></tr>
+      <tr><td>Web 认证</td><td>官网/后台：邮箱+密码登录，密码 Argon2 / bcrypt 存储；会话用短期 JWT（HttpOnly Cookie 或 Authorization Bearer）+ 刷新机制；登录失败次数限制（防暴力破解）</td></tr>
+      <tr><td>API 认证</td><td>MCP / REST 用 <code>X-API-Key</code>；<b>服务端只存 Key 哈希（SHA-256）+ 前缀明文</b>，明文仅创建时展示一次；Key 支持即时停用</td></tr>
+      <tr><td>授权</td><td>用户侧：只能访问自己的余额/密钥/流水；管理后台：RBAC（超管/运营/财务），敏感操作二次确认</td></tr>
+      <tr><td>限流与防滥用</td><td>用户级 5 QPS 滑动窗口；全局 QPS 上限防 DDoS；IP 级粗粒度限流；注册接口加验证码/频控</td></tr>
+      <tr><td>输入校验</td><td>JSON Schema 校验 MCP 工具参数；SQL 参数化；输出编码防 XSS</td></tr>
+      <tr><td>支付安全</td><td>订单服务端生成，金额不可由前端传入；回调严格验签 + 幂等处理；防重复到账</td></tr>
+      <tr><td>敏感数据</td><td>第三方账号 cookie <b>加密存储</b>（AES-GCM，密钥走 KMS / 环境变量隔离）；Redis 开启认证与内网隔离；日志脱敏（Key / cookie / 邮箱）</td></tr>
+      <tr><td>审计</td><td>管理后台关键操作审计日志；扣点流水不可篡改（append-only + 对账脚本）</td></tr>
+      <tr><td>依赖安全</td><td>依赖漏洞扫描（OWASP Dependency-Check / Snyk），最小化第三方库</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 高风险项与建议（需陈总决策）</h3>
+  <table>
+    <colgroup><col style="width:7%"><col style="width:33%"><col style="width:20%"><col></colgroup>
+    <thead><tr><th>#</th><th>风险</th><th>影响</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>R1</td>
+        <td><b>第三方数据源采用挂 cookie 模拟登录态</b>，违反选品软件服务条款可能性高，存在封号、法律（不正当竞争/数据爬取）风险 <span class="tag high">高</span></td>
+        <td>平台业务连续性 + 法律合规</td>
+        <td>优先评估官方开放接口（如 open.sellersprite.com 开放接口规范，架构图脚注已提及）或商务合作授权；短期若沿用，需多账号冗余 + 故障熔断 + 法务评估</td>
+      </tr>
+      <tr>
+        <td>R2</td>
+        <td>积分即资产，扣点/充值涉及资金 <span class="tag mid">中</span></td>
+        <td>财务损失 / 纠纷</td>
+        <td>全流水对账、退款流程、每日对账任务</td>
+      </tr>
+      <tr>
+        <td>R3</td>
+        <td>cookie 池泄露 = 第三方账号批量失陷 <span class="tag mid">中</span></td>
+        <td>数据源中断</td>
+        <td>加密存储 + 最小访问权限 + 轮换机制</td>
+      </tr>
+      <tr>
+        <td>R4</td>
+        <td>MCP 参数被大模型侧注入异常值 <span class="tag mid">中</span></td>
+        <td>接口异常 / 越权</td>
+        <td>严格 JSON Schema + 白名单（marketplace 枚举、ASIN 格式校验）</td>
+      </tr>
+      <tr>
+        <td>R5</td>
+        <td>域名备案与支付资质（境内主体收单） <span class="tag mid">中</span></td>
+        <td>上线阻塞</td>
+        <td>提前启动 ICP 备案、微信/支付宝商户进件</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>三、里程碑建议（供后续任务拆解参考）</h2>
+  <table>
+    <colgroup><col style="width:12%"><col style="width:22%"><col></colgroup>
+    <thead><tr><th>阶段</th><th>内容</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr><td>M1 基础设施</td><td>工程骨架、MySQL/Redis、认证鉴权、CI/CD</td><td>—</td></tr>
+      <tr><td>M2 网关核心</td><td>MCP 端点 + 横切链（认证/限流/缓存/扣点）+ 卖家精灵两个接口</td><td>首期上线范围</td></tr>
+      <tr><td>M3 官网+工作台</td><td>注册登录、密钥管理、充值支付、用量统计</td><td>—</td></tr>
+      <tr><td>M4 管理后台</td><td>用户/定价/订单/会话池管理、运营报表</td><td>—</td></tr>
+      <tr><td>M5 扩展</td><td>新数据源与工具（SIF / 西柚 / H10）、关键词类接口</td><td>依赖 R1 决策</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--text2); font-size:13px; margin-top:10px;">具体工期与人力需陈总确认资源后，在任务拆解阶段给出。</p>
+
+  <div class="foot">sellerdata-mcp · 安全架构与技术选型 v0.1 · 2026-08-18</div>
+</div>
+</body>
+</html>

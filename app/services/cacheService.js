@@ -17,7 +17,7 @@ const CACHE_VERSION = 'v1';
 
 function normalizeRequest(request) {
   // 只保留影响数据内容的业务参数，剔除 page/size/order 等与数据内容无关的分页排序参数
-  const { marketplace, asin, asins, monthName, lowPrice, symbolFlag, nodeIdPaths } = request || {};
+  const { marketplace, asin, asins, monthName, lowPrice, symbolFlag, nodeIdPaths, categoryId, bsr } = request || {};
   const list = asins && asins.length ? asins : [asin];
   return JSON.stringify({
     marketplace: marketplace ? String(marketplace).toUpperCase() : null,
@@ -25,7 +25,9 @@ function normalizeRequest(request) {
     monthName: monthName || 'bsr_sales_nearly',
     lowPrice: lowPrice || 'N',
     symbolFlag: symbolFlag !== undefined ? symbolFlag : true,
-    nodeIdPaths: nodeIdPaths || []
+    nodeIdPaths: nodeIdPaths || [],
+    categoryId: categoryId ? String(categoryId) : null,
+    bsr: bsr !== undefined && bsr !== null ? Number(bsr) : null
   });
 }
 
