@@ -44,7 +44,7 @@ async function queryAsinSales(user, request) {
     return cached;
   }
 
-  const session = await sessionService.pickSellerSpriteSession();
+  const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinSales(request, session);
   const transformed = transformAsinSalesResponse(raw, request);
 

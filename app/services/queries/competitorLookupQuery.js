@@ -52,7 +52,7 @@ async function queryCompetingLookup(user, request) {
     return cached;
   }
 
-  const session = await sessionService.pickSellerSpriteSession();
+  const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchCompetingLookup(request, session);
   const transformed = transformCompetitionResponse(raw, request);
 

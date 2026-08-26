@@ -45,7 +45,7 @@ async function queryBsrSales(user, request) {
     return cached;
   }
 
-  const session = await sessionService.pickSellerSpriteSession();
+  const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchBsrSales(request, session);
   const transformed = transformBsrSalesResponse(raw, request);
 

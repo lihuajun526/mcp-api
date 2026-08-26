@@ -46,7 +46,7 @@ async function queryAsinDetail(user, request) {
     return cached;
   }
 
-  const session = await sessionService.pickSellerSpriteSession();
+  const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinDetail(request, session);
   const transformed = transformAsinResponse(raw);
   for (const item of transformed.items || []) {
