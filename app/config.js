@@ -29,6 +29,7 @@ module.exports = {
     asinSalesPath: process.env.SELLERSPRITE_ASIN_SALES_PATH || '/v2/tools/sales-estimator/asin.json',
     asinReversingPath: process.env.SELLERSPRITE_ASIN_REVERSING_PATH || '/v3/api/relation/reversing',
     bsrSalesPath: process.env.SELLERSPRITE_BSR_SALES_PATH || '/v2/tools/sales-estimator/bsr.json',
+    keywordResearchPath: process.env.SELLERSPRITE_KEYWORD_RESEARCH_PATH || '/v2/keyword-research',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   cache: {

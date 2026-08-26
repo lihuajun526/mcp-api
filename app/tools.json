@@ -229,6 +229,159 @@
     }
   },
   {
+    "name": "keyword_research",
+    "description": "关键词选品：根据包含关键词从亚马逊站内搜索词出发挖掘细分赛道，发现高需求、低竞争的产品机会。返回关键词的月搜索量、月购买量、购买率、商品数、需供比、增长率、同比增长、PPC出价、均价、评分数、评分值等数据，以及相关ASIN列表。支持按月份、各类筛选条件过滤。鉴权由服务端处理，模型不要传递 API Key。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "includeKeywords": {
+          "type": "string",
+          "description": "必填，包含的关键词（搜索词），例如 desk、wireless charger"
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除的关键词，多个用空格分隔，留空表示不排除"
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，格式 YYYYMM 或 YYYY-MM，例如 202607，留空表示最近月份"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，默认 100，最大 200",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "orderField": {
+          "type": "string",
+          "description": "排序字段：searches（搜索量）、purchases（购买量）、purchaseRate（购买率）、products（商品数）、growth（增长率）、bid（PPC竞价）、supplyDemandRatio（需供比）、avgPrice（均价）",
+          "enum": ["searches","purchases","purchaseRate","products","growth","bid","supplyDemandRatio","avgPrice"]
+        },
+        "orderDesc": {
+          "type": "boolean",
+          "description": "是否降序排序，默认 true（降序）"
+        },
+        "supplement": {
+          "type": "string",
+          "description": "是否补充词，N=否（默认），Y=是",
+          "enum": ["N","Y"]
+        },
+        "minSearches": {
+          "type": "integer",
+          "description": "最小月搜索量",
+          "minimum": 0
+        },
+        "maxSearches": {
+          "type": "integer",
+          "description": "最大月搜索量",
+          "minimum": 0
+        },
+        "minYearlyGrowth": {
+          "type": "number",
+          "description": "最小年增长率（%），例如 10 表示至少增长10%"
+        },
+        "maxYearlyGrowth": {
+          "type": "number",
+          "description": "最大年增长率（%）"
+        },
+        "minProducts": {
+          "type": "integer",
+          "description": "最小商品数",
+          "minimum": 0
+        },
+        "maxProducts": {
+          "type": "integer",
+          "description": "最大商品数",
+          "minimum": 0
+        },
+        "minPurchases": {
+          "type": "integer",
+          "description": "最小月购买量",
+          "minimum": 0
+        },
+        "maxPurchases": {
+          "type": "integer",
+          "description": "最大月购买量",
+          "minimum": 0
+        },
+        "minGrowth": {
+          "type": "number",
+          "description": "最小月增长率（%）"
+        },
+        "maxGrowth": {
+          "type": "number",
+          "description": "最大月增长率（%）"
+        },
+        "minAvgPrice": {
+          "type": "number",
+          "description": "最小均价",
+          "minimum": 0
+        },
+        "maxAvgPrice": {
+          "type": "number",
+          "description": "最大均价",
+          "minimum": 0
+        },
+        "minWordCount": {
+          "type": "integer",
+          "description": "关键词最少词数",
+          "minimum": 1
+        },
+        "maxWordCount": {
+          "type": "integer",
+          "description": "关键词最多词数"
+        },
+        "minSupplyDemandRatio": {
+          "type": "number",
+          "description": "最小需供比",
+          "minimum": 0
+        },
+        "maxSupplyDemandRatio": {
+          "type": "number",
+          "description": "最大需供比"
+        },
+        "minPurchaseRate": {
+          "type": "number",
+          "description": "最小购买率（0~1），例如 0.01 表示至少1%"
+        },
+        "maxPurchaseRate": {
+          "type": "number",
+          "description": "最大购买率（0~1）"
+        },
+        "minBid": {
+          "type": "number",
+          "description": "最小PPC竞价（$）",
+          "minimum": 0
+        },
+        "maxBid": {
+          "type": "number",
+          "description": "最大PPC竞价（$）"
+        },
+        "marketPeriod": {
+          "type": "string",
+          "description": "季节性筛选，例如 S1,S2 表示1月和2月旺季，留空表示不限"
+        },
+        "keywordBidMatchType": {
+          "type": "string",
+          "description": "PPC出价匹配类型：exact（精准，默认）、phrase（词组）、broad（广泛）",
+          "enum": ["exact","phrase","broad"]
+        }
+      },
+      "required": ["marketplace","includeKeywords"],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "bsr_sales",
     "description": "BSR销量预测：根据亚马逊一级类目节点ID(categoryId)与Best Sellers Rank(bsr)预测商品日均销量、月均销量以及不同排名的日均销量分布。当用户需要估算某个BSR排名对应的销量时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、categoryId、categoryLabel、bsr、estimatedDailySales、estimatedMonthlySales、rankSales 等。",
     "inputSchema": {

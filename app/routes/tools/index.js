@@ -4,6 +4,7 @@ const tools = [
   require('./bsrSalesTool'),
   require('./asinSalesTool'),
   require('./asinReversingTool'),
+  require('./keywordResearchTool'),
 ];
 
 module.exports = Object.fromEntries(tools.map((t) => [t.name, t]));
