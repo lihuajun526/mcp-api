@@ -56,5 +56,6 @@ VALUES (1, 'ASIN_DETAIL', 5, true),
        (4, 'ASIN_SALES', 5, true),
        (5, 'ASIN_REVERSING', 10, true),
        (6, 'KEYWORD_RESEARCH', 10, true),
-       (7, 'KEYWORD_MINER', 10, true)
+       (7, 'KEYWORD_MINER', 10, true),
+       (8, 'TRAFFIC_EXTEND', 10, true)
 ON DUPLICATE KEY UPDATE endpoint_code = endpoint_code;

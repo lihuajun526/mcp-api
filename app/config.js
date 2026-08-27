@@ -31,6 +31,7 @@ module.exports = {
     bsrSalesPath: process.env.SELLERSPRITE_BSR_SALES_PATH || '/v2/tools/sales-estimator/bsr.json',
     keywordResearchPath: process.env.SELLERSPRITE_KEYWORD_RESEARCH_PATH || '/v2/keyword-research',
     keywordMinerPath: process.env.SELLERSPRITE_KEYWORD_MINER_PATH || '/v3/api/keyword-miner',
+    trafficExtendPath: process.env.SELLERSPRITE_TRAFFIC_EXTEND_PATH || '/v3/api/traffic/extend/asin',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   cache: {

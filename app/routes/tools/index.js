@@ -6,6 +6,7 @@ const tools = [
   require('./asinReversingTool'),
   require('./keywordResearchTool'),
   require('./keywordMinerTool'),
+  require('./trafficExtendTool'),
 ];
 
 module.exports = Object.fromEntries(tools.map((t) => [t.name, t]));
