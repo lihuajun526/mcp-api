@@ -532,5 +532,329 @@
       ],
       "additionalProperties": false
     }
+  },
+  {
+    "name": "keyword_order",
+    "description": "出单词反查：根据一个或多个 ASIN，反查该 ASIN 在亚马逊 ABA（Amazon Brand Analytics）数据中有点击或转化表现的关键词。支持按周（W）或按月（M）的ABA数据。返回关键词的搜索量、ABA搜索排名、周/月变化量、转化效果、前三点击率、前三转化率、点击前三ASIN等数据。鉴权由服务端处理，模型不要传递 API Key。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "asins": {
+          "type": "array",
+          "description": "需要反查的 ASIN 列表，最多20个，例如 [\"B06XZTZ7GB\"]",
+          "items": {"type": "string", "minLength": 10, "maxLength": 10},
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "reverseType": {
+          "type": "string",
+          "description": "ABA数据周期：W=按周（默认），M=按月",
+          "enum": ["W","M"]
+        },
+        "date": {
+          "type": "string",
+          "description": "按周时填周六日期格式 yyyyMMdd（如 20241228），按月时填月份格式 yyyyMM（如 202412），留空表示最近一期"
+        },
+        "conversionType": {
+          "type": "array",
+          "description": "转化效果筛选：E=高效转化词，S=一般转化词，L=低效转化词，I=无效曝光词，U=无数据",
+          "items": {"type": "string", "enum": ["E","S","L","I","U"]}
+        },
+        "variation": {
+          "type": "string",
+          "description": "是否包含变体：Y=包含（默认），N=不包含",
+          "enum": ["Y","N"]
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "orderField": {
+          "type": "string",
+          "description": "排序字段：searchRank（ABA排名，默认）、searches（搜索量）、searchRankGrowthValue（周变化量）、searchRankGrowthRate（周变化率）、monopolyClickRate（点击占比）、cvsShareRate（转化占比）"
+        },
+        "orderDesc": {
+          "type": "boolean",
+          "description": "是否降序，默认 false（升序，ABA排名越小越靠前）"
+        }
+      },
+      "required": ["marketplace","asins"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "google_trend",
+    "description": "谷歌趋势：查询关键词在 Google Trends 上近5年（或近1年）的搜索热度趋势，按周聚合。返回时间序列数据（时间戳+热度值0~100）及 Google Trends 链接。适用于分析关键词的季节性趋势、长期走势。鉴权由服务端处理，模型不要传递 API Key。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "keyword": {
+          "type": "string",
+          "description": "要查询的关键词，例如 iphone stand"
+        },
+        "googleProp": {
+          "type": "string",
+          "description": "搜索类型：web=谷歌网页搜索（默认），shoppingCart=谷歌购物搜索",
+          "enum": ["web","shoppingCart"]
+        },
+        "monthly": {
+          "type": "boolean",
+          "description": "是否按月聚合（false=按周，默认 false）"
+        }
+      },
+      "required": ["marketplace"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "keyword_conversion",
+    "description": "关键字转化率：查询亚马逊关键词的搜索转化率、点击转化率、PPC竞价、CPA、预算、ACOS等广告相关数据。返回关键词的月搜索量、点击量、购买量、搜索转化率、点击转化率、词组/精准/广泛PPC及CPA、均价、广告预算、ACOS、前三 ASIN 数据。适用于评估关键词的商业价值和广告投放效率。鉴权由服务端处理，模型不要传递 API Key。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "keyword": {
+          "type": "string",
+          "description": "要查询的关键词，例如 lunch box"
+        },
+        "timeType": {
+          "type": "string",
+          "description": "时间周期：WEEK=近7天（默认），90D=近90天",
+          "enum": ["WEEK","90D"]
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，最大 100，默认 100",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "orderDesc": {
+          "type": "boolean",
+          "description": "是否降序，默认 true"
+        },
+        "bidMatchType": {
+          "type": "string",
+          "description": "PPC出价匹配类型：exact（精准，默认）、phrase（词组）、broad（广泛）",
+          "enum": ["exact","phrase","broad"]
+        },
+        "includeKeywords": {
+          "type": "array",
+          "description": "包含词过滤",
+          "items": {"type": "string"}
+        },
+        "excludeKeywords": {
+          "type": "array",
+          "description": "排除词过滤",
+          "items": {"type": "string"}
+        },
+        "customAvgProductPrice": {
+          "type": "number",
+          "description": "自定义商品均价（用于计算预算/ACOS）",
+          "minimum": 0
+        },
+        "minSearches": {"type": "integer", "description": "最小月搜索量", "minimum": 0},
+        "maxSearches": {"type": "integer", "description": "最大月搜索量"},
+        "minClicks": {"type": "integer", "description": "最小点击量", "minimum": 0},
+        "maxClicks": {"type": "integer", "description": "最大点击量"},
+        "minPurchases": {"type": "integer", "description": "最小购买量", "minimum": 0},
+        "maxPurchases": {"type": "integer", "description": "最大购买量"},
+        "minSearchConvRate": {"type": "number", "description": "最小搜索转化率", "minimum": 0},
+        "maxSearchConvRate": {"type": "number", "description": "最大搜索转化率"},
+        "minClickConvRate": {"type": "number", "description": "最小点击转化率", "minimum": 0},
+        "maxClickConvRate": {"type": "number", "description": "最大点击转化率"},
+        "minPpc": {"type": "number", "description": "最小PPC竞价($)", "minimum": 0},
+        "maxPpc": {"type": "number", "description": "最大PPC竞价($)"},
+        "minCpa": {"type": "number", "description": "最小CPA($)", "minimum": 0},
+        "maxCpa": {"type": "number", "description": "最大CPA($)"},
+        "minProductPrice": {"type": "number", "description": "最小商品均价($)", "minimum": 0},
+        "maxProductPrice": {"type": "number", "description": "最大商品均价($)"},
+        "minAcos": {"type": "number", "description": "最小ACOS", "minimum": 0},
+        "maxAcos": {"type": "number", "description": "最大ACOS"},
+        "minClickingRate": {"type": "number", "description": "最小前三ASIN点击占比", "minimum": 0},
+        "maxClickingRate": {"type": "number", "description": "最大前三ASIN点击占比"},
+        "minConversionRate": {"type": "number", "description": "最小前三ASIN转化占比", "minimum": 0},
+        "maxConversionRate": {"type": "number", "description": "最大前三ASIN转化占比"},
+        "minPhraseCount": {"type": "integer", "description": "最小词组数", "minimum": 0},
+        "maxPhraseCount": {"type": "integer", "description": "最大词组数"},
+        "minBudget": {"type": "number", "description": "最小广告预算($)", "minimum": 0},
+        "maxBudget": {"type": "number", "description": "最大广告预算($)"}
+      },
+      "required": ["marketplace","keyword"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "aba_research_weekly",
+    "description": "ABA数据选品-按周：基于亚马逊 ABA（Amazon Brand Analytics）每周数据，筛选高潜力搜索关键词及其竞争热度。返回关键词的ABA搜索排名、搜索量、购买量、购买率、点击量、曝光量、排名变化、前三品牌/ASIN等。支持按部门、关键词、排名范围等多维度筛选。鉴权由服务端处理，模型不要传递 API Key。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "date": {
+          "type": "string",
+          "description": "查询日期（周六日期），格式 yyyyMMdd，例如 20230610，留空表示最近一周"
+        },
+        "departments": {
+          "type": "array",
+          "description": "部门/类目过滤，例如 [\"automotive\",\"baby-products\"]",
+          "items": {"type": "string"}
+        },
+        "includeKeywords": {
+          "type": "string",
+          "description": "包含的关键词"
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除的关键词"
+        },
+        "exactFlag": {
+          "type": "boolean",
+          "description": "是否精确匹配关键词，默认 false"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，最大 40，默认 40",
+          "minimum": 1,
+          "maximum": 40
+        },
+        "orderField": {
+          "type": "string",
+          "description": "排序字段，例如 searchfrequencyrank（ABA搜索频率排名，默认）、searches（搜索量）"
+        },
+        "orderDesc": {
+          "type": "boolean",
+          "description": "是否降序，默认 true"
+        },
+        "rankGrowthValue": {"type": "number", "description": "排名增长值筛选"},
+        "rankGrowthRate": {"type": "number", "description": "排名增长率筛选"},
+        "minRankGrowthRate": {"type": "number", "description": "最小排名增长率"},
+        "maxRankGrowthRate": {"type": "number", "description": "最大排名增长率"},
+        "minSearchRank": {"type": "integer", "description": "最小ABA搜索排名", "minimum": 1},
+        "maxSearchRank": {"type": "integer", "description": "最大ABA搜索排名"},
+        "minSearches": {"type": "integer", "description": "最小搜索量", "minimum": 0},
+        "maxSearches": {"type": "integer", "description": "最大搜索量"},
+        "minMonopolyClickRate": {"type": "number", "description": "最小点击集中度", "minimum": 0},
+        "maxMonopolyClickRate": {"type": "number", "description": "最大点击集中度"},
+        "minConversionRate": {"type": "number", "description": "最小转化率", "minimum": 0},
+        "maxConversionRate": {"type": "number", "description": "最大转化率"},
+        "minWordCount": {"type": "integer", "description": "最小词数", "minimum": 1},
+        "maxWordCount": {"type": "integer", "description": "最大词数"},
+        "minSPR": {"type": "integer", "description": "最小SPR", "minimum": 0},
+        "maxSPR": {"type": "integer", "description": "最大SPR"},
+        "minTitleDensity": {"type": "integer", "description": "最小标题密度", "minimum": 0},
+        "maxTitleDensity": {"type": "integer", "description": "最大标题密度"},
+        "minClicks": {"type": "integer", "description": "最小点击量", "minimum": 0},
+        "maxClicks": {"type": "integer", "description": "最大点击量"},
+        "minImpressions": {"type": "integer", "description": "最小曝光量", "minimum": 0},
+        "maxImpressions": {"type": "integer", "description": "最大曝光量"}
+      },
+      "required": ["marketplace"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "aba_research_monthly",
+    "description": "ABA数据选品-按月：基于亚马逊 ABA（Amazon Brand Analytics）每月数据，筛选高潜力搜索关键词及其竞争热度。与按周版本类似，但使用月度ABA数据，适合分析月度趋势和更长时间范围的关键词表现。鉴权由服务端处理，模型不要传递 API Key。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "date": {
+          "type": "string",
+          "description": "查询月份，格式 yyyyMM，例如 202506，留空表示最近30天"
+        },
+        "departments": {
+          "type": "array",
+          "description": "部门/类目过滤，例如 [\"automotive\",\"baby-products\"]",
+          "items": {"type": "string"}
+        },
+        "includeKeywords": {
+          "type": "string",
+          "description": "包含的关键词"
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除的关键词"
+        },
+        "exactFlag": {
+          "type": "boolean",
+          "description": "是否精确匹配关键词，默认 false"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，最大 15，默认 15",
+          "minimum": 1,
+          "maximum": 15
+        },
+        "orderField": {
+          "type": "string",
+          "description": "排序字段，例如 searchfrequencyrank（ABA搜索频率排名，默认）、searches（搜索量）"
+        },
+        "orderDesc": {
+          "type": "boolean",
+          "description": "是否降序，默认 true"
+        },
+        "minRankGrowthRate": {"type": "number", "description": "最小排名增长率"},
+        "maxRankGrowthRate": {"type": "number", "description": "最大排名增长率"},
+        "minSearchRank": {"type": "integer", "description": "最小ABA搜索排名", "minimum": 1},
+        "maxSearchRank": {"type": "integer", "description": "最大ABA搜索排名"},
+        "minSearches": {"type": "integer", "description": "最小搜索量", "minimum": 0},
+        "maxSearches": {"type": "integer", "description": "最大搜索量"},
+        "minMonopolyClickRate": {"type": "number", "description": "最小点击集中度", "minimum": 0},
+        "maxMonopolyClickRate": {"type": "number", "description": "最大点击集中度"},
+        "minConversionRate": {"type": "number", "description": "最小转化率", "minimum": 0},
+        "maxConversionRate": {"type": "number", "description": "最大转化率"},
+        "minWordCount": {"type": "integer", "description": "最小词数", "minimum": 1},
+        "maxWordCount": {"type": "integer", "description": "最大词数"},
+        "minSPR": {"type": "integer", "description": "最小SPR", "minimum": 0},
+        "maxSPR": {"type": "integer", "description": "最大SPR"},
+        "minTitleDensity": {"type": "integer", "description": "最小标题密度", "minimum": 0},
+        "maxTitleDensity": {"type": "integer", "description": "最大标题密度"},
+        "minClicks": {"type": "integer", "description": "最小点击量", "minimum": 0},
+        "maxClicks": {"type": "integer", "description": "最大点击量"},
+        "minImpressions": {"type": "integer", "description": "最小曝光量", "minimum": 0},
+        "maxImpressions": {"type": "integer", "description": "最大曝光量"}
+      },
+      "required": ["marketplace"],
+      "additionalProperties": false
+    }
   }
 ]

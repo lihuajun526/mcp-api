@@ -32,6 +32,10 @@ module.exports = {
     keywordResearchPath: process.env.SELLERSPRITE_KEYWORD_RESEARCH_PATH || '/v2/keyword-research',
     keywordMinerPath: process.env.SELLERSPRITE_KEYWORD_MINER_PATH || '/v3/api/keyword-miner',
     trafficExtendPath: process.env.SELLERSPRITE_TRAFFIC_EXTEND_PATH || '/v3/api/traffic/extend/asin',
+    keywordOrderPath: process.env.SELLERSPRITE_KEYWORD_ORDER_PATH || '/v2/aba/reverse/search',
+    googleTrendPath: process.env.SELLERSPRITE_GOOGLE_TREND_PATH || '/v2/keyword/google-trends.json',
+    keywordConversionPath: process.env.SELLERSPRITE_KEYWORD_CONVERSION_PATH || '/v3/api/keyword-conv',
+    abaResearchPath: process.env.SELLERSPRITE_ABA_RESEARCH_PATH || '/v3/api/aba-research',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   cache: {

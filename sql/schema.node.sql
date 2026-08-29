@@ -57,5 +57,10 @@ VALUES (1, 'ASIN_DETAIL', 5, true),
        (5, 'ASIN_REVERSING', 10, true),
        (6, 'KEYWORD_RESEARCH', 10, true),
        (7, 'KEYWORD_MINER', 10, true),
-       (8, 'TRAFFIC_EXTEND', 10, true)
+       (8, 'TRAFFIC_EXTEND', 10, true),
+       (9, 'KEYWORD_ORDER', 10, true),
+       (10, 'GOOGLE_TREND', 5, true),
+       (11, 'KEYWORD_CONVERSION', 10, true),
+       (12, 'ABA_RESEARCH_WEEKLY', 10, true),
+       (13, 'ABA_RESEARCH_MONTHLY', 10, true)
 ON DUPLICATE KEY UPDATE endpoint_code = endpoint_code;

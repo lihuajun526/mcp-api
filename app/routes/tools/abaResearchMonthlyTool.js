@@ -1,0 +1,53 @@
+const { queryAbaResearchMonthly } = require('../../services/queries/abaResearchMonthlyQuery');
+
+module.exports = {
+  name: 'aba_research_monthly',
+
+  async handle(args, user) {
+    if (!args.marketplace) {
+      const err = new Error('marketplace is required');
+      err.code = -32602;
+      throw err;
+    }
+
+    const data = await queryAbaResearchMonthly(user, {
+      marketplace: String(args.marketplace),
+      date: args.date ? String(args.date) : '',
+      departments: Array.isArray(args.departments) ? args.departments : [],
+      includeKeywords: args.includeKeywords,
+      excludeKeywords: args.excludeKeywords,
+      exactFlag: args.exactFlag,
+      page: args.page,
+      size: args.size,
+      orderField: args.orderField,
+      orderDesc: args.orderDesc,
+      minRankGrowthRate: args.minRankGrowthRate,
+      maxRankGrowthRate: args.maxRankGrowthRate,
+      minSearchRank: args.minSearchRank,
+      maxSearchRank: args.maxSearchRank,
+      minSearches: args.minSearches,
+      maxSearches: args.maxSearches,
+      minMonopolyClickRate: args.minMonopolyClickRate,
+      maxMonopolyClickRate: args.maxMonopolyClickRate,
+      minConversionRate: args.minConversionRate,
+      maxConversionRate: args.maxConversionRate,
+      minWordCount: args.minWordCount,
+      maxWordCount: args.maxWordCount,
+      minSPR: args.minSPR,
+      maxSPR: args.maxSPR,
+      minTitleDensity: args.minTitleDensity,
+      maxTitleDensity: args.maxTitleDensity,
+      minClicks: args.minClicks,
+      maxClicks: args.maxClicks,
+      minImpressions: args.minImpressions,
+      maxImpressions: args.maxImpressions,
+      searchModel: args.searchModel
+    });
+
+    return {
+      code: 'OK',
+      message: '成功',
+      data
+    };
+  }
+};
