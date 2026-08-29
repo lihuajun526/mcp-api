@@ -12,6 +12,10 @@ const tools = [
   require('./keywordConversionTool'),
   require('./abaResearchWeeklyTool'),
   require('./abaResearchMonthlyTool'),
+  require('./trafficKeywordStatTool'),
+  require('./trafficListingStatTool'),
+  require('./trafficListingTool'),
+  require('./marketResearchTool'),
 ];
 
 module.exports = Object.fromEntries(tools.map((t) => [t.name, t]));

@@ -856,5 +856,184 @@
       "required": ["marketplace"],
       "additionalProperties": false
     }
+  },
+  {
+    "name": "traffic_keyword_stat",
+    "description": "流量词统计：查询指定 ASIN 的流量词统计数据，包括全部流量词条数、自然流量词条数、广告流量词条数及各类型词的数量（AC、ER、四星、HR、品牌广告、视频广告、SP广告等）。当用户需要了解某 ASIN 的关键词分布概况时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、asin、keywords、ranks、ads、calcTime、badgeCount(ns/ac/er/fs/hr/sb/sv/ad)、status 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "asin": {
+          "type": "string",
+          "description": "Amazon ASIN，例如 B07Z82895W",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，格式 YYYYMM，例如 202605，不填默认最新数据"
+        },
+        "forceReStat": {
+          "type": "boolean",
+          "description": "是否强制重新统计，默认 false"
+        }
+      },
+      "required": ["marketplace", "asin"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "traffic_listing_stat",
+    "description": "关联流量统计：查询一组 ASIN 的关联流量统计数据，返回全部关联流量数、免费流量数、付费流量数及各关联类型（VAV/FBT/BAB/AVP/BAV/MIB/MIE/COB/SP/FSA/BCA/CSI 等）的数量。当用户需要了解竞品之间的关联流量分布时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、asin、relations、freeRelations、paidRelations、calcTime、items(relation/count) 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "asinList": {
+          "type": "array",
+          "description": "需要查询的 ASIN 列表，例如 [\"B098T9ZFB5\", \"B09JW5FNVX\"]",
+          "items": { "type": "string", "minLength": 10, "maxLength": 10 },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "queryVariations": {
+          "type": "boolean",
+          "description": "是否包含变体，默认 true"
+        }
+      },
+      "required": ["marketplace", "asinList"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "traffic_listing",
+    "description": "关联流量列表：分页查询一组 ASIN 产品及其变体的关联流量来源列表，包含每条关联商品的详细数据（ASIN、标题、价格、销量、BSR、评分、品牌、配送方式等）。当用户需要挖掘竞品的关联商品来源时调用。relations 参数指定关联类型（如 vav、fbt、bab 等）。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 page、size、total、pages、items(asin/title/price/units/revenue/bsr/ratings/rating/fulfillment/brand/sellerNation/badge 等) 及 order 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "asinList": {
+          "type": "array",
+          "description": "需要查询的 ASIN 列表，例如 [\"B098T9ZFB5\", \"B09JW5FNVX\"]",
+          "items": { "type": "string", "minLength": 10, "maxLength": 10 },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "relations": {
+          "type": "array",
+          "description": "关联类型列表，见附录表2.2，例如 [\"vav\",\"fbt\"]，传空数组表示查询全部类型",
+          "items": { "type": "string" }
+        },
+        "variations": {
+          "type": "boolean",
+          "description": "是否包含变体，默认 true"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，从 1 开始，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，默认 50，最大 100",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": { "type": "string", "description": "排序字段，例如 createdTime、units、revenue、bsr、price、rating、ratings" },
+            "desc": { "type": "boolean", "description": "是否降序，默认 true" }
+          }
+        }
+      },
+      "required": ["marketplace", "asinList", "relations"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "market_research",
+    "description": "选市场列表：分页查询亚马逊细分类目的市场分析数据，包含每个子类目的月总销量、月均销量、月均销售额、平均评分、平均BSR、平均卖家数、平均价格、FBA/AMZ/FBM占比、商品/品牌/卖家集中度、新品数量占比、退货率等核心指标。当用户需要挖掘细分市场、分析市场竞争格局、选品时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、page、size、total、pages、items(ranking/nodeIdPath/nodeLabelName/nodeLabelLocale/topProducts/brands/sellers/totalUnits/avgUnits/avgRevenue/avgRatings/avgRating/avgBsr/avgSellers/avgPrice/fbaProportion/amazonSelfProportion/fbmProportion/goodsCrn/brandCrn/sellerCrn/newCount/newProportion/totalProducts/returnRatio/avgReturnRatio 等)、order 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "nodeIdPath": {
+          "type": "string",
+          "description": "类目节点 ID 路径，例如 172282:281407，不填则查询全部大类"
+        },
+        "departmentKeyword": {
+          "type": "string",
+          "description": "类目关键词过滤，例如 Electronics:Accessories & Supplies"
+        },
+        "topNum": {
+          "type": "integer",
+          "description": "头部 Listing 样本数量，默认 10",
+          "minimum": 1
+        },
+        "newProduct": {
+          "type": "integer",
+          "description": "新品定义（月数），例如 3 表示 3 个月内上架为新品，默认 6",
+          "enum": [1, 3, 6, 12]
+        },
+        "sellerLocation": {
+          "type": "string",
+          "description": "卖家所属地过滤，多个用逗号分隔，例如 US,GB"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，从 1 开始，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，默认 20，最大 200",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": { "type": "string", "description": "排序字段，例如 total_sales、avg_revenue、avg_units、avg_bsr、avg_price、avg_rating、return_rate、new_product_count" },
+            "desc": { "type": "boolean", "description": "是否降序，默认 true" }
+          }
+        },
+        "minAvgUnits": { "type": "number", "description": "最低月均销量" },
+        "maxAvgUnits": { "type": "number", "description": "最高月均销量" },
+        "minAvgRevenue": { "type": "number", "description": "最低月均销售额" },
+        "maxAvgRevenue": { "type": "number", "description": "最高月均销售额" },
+        "minAvgBsr": { "type": "number", "description": "最低平均BSR排名" },
+        "maxAvgBsr": { "type": "number", "description": "最高平均BSR排名" },
+        "minAvgPrice": { "type": "number", "description": "最低平均价格" },
+        "maxAvgPrice": { "type": "number", "description": "最高平均价格" },
+        "minWeight": { "type": "number", "description": "最低重量" },
+        "maxWeight": { "type": "number", "description": "最高重量" },
+        "minTopAvgBsr": { "type": "number", "description": "最低头部平均BSR" },
+        "maxTopAvgBsr": { "type": "number", "description": "最高头部平均BSR" },
+        "minGoodsCount": { "type": "integer", "description": "最低商品数量" },
+        "maxGoodsCount": { "type": "integer", "description": "最高商品数量" }
+      },
+      "required": ["marketplace"],
+      "additionalProperties": false
+    }
   }
 ]

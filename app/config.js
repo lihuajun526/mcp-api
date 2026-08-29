@@ -36,6 +36,10 @@ module.exports = {
     googleTrendPath: process.env.SELLERSPRITE_GOOGLE_TREND_PATH || '/v2/keyword/google-trends.json',
     keywordConversionPath: process.env.SELLERSPRITE_KEYWORD_CONVERSION_PATH || '/v3/api/keyword-conv',
     abaResearchPath: process.env.SELLERSPRITE_ABA_RESEARCH_PATH || '/v3/api/aba-research',
+    trafficKeywordStatPath: process.env.SELLERSPRITE_TRAFFIC_KEYWORD_STAT_PATH || '/v3/api/relation/stat-keywords',
+    trafficListingStatPath: process.env.SELLERSPRITE_TRAFFIC_LISTING_STAT_PATH || '/v3/api/relation/multi-stat-traffics',
+    trafficListingPath: process.env.SELLERSPRITE_TRAFFIC_LISTING_PATH || '/v3/api/relation/traffic',
+    marketResearchPath: process.env.SELLERSPRITE_MARKET_RESEARCH_PATH || '/v2/market-research',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   cache: {

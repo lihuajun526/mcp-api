@@ -13,6 +13,10 @@ const { queryGoogleTrend } = require('../services/queries/googleTrendQuery');
 const { queryKeywordConversion } = require('../services/queries/keywordConversionQuery');
 const { queryAbaResearchWeekly } = require('../services/queries/abaResearchWeeklyQuery');
 const { queryAbaResearchMonthly } = require('../services/queries/abaResearchMonthlyQuery');
+const { queryTrafficKeywordStat } = require('../services/queries/trafficKeywordStatQuery');
+const { queryTrafficListingStat } = require('../services/queries/trafficListingStatQuery');
+const { queryTrafficListing } = require('../services/queries/trafficListingQuery');
+const { queryMarketResearch } = require('../services/queries/marketResearchQuery');
 
 const router = express.Router();
 
@@ -163,6 +167,54 @@ router.post('/api/v1/mcp/aba/research/monthly', async (req, res, next) => {
     const user = await authService.authenticate(apiKey);
     await authService.consumeRateLimit(user.userId, user.qpsLimit);
     const data = await queryAbaResearchMonthly(user, req.body || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/api/v1/mcp/traffic/keyword/stat', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryTrafficKeywordStat(user, req.body || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/api/v1/mcp/traffic/listing/stat', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryTrafficListingStat(user, req.body || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/api/v1/mcp/traffic/listing', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryTrafficListing(user, req.body || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/api/v1/mcp/market/research', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryMarketResearch(user, req.body || {});
     res.json({ success: true, message: 'OK', data });
   } catch (e) {
     next(e);
