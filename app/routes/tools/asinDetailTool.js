@@ -16,9 +16,9 @@ module.exports = {
     });
 
     return {
-      isError: false,
-      structuredContent: detail,
-      content: [{ type: 'text', text: 'asin_detail_lookup success' }]
+      code: "OK",
+      message: "成功",
+      data: detail
     };
   }
 };

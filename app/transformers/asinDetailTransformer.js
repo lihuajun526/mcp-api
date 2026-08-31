@@ -51,7 +51,7 @@ function toStringArray(v) {
   return s ? [s] : [];
 }
 
-function transformAsinResponse(root) {
+function transformAsinDetailResponse(root) {
   const data = root && root.data ? root.data : {};
   const items = Array.isArray(data.items) ? data.items : [];
   const out = items.map((item) => ({
@@ -138,5 +138,5 @@ function transformAsinResponse(root) {
 }
 
 module.exports = {
-  transformAsinResponse
+  transformAsinDetailResponse
 };

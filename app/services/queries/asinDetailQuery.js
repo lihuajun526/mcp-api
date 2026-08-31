@@ -4,7 +4,7 @@ const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
-const { transformAsinResponse } = require('../../transformers/asinTransformer');
+const { transformAsinDetailResponse } = require('../../transformers/asinDetailTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'ASIN_DETAIL';
@@ -48,7 +48,7 @@ async function queryAsinDetail(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinDetail(request, session);
-  const transformed = transformAsinResponse(raw);
+  const transformed = transformAsinDetailResponse(raw);
   for (const item of transformed.items || []) {
     if (!item.marketplace) {
       item.marketplace = request.marketplace;
