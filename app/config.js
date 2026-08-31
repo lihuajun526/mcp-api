@@ -40,6 +40,9 @@ module.exports = {
     trafficListingStatPath: process.env.SELLERSPRITE_TRAFFIC_LISTING_STAT_PATH || '/v3/api/relation/multi-stat-traffics',
     trafficListingPath: process.env.SELLERSPRITE_TRAFFIC_LISTING_PATH || '/v3/api/relation/traffic',
     marketResearchPath: process.env.SELLERSPRITE_MARKET_RESEARCH_PATH || '/v2/market-research',
+    productResearchPath: process.env.SELLERSPRITE_PRODUCT_RESEARCH_PATH || '/v3/api/product-research',
+    openApiBaseUrl: process.env.SELLERSPRITE_OPEN_API_BASE_URL || 'https://api.sellersprite.com',
+    productNodePath: process.env.SELLERSPRITE_PRODUCT_NODE_PATH || '/v1/product/node',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   cache: {

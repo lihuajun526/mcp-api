@@ -1,39 +1,54 @@
 [
   {
     "name": "competitor_lookup",
-    "description": "查竞品：查询目标 ASIN 的销量、销额、BSR 排名、评论、利润等详细数据及历史趋势。当用户需要分析竞品表现、监控竞品销量、进行产品对比时调用。asins 支持一次查询多个 ASIN（建议不超过 100 个）。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 asin、title、price、monthlySalesUnits、monthlySalesRevenue、bsr、rating、reviews、profit、salesTrend 等。",
+    "description": "查竞品：根据关键词、品牌、卖家或 ASIN 列表，查询亚马逊商品的销量、销额、BSR 排名、评论、利润等详细数据及历史趋势。keyword/brand/asins 均为可选，至少提供一个筛选条件（或仅指定市场查询全市场数据）。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 asin、title、price、monthlySalesUnits、monthlySalesRevenue、bsr、rating、reviews、profit、salesTrend 等。",
     "inputSchema": {
       "type": "object",
       "properties": {
         "marketplace": {
           "type": "string",
           "description": "亚马逊站点，例如 US、UK、DE、JP",
-          "enum": [
-            "US",
-            "CA",
-            "MX",
-            "UK",
-            "DE",
-            "FR",
-            "IT",
-            "ES",
-            "JP",
-            "IN",
-            "AU"
-          ],
-          "minLength": 2,
-          "maxLength": 8
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，格式 yyyyMM，例如 202507；不填表示最近月份"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "关键词，例如 desk lamp"
+        },
+        "matchType": {
+          "type": "integer",
+          "description": "关键词匹配方式：1=词组匹配，2=模糊匹配（默认），3=精准匹配",
+          "enum": [1, 2, 3]
+        },
+        "brand": {
+          "type": "string",
+          "description": "品牌名称，例如 Apple"
+        },
+        "sellerName": {
+          "type": "string",
+          "description": "卖家名称，例如 Amazon"
         },
         "asins": {
           "type": "array",
-          "description": "需要查询的 ASIN 列表，一次可查询多个，例如 [\"B0GYPQ75WH\", \"B00MNV8E0C\"]",
-          "items": {
-            "type": "string",
-            "minLength": 10,
-            "maxLength": 10
-          },
-          "minItems": 1,
-          "maxItems": 100
+          "description": "ASIN 列表，最多 40 个，例如 [\"B0GYPQ75WH\"]",
+          "items": { "type": "string", "minLength": 10, "maxLength": 10 },
+          "maxItems": 40
+        },
+        "nodeIdPath": {
+          "type": "string",
+          "description": "类目节点 id 字符串，例如 172282:281407，通过 product_node 工具获取"
+        },
+        "nodeIdPathEqual": {
+          "type": "boolean",
+          "description": "类目查询方式：true=精确查当前类目，false=包含子类目（默认 false）"
+        },
+        "variation": {
+          "type": "string",
+          "description": "是否包含变体：N=含变体（默认），Y=不含变体",
+          "enum": ["N", "Y"]
         },
         "page": {
           "type": "integer",
@@ -42,40 +57,190 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 60，最大 100",
+          "description": "每页条数，默认 50，最大 100",
           "minimum": 1,
           "maximum": 100
         },
-        "orderField": {
-          "type": "string",
-          "description": "排序字段：amz_unit(变体销量)、total_amount(销售额)、total_units(销量)、bsr_rank、price、rating、reviews、profit、reviews_rate、available_date、total_units_growth、total_amount_growth、reviews_increasement、bsr_rank_cv、bsr_rank_cr",
-          "enum": [
-            "amz_unit",
-            "total_amount",
-            "total_units",
-            "bsr_rank",
-            "price",
-            "rating",
-            "reviews",
-            "profit",
-            "reviews_rate",
-            "available_date",
-            "total_units_growth",
-            "total_amount_growth",
-            "reviews_increasement",
-            "bsr_rank_cv",
-            "bsr_rank_cr"
-          ]
-        },
-        "orderDesc": {
-          "type": "boolean",
-          "description": "是否降序排序，默认 true"
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 total_units；可选：total_units、amz_unit、total_amount、bsr_rank、price、rating、ratings、profit、reviews_rate、available_date、total_units_growth、total_amount_growth、reviews_increasement、bsr_rank_cv、bsr_rank_cr"
+            },
+            "desc": { "type": "boolean", "description": "true=降序（默认），false=升序" }
+          }
         }
       },
-      "required": [
-        "marketplace",
-        "asins"
-      ],
+      "required": ["marketplace"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "asin_competitor",
+    "description": "查询 ASIN 竞品数据：输入一个亚马逊 ASIN，返回与该商品具有较高竞争关系的竞品列表及其销量、销额、BSR、评分、利润等数据。适用于竞品分析、选品研究、市场调研。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 items(asin/title/price/monthlySalesUnits/monthlySalesRevenue/bsr/rating/ratings/profit/fulfillment/sellerNation/badge 等)、total、page、size。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "asin": {
+          "type": "string",
+          "description": "目标 Amazon ASIN，例如 B07Z82895W",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "size": {
+          "type": "integer",
+          "description": "返回竞品数量，默认 20，最大 100",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": ["marketplace", "asin"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "product_research",
+    "description": "选产品：根据销量、销额、增长率、价格、利润率、BSR、评分、配送方式、卖家国籍、尺寸重量等多维度条件筛选亚马逊商品，发现高潜力产品机会。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 items(asin/title/price/bsr/units/revenue/rating/ratings/profit/fulfillment/sellerNation/badge/weight/dimensions/subcategories 等)、total、page、size、pages。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，格式 yyyyMM，例如 202507；不填表示最近月份"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "关键词，例如 N95"
+        },
+        "matchType": {
+          "type": "integer",
+          "description": "关键词匹配方式：1=词组，2=模糊（默认），3=精准",
+          "enum": [1, 2, 3]
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除关键词，例如 portable"
+        },
+        "includeBrands": {
+          "type": "string",
+          "description": "包含品牌（逗号分隔）"
+        },
+        "excludeBrands": {
+          "type": "string",
+          "description": "排除品牌（逗号分隔）"
+        },
+        "includeSellers": {
+          "type": "string",
+          "description": "包含卖家（逗号分隔）"
+        },
+        "excludeSellers": {
+          "type": "string",
+          "description": "排除卖家（逗号分隔）"
+        },
+        "nodeIdPaths": {
+          "type": "array",
+          "description": "类目节点 id 字符串列表，通过 product_node 工具获取",
+          "items": { "type": "string" }
+        },
+        "nodeIdPathEqual": {
+          "type": "boolean",
+          "description": "类目查询方式：true=精确当前类目，false=含子类目（默认 false）"
+        },
+        "filterSub": {
+          "type": "boolean",
+          "description": "是否筛选子类目，默认 false；需指定类目时才生效"
+        },
+        "variation": {
+          "type": "string",
+          "description": "是否包含变体：N=含变体（默认），Y=不含变体",
+          "enum": ["N", "Y"]
+        },
+        "fulfillment": {
+          "type": "string",
+          "description": "配送方式，多个用逗号分隔，例如 AMZ,FBA,FBM"
+        },
+        "sellerNation": {
+          "type": "string",
+          "description": "卖家所属地，多个用逗号分隔，例如 US,CN"
+        },
+        "dimensionType": {
+          "type": "string",
+          "description": "尺寸类型，多个用逗号分隔；见附录表 1.4"
+        },
+        "weightUnit": {
+          "type": "string",
+          "description": "重量单位：g（默认）、lb、oz、kg",
+          "enum": ["g", "lb", "oz", "kg"]
+        },
+        "badgeBS": { "type": "string", "description": "是否要求 Best Seller 标识：Y=是", "enum": ["Y"] },
+        "badgeAC": { "type": "string", "description": "是否要求 Amazon's Choice 标识：Y=是", "enum": ["Y"] },
+        "badgeNR": { "type": "string", "description": "是否要求 New Release 标识：Y=是", "enum": ["Y"] },
+        "availableMonth": {
+          "type": "integer",
+          "description": "上架月数筛选，例如 6 表示近 6 个月内上架；见附录表 1.3"
+        },
+        "page": { "type": "integer", "description": "页码，默认 1", "minimum": 1 },
+        "size": { "type": "integer", "description": "每页条数，默认 50，最大 100", "minimum": 1, "maximum": 100 },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": { "type": "string", "description": "排序字段，默认 total_units；可选：total_units、amz_unit、total_amount、bsr_rank、price、profit、rating、ratings、fba、lqs、available_date、total_units_growth、total_amount_growth、bsr_rank_cv、bsr_rank_cr" },
+            "desc": { "type": "boolean", "description": "true=降序（默认），false=升序" }
+          }
+        },
+        "minPrice": { "type": "number", "description": "最低价格" },
+        "maxPrice": { "type": "number", "description": "最高价格" },
+        "minRating": { "type": "number", "description": "最低评分值" },
+        "maxRating": { "type": "number", "description": "最高评分值" },
+        "minRatings": { "type": "integer", "description": "最低评分数" },
+        "maxRatings": { "type": "integer", "description": "最高评分数" },
+        "minRatingsCv": { "type": "integer", "description": "最低月新增评分数" },
+        "maxRatingsCv": { "type": "integer", "description": "最高月新增评分数" },
+        "minSellers": { "type": "integer", "description": "最小卖家数" },
+        "maxSellers": { "type": "integer", "description": "最大卖家数" },
+        "minProfit": { "type": "number", "description": "最小毛利率(%)" },
+        "maxProfit": { "type": "number", "description": "最大毛利率(%)" },
+        "minBsr": { "type": "integer", "description": "大类 BSR 最高排名（最小值）" },
+        "maxBsr": { "type": "integer", "description": "大类 BSR 最低排名（最大值）" },
+        "minBsrCv": { "type": "integer", "description": "BSR 最低增长数" },
+        "maxBsrCv": { "type": "integer", "description": "BSR 最高增长数" },
+        "minBsrCr": { "type": "number", "description": "BSR 最低增长率(%)" },
+        "maxBsrCr": { "type": "number", "description": "BSR 最高增长率(%)" },
+        "minUnits": { "type": "integer", "description": "最低月销量（父体）" },
+        "maxUnits": { "type": "integer", "description": "最高月销量（父体）" },
+        "minAmzUnit": { "type": "integer", "description": "最低月子体销量" },
+        "maxAmzUnit": { "type": "integer", "description": "最高月子体销量" },
+        "minRevenue": { "type": "number", "description": "最低月销售额" },
+        "maxRevenue": { "type": "number", "description": "最高月销售额" },
+        "minRevenueCr": { "type": "number", "description": "月销售额最低增长率(%)" },
+        "maxRevenueCr": { "type": "number", "description": "月销售额最高增长率(%)" },
+        "minUnitsCr": { "type": "number", "description": "月销量最低增长率(%)" },
+        "maxUnitsCr": { "type": "number", "description": "月销量最高增长率(%)" },
+        "minWeights": { "type": "number", "description": "最小重量（依 weightUnit）" },
+        "maxWeights": { "type": "number", "description": "最大重量（依 weightUnit）" },
+        "minVariations": { "type": "integer", "description": "最低变体数" },
+        "maxVariations": { "type": "integer", "description": "最高变体数" },
+        "minSubBsrRank": { "type": "integer", "description": "最小子类排名（filterSub=Y 时生效）" },
+        "maxSubBsrRank": { "type": "integer", "description": "最大子类排名（filterSub=Y 时生效）" },
+        "minFba": { "type": "number", "description": "FBA 最低运费" },
+        "maxFba": { "type": "number", "description": "FBA 最高运费" },
+        "minLqs": { "type": "number", "description": "最低 Listing 质量分" },
+        "maxLqs": { "type": "number", "description": "最高 Listing 质量分" }
+      },
+      "required": ["marketplace"],
       "additionalProperties": false
     }
   },
@@ -1031,6 +1196,36 @@
         "maxTopAvgBsr": { "type": "number", "description": "最高头部平均BSR" },
         "minGoodsCount": { "type": "integer", "description": "最低商品数量" },
         "maxGoodsCount": { "type": "integer", "description": "最高商品数量" }
+      },
+      "required": ["marketplace"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "product_node",
+    "description": "查产品类目：查询亚马逊类目节点信息，返回类目ID路径、类目名称、中文名称及类目下产品数量。支持按类目节点路径（nodeIdPath）查询子类目，或按关键字（类目名称/nodeId）搜索。当用户需要获取类目结构、查找产品所在类目、浏览类目树、获取 nodeIdPath 时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段：nodeIdPath（类目id字符串）、nodeLabelPath（类目名称路径）、products（类目下产品数）、nodeLabelLocale（类目节点中文名）、nodeLabelPathLocale（所有节点中文名）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "nodeIdPath": {
+          "type": "string",
+          "description": "类目节点 id 字符串，例如 2619525011:3741271，传入后返回该节点的直接子类目列表"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "搜索关键字，可输入 nodeId 或类目名称，例如 Books 或 4053"
+        },
+        "month": {
+          "type": "string",
+          "description": "查询历史月份类目，格式 yyyyMM，例如 202502，留空表示最新数据"
+        }
       },
       "required": ["marketplace"],
       "additionalProperties": false

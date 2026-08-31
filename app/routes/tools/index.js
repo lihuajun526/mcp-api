@@ -1,6 +1,8 @@
 const tools = [
   require('./asinDetailTool'),
   require('./competitorLookupTool'),
+  require('./asinCompetitorTool'),
+  require('./productResearchTool'),
   require('./bsrSalesTool'),
   require('./asinSalesTool'),
   require('./asinReversingTool'),
@@ -16,6 +18,7 @@ const tools = [
   require('./trafficListingStatTool'),
   require('./trafficListingTool'),
   require('./marketResearchTool'),
+  require('./productNodeTool'),
 ];
 
 module.exports = Object.fromEntries(tools.map((t) => [t.name, t]));

@@ -3,6 +3,8 @@ const config = require('../config');
 const authService = require('../services/authService');
 const { queryAsinDetail } = require('../services/queries/asinDetailQuery');
 const { queryCompetingLookup } = require('../services/queries/competitorLookupQuery');
+const { queryAsinCompetitor } = require('../services/queries/asinCompetitorQuery');
+const { queryProductResearch } = require('../services/queries/productResearchQuery');
 const { queryBsrSales } = require('../services/queries/bsrSalesQuery');
 const { queryAsinReversing } = require('../services/queries/asinReversingQuery');
 const { queryAsinSales } = require('../services/queries/asinSalesQuery');
@@ -17,6 +19,7 @@ const { queryTrafficKeywordStat } = require('../services/queries/trafficKeywordS
 const { queryTrafficListingStat } = require('../services/queries/trafficListingStatQuery');
 const { queryTrafficListing } = require('../services/queries/trafficListingQuery');
 const { queryMarketResearch } = require('../services/queries/marketResearchQuery');
+const { queryProductNode } = require('../services/queries/productNodeQuery');
 
 const router = express.Router();
 
@@ -215,6 +218,42 @@ router.post('/api/v1/mcp/market/research', async (req, res, next) => {
     const user = await authService.authenticate(apiKey);
     await authService.consumeRateLimit(user.userId, user.qpsLimit);
     const data = await queryMarketResearch(user, req.body || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/api/v1/mcp/product/node', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryProductNode(user, req.query || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/api/v1/mcp/asin/competitor', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryAsinCompetitor(user, req.query || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post('/api/v1/mcp/product/research', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryProductResearch(user, req.body || {});
     res.json({ success: true, message: 'OK', data });
   } catch (e) {
     next(e);

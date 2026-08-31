@@ -66,5 +66,8 @@ VALUES (1, 'ASIN_DETAIL', 5, true),
        (14, 'TRAFFIC_KEYWORD_STAT', 5, true),
        (15, 'TRAFFIC_LISTING_STAT', 5, true),
        (16, 'TRAFFIC_LISTING', 10, true),
-       (17, 'MARKET_RESEARCH', 10, true)
+       (17, 'MARKET_RESEARCH', 10, true),
+       (18, 'PRODUCT_NODE', 5, true),
+       (19, 'ASIN_COMPETITOR', 10, true),
+       (20, 'PRODUCT_RESEARCH', 10, true)
 ON DUPLICATE KEY UPDATE endpoint_code = endpoint_code;
