@@ -1230,5 +1230,27 @@
       "required": ["marketplace"],
       "additionalProperties": false
     }
+  },
+  {
+    "name": "asin_sales_trend",
+    "description": "查询 ASIN 销量趋势：输入亚马逊站点和 ASIN，返回该 ASIN 的父体/子体月度销量、销售额趋势数据，以及商品基本信息（品牌、BSR 排名、价格、评分、变体列表等）。适用于分析商品的历史销售趋势、季节性规律及增长情况。鉴权由服务端处理，模型不要传递 API Key。返回字段：asin（商品详情，包含 brand/bsrRank/price/rating/ratings/fulfillment/variations/badge 等）、salesTrendPoints（月度趋势点列表，包含 month/price/averagePrice/parentUnitSales/childUnitSales/parentSalesRevenue/childSalesRevenue）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "enum": ["US","CA","MX","UK","DE","FR","IT","ES","JP","IN","AU"]
+        },
+        "asin": {
+          "type": "string",
+          "description": "目标 Amazon ASIN，例如 B0DXTMS9NF",
+          "minLength": 10,
+          "maxLength": 10
+        }
+      },
+      "required": ["marketplace", "asin"],
+      "additionalProperties": false
+    }
   }
 ]

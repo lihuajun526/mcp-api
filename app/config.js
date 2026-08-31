@@ -43,6 +43,7 @@ module.exports = {
     productResearchPath: process.env.SELLERSPRITE_PRODUCT_RESEARCH_PATH || '/v3/api/product-research',
     openApiBaseUrl: process.env.SELLERSPRITE_OPEN_API_BASE_URL || 'https://api.sellersprite.com',
     productNodePath: process.env.SELLERSPRITE_PRODUCT_NODE_PATH || '/v1/product/node',
+    asinSalesTrendPath: process.env.SELLERSPRITE_ASIN_SALES_TREND_PATH || '/v1/asin',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   cache: {

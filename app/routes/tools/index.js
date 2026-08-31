@@ -19,6 +19,7 @@ const tools = [
   require('./trafficListingTool'),
   require('./marketResearchTool'),
   require('./productNodeTool'),
+  require('./asinSalesTrendTool'),
 ];
 
 module.exports = Object.fromEntries(tools.map((t) => [t.name, t]));
