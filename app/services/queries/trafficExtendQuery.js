@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -112,12 +113,11 @@ async function fetchTrafficExtend(request, session) {
     headers['x-token'] = session.xToken;
   }
 
-  const resp = await axios.post(
+  return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.trafficExtendPath}`,
     payload,
     { headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryTrafficExtend(user, request) {
@@ -137,7 +137,7 @@ async function queryTrafficExtend(user, request) {
   const raw = await fetchTrafficExtend(request, session);
 
   const rawData = raw && raw.data ? raw.data : raw;
-  const transformed = transformTrafficExtendResponse(rawData, request);
+  const transformed = sanitizeInternalFields(transformTrafficExtendResponse(rawData, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

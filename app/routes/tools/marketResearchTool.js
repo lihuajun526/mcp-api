@@ -1,4 +1,5 @@
 const { queryMarketResearch } = require('../../services/queries/marketResearchQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'market_research',
@@ -38,10 +39,6 @@ module.exports = {
       maxAvgPrice: args.maxAvgPrice
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

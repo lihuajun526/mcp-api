@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -56,12 +57,11 @@ async function fetchAsinReversing(request, session) {
     'user-agent': session.userAgent || 'Mozilla/5.0'
   };
 
-  const resp = await axios.post(
+  return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.asinReversingPath}?market=${market}`,
     payload,
     { headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryAsinReversing(user, request) {
@@ -76,7 +76,7 @@ async function queryAsinReversing(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinReversing(request, session);
-  const transformed = transformAsinReversingResponse(raw, request);
+  const transformed = sanitizeInternalFields(transformAsinReversingResponse(raw, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

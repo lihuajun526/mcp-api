@@ -1,4 +1,5 @@
 const { queryAbaResearchWeekly } = require('../../services/queries/abaResearchWeeklyQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'aba_research_weekly',
@@ -46,10 +47,6 @@ module.exports = {
       searchModel: args.searchModel
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

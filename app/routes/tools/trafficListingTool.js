@@ -1,4 +1,5 @@
 const { queryTrafficListing } = require('../../services/queries/trafficListingQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'traffic_listing',
@@ -31,10 +32,6 @@ module.exports = {
       orderDesc: args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false)
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

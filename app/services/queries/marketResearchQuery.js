@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -59,11 +60,11 @@ async function fetchMarketResearch(request, session) {
     headers['x-token'] = session.xToken;
   }
 
-  const resp = await axios.get(
+  return upstreamClient.get(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.marketResearchPath}`,
-    { params, headers, timeout: config.sellerSprite.timeoutMs }
+    { params, headers, timeout: config.sellerSprite.timeoutMs },
+    { expectHtml: true }
   );
-  return resp.data;
 }
 
 async function queryMarketResearch(user, request) {
@@ -76,7 +77,7 @@ async function queryMarketResearch(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const html = await fetchMarketResearch(request, session);
-  const transformed = transformMarketResearchResponse(html, request);
+  const transformed = sanitizeInternalFields(transformMarketResearchResponse(html, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

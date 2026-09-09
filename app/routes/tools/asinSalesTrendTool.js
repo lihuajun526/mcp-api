@@ -1,4 +1,5 @@
 const { queryAsinSalesTrend } = require('../../services/queries/asinSalesTrendQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'asin_sales_trend',
@@ -15,10 +16,6 @@ module.exports = {
       asin: String(args.asin)
     });
 
-    return {
-      isError: false,
-      structuredContent: data,
-      content: [{ type: 'text', text: `asin_sales_trend success, asin=${args.asin}, points=${data.salesTrendPoints ? data.salesTrendPoints.length : 0}` }]
-    };
+    return buildSuccess(args, data);
   }
 };

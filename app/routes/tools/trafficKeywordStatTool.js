@@ -1,4 +1,5 @@
 const { queryTrafficKeywordStat } = require('../../services/queries/trafficKeywordStatQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'traffic_keyword_stat',
@@ -23,10 +24,6 @@ module.exports = {
       badges: Array.isArray(args.badges) ? args.badges : []
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

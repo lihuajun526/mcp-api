@@ -1,4 +1,5 @@
 const { queryKeywordMiner } = require('../../services/queries/keywordMinerQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'keyword_miner',
@@ -59,10 +60,6 @@ module.exports = {
       maxRating: args.maxRating
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

@@ -1,4 +1,5 @@
 const { queryKeywordOrder } = require('../../services/queries/keywordOrderQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'keyword_order',
@@ -28,10 +29,6 @@ module.exports = {
       orderDesc: args.orderDesc
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

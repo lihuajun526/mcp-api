@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -116,12 +117,11 @@ async function fetchProductResearch(request, session) {
     cookie: session.cookie || '',
     'user-agent': session.userAgent || 'Mozilla/5.0'
   };
-  const resp = await axios.post(
+  return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.productResearchPath}`,
     payload,
     { headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryProductResearch(user, request) {
@@ -134,7 +134,7 @@ async function queryProductResearch(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchProductResearch(request, session);
-  const transformed = transformCompetitionResponse(raw, request);
+  const transformed = sanitizeInternalFields(transformCompetitionResponse(raw, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

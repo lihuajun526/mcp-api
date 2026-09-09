@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -58,11 +59,11 @@ async function fetchKeywordOrder(request, session) {
     referer: `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordOrderPath}`
   };
 
-  const resp = await axios.get(
+  return upstreamClient.get(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordOrderPath}`,
-    { params, headers, timeout: config.sellerSprite.timeoutMs }
+    { params, headers, timeout: config.sellerSprite.timeoutMs },
+    { expectHtml: true }
   );
-  return resp.data;
 }
 
 async function queryKeywordOrder(user, request) {
@@ -79,7 +80,7 @@ async function queryKeywordOrder(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const html = await fetchKeywordOrder(request, session);
-  const transformed = transformKeywordOrderResponse(html, request);
+  const transformed = sanitizeInternalFields(transformKeywordOrderResponse(html, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

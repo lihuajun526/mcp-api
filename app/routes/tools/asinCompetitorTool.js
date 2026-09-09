@@ -1,4 +1,5 @@
 const { queryAsinCompetitor } = require('../../services/queries/asinCompetitorQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'asin_competitor',
@@ -16,10 +17,6 @@ module.exports = {
       size: args.size ? Number(args.size) : 20
     });
 
-    return {
-      isError: false,
-      structuredContent: data,
-      content: [{ type: 'text', text: `asin_competitor success, asin=${args.asin}, total=${data.total}` }]
-    };
+    return buildSuccess(args, data);
   }
 };

@@ -1,4 +1,5 @@
 const { queryAsinDetail } = require('../../services/queries/asinDetailQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'asin_detail_lookup',
@@ -15,10 +16,6 @@ module.exports = {
       asin: String(args.asin)
     });
 
-    return {
-      code: "OK",
-      message: "成功",
-      data: detail
-    };
+    return buildSuccess(args, detail);
   }
 };

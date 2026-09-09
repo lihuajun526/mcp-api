@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -80,12 +81,11 @@ async function fetchAbaResearchWeekly(request, session) {
     headers['x-token'] = session.xToken;
   }
 
-  const resp = await axios.post(
+  return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.abaResearchPath}`,
     payload,
     { headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryAbaResearchWeekly(user, request) {
@@ -100,7 +100,7 @@ async function queryAbaResearchWeekly(user, request) {
   const raw = await fetchAbaResearchWeekly(request, session);
 
   const rawData = raw && raw.data ? raw.data : raw;
-  const transformed = transformAbaResearchResponse(rawData, request);
+  const transformed = sanitizeInternalFields(transformAbaResearchResponse(rawData, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

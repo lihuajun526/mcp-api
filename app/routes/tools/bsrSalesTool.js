@@ -1,4 +1,5 @@
 const { queryBsrSales } = require('../../services/queries/bsrSalesQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'bsr_sales',
@@ -16,10 +17,6 @@ module.exports = {
       bsr: Number(args.bsr)
     });
 
-    return {
-      code: "OK",
-      message: "成功",
-      data: detail
-    };
+    return buildSuccess(args, detail);
   }
 };

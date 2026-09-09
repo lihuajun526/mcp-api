@@ -1,4 +1,5 @@
 const { queryProductNode } = require('../../services/queries/productNodeQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'product_node',
@@ -17,10 +18,6 @@ module.exports = {
       month: args.month ? String(args.month) : ''
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

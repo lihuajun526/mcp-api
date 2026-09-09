@@ -1,4 +1,5 @@
 const { queryAsinReversing } = require('../../services/queries/asinReversingQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'asin_reversing',
@@ -19,10 +20,6 @@ module.exports = {
       badges: args.badges
     });
 
-    return {
-      code: "OK",
-      message: "成功",
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

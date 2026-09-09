@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -28,12 +29,11 @@ async function fetchAsinDetail(request, session) {
     cookie: session.cookie || '',
     'user-agent': session.userAgent || 'Mozilla/5.0'
   };
-  const resp = await axios.post(
+  return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.competingLookupPath}`,
     payload,
     { headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryAsinDetail(user, request) {
@@ -48,7 +48,7 @@ async function queryAsinDetail(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinDetail(request, session);
-  const transformed = transformAsinDetailResponse(raw);
+  const transformed = sanitizeInternalFields(transformAsinDetailResponse(raw));
   for (const item of transformed.items || []) {
     if (!item.marketplace) {
       item.marketplace = request.marketplace;

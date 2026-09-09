@@ -1,4 +1,6 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
+const { UpstreamError } = require('../../errors');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -9,6 +11,13 @@ const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'PRODUCT_NODE';
 
 async function fetchProductNode(request, session) {
+  if (!session.secretKey) {
+    throw new UpstreamError('当前数据服务会话未配置访问凭证，无法调用该接口', {
+      url: `${config.sellerSprite.openApiBaseUrl}${config.sellerSprite.productNodePath}`,
+      hint: '请联系管理员补充数据服务凭证后重试'
+    });
+  }
+
   const params = { marketplace: request.marketplace };
   if (request.nodeIdPath) params.nodeIdPath = request.nodeIdPath;
   if (request.keyword) params.keyword = request.keyword;
@@ -19,11 +28,10 @@ async function fetchProductNode(request, session) {
     accept: 'application/json'
   };
 
-  const resp = await axios.get(
+  return upstreamClient.get(
     `${config.sellerSprite.openApiBaseUrl}${config.sellerSprite.productNodePath}`,
     { params, headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryProductNode(user, request) {

@@ -1,4 +1,5 @@
 const { queryAsinSales } = require('../../services/queries/asinSalesQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'asin_sales',
@@ -15,10 +16,6 @@ module.exports = {
       asin: String(args.asin)
     });
 
-    return {
-      code: "OK",
-      message: "成功",
-      data: detail
-    };
+    return buildSuccess(args, detail);
   }
 };

@@ -1,4 +1,5 @@
 const { queryTrafficExtend } = require('../../services/queries/trafficExtendQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'traffic_extend',
@@ -57,10 +58,6 @@ module.exports = {
       maxCompetitors: args.maxCompetitors
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

@@ -1,4 +1,5 @@
 const { queryProductResearch } = require('../../services/queries/productResearchQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'product_research',
@@ -77,10 +78,6 @@ module.exports = {
       maxLqs: args.maxLqs != null ? Number(args.maxLqs) : undefined
     });
 
-    return {
-      isError: false,
-      structuredContent: data,
-      content: [{ type: 'text', text: `product_research success, total=${data.total}` }]
-    };
+    return buildSuccess(args, data);
   }
 };

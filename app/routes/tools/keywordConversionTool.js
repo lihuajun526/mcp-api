@@ -1,4 +1,5 @@
 const { queryKeywordConversion } = require('../../services/queries/keywordConversionQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'keyword_conversion',
@@ -50,10 +51,6 @@ module.exports = {
       maxBudget: args.maxBudget
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

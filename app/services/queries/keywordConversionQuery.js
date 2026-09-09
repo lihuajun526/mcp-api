@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -80,12 +81,11 @@ async function fetchKeywordConversion(request, session) {
     headers['x-token'] = session.xToken;
   }
 
-  const resp = await axios.post(
+  return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordConversionPath}`,
     payload,
     { headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryKeywordConversion(user, request) {
@@ -101,7 +101,7 @@ async function queryKeywordConversion(user, request) {
 
   // 第三方返回格式: { code, message, data: { pager: { items, ... } } }
   const pager = raw && raw.data && raw.data.pager ? raw.data.pager : (raw && raw.data ? raw.data : raw);
-  const transformed = transformKeywordConversionResponse(pager, request);
+  const transformed = sanitizeInternalFields(transformKeywordConversionResponse(pager, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

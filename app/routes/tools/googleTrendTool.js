@@ -1,4 +1,5 @@
 const { queryGoogleTrend } = require('../../services/queries/googleTrendQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'google_trend',
@@ -17,10 +18,6 @@ module.exports = {
       monthly: args.monthly === true || args.monthly === 'true'
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

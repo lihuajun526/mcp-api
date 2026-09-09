@@ -1,6 +1,7 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
+const { BusinessError, UpstreamError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -10,13 +11,18 @@ const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'ASIN_SALES_TREND';
 
 async function fetchAsinSalesTrend(request, session) {
+  const url = `${config.sellerSprite.openApiBaseUrl}${config.sellerSprite.asinSalesTrendPath}/${request.marketplace}/${request.asin}/sales-trend`;
+  if (!session.secretKey) {
+    throw new UpstreamError('当前数据服务会话未配置访问凭证，无法调用该接口', {
+      url,
+      hint: '请联系管理员补充数据服务凭证后重试'
+    });
+  }
   const headers = {
-    'secret-key': session.secretKey || '',
+    'secret-key': session.secretKey,
     accept: 'application/json'
   };
-  const url = `${config.sellerSprite.openApiBaseUrl}${config.sellerSprite.asinSalesTrendPath}/${request.marketplace}/${request.asin}/sales-trend`;
-  const resp = await axios.get(url, { headers, timeout: config.sellerSprite.timeoutMs });
-  return resp.data;
+  return upstreamClient.get(url, { headers, timeout: config.sellerSprite.timeoutMs });
 }
 
 async function queryAsinSalesTrend(user, request) {
@@ -29,7 +35,7 @@ async function queryAsinSalesTrend(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinSalesTrend(request, session);
-  const transformed = transformAsinSalesTrendResponse(raw, request);
+  const transformed = sanitizeInternalFields(transformAsinSalesTrendResponse(raw, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

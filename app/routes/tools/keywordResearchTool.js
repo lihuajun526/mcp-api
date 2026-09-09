@@ -1,4 +1,5 @@
 const { queryKeywordResearch } = require('../../services/queries/keywordResearchQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'keyword_research',
@@ -44,10 +45,6 @@ module.exports = {
       keywordBidMatchType: args.keywordBidMatchType
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

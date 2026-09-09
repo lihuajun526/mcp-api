@@ -1,4 +1,5 @@
 const { queryTrafficListingStat } = require('../../services/queries/trafficListingStatQuery');
+const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
   name: 'traffic_listing_stat',
@@ -21,10 +22,6 @@ module.exports = {
       queryVariations: args.queryVariations !== false
     });
 
-    return {
-      code: 'OK',
-      message: '成功',
-      data
-    };
+    return buildSuccess(args, data);
   }
 };

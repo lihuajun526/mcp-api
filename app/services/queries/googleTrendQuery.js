@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -55,11 +56,10 @@ async function fetchGoogleTrend(request, session) {
     'x-requested-with': 'XMLHttpRequest'
   };
 
-  const resp = await axios.get(
+  return upstreamClient.get(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.googleTrendPath}`,
     { params, headers, timeout: config.sellerSprite.timeoutMs }
   );
-  return resp.data;
 }
 
 async function queryGoogleTrend(user, request) {
@@ -74,7 +74,7 @@ async function queryGoogleTrend(user, request) {
   const raw = await fetchGoogleTrend(request, session);
 
   const rawData = raw && raw.data ? raw.data : raw;
-  const transformed = transformGoogleTrendResponse(rawData, request);
+  const transformed = sanitizeInternalFields(transformGoogleTrendResponse(rawData, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

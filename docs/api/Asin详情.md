@@ -2,6 +2,12 @@
 输入参数和返回结果的格式参考下面的文档
 https://open.sellersprite.com/api/3
 
+【平台通用约定】
+- 响应包裹：统一 {code, message, data}，失败时 data 含 hint 处理建议
+- returnFields（可选）：按需返回字段，取值为 data.items 元素（或 data）的字段名，分页信息始终保留
+- 错误码表：OK / BAD_REQUEST / UPSTREAM_ERROR / INTERNAL_ERROR，及 JSON-RPC 协议错误（-32602 等）
+详见同目录《通用约定.md》。
+
 二、第三方curl请求及响应如下
 1、curl请求
 curl 'https://www.sellersprite.com/v3/api/competing-lookup' \

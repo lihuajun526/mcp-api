@@ -1,4 +1,5 @@
-const axios = require('axios');
+const upstreamClient = require('../upstreamClient');
+const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
 const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
@@ -93,11 +94,11 @@ async function fetchKeywordResearch(request, session) {
     referer: `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordResearchPath}`
   };
 
-  const resp = await axios.get(
+  return upstreamClient.get(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordResearchPath}`,
-    { params, headers, timeout: config.sellerSprite.timeoutMs }
+    { params, headers, timeout: config.sellerSprite.timeoutMs },
+    { expectHtml: true }
   );
-  return resp.data;
 }
 
 async function queryKeywordResearch(user, request) {
@@ -112,7 +113,7 @@ async function queryKeywordResearch(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const html = await fetchKeywordResearch(request, session);
-  const transformed = transformKeywordResearchResponse(html, request);
+  const transformed = sanitizeInternalFields(transformKeywordResearchResponse(html, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
