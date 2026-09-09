@@ -6,13 +6,13 @@ module.exports = {
   name: 'competitor_lookup',
 
   async handle(args, user) {
-    if (!args.marketplace) {
+    if (args.marketplace == null) {
       const err = new Error('marketplace is required');
       err.code = -32602;
       throw err;
     }
 
-    if (args.month) {
+    if (args.month != null) {
       const monthStr = String(args.month);
       const parsed = new Date(monthStr.substring(0, 4), parseInt(monthStr.substring(4, 6), 10) - 1);
       if (!/^\d{6}$/.test(monthStr) || isNaN(parsed.getTime())) {
@@ -32,11 +32,14 @@ module.exports = {
       ...(args.nodeIdPathEqual !== undefined ? { nodeIdPathEqual: !!args.nodeIdPathEqual } : {}),
       ...(args.keyword ? { keywords: String(args.keyword) } : {}),
       ...(args.matchType !== undefined ? { matchType: Number(args.matchType) } : {}),
-      symbolFlag: args.variation !== undefined ? !args.variation : false,
+      symbolFlag: args.variation != null ? !args.variation : false,
       lowPrice: "N",
       page: args.page ? Number(args.page) : 1,
       size: args.size ? Number(args.size) : 60,
-      order: { field: "amz_unit", desc: true }
+      order: {
+        field: args.order && args.order.field ? String(args.order.field) : 'amz_unit',
+        desc: args.order && args.order.desc !== undefined ? !!args.order.desc : true
+      }
     });
 
     return buildSuccess(args, data);

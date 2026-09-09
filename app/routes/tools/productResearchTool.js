@@ -2,80 +2,122 @@ const { queryProductResearch } = require('../../services/queries/productResearch
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
+  // 选产品
   name: 'product_research',
 
   async handle(args, user) {
-    if (!args.marketplace) {
+    if (args.marketplace == null) {
       const err = new Error('marketplace is required');
       err.code = -32602;
       throw err;
     }
 
+    if (args.month != null) {
+      const monthStr = String(args.month);
+      const parsed = new Date(monthStr.substring(0, 4), parseInt(monthStr.substring(4, 6), 10) - 1);
+      if (!/^\d{6}$/.test(monthStr) || isNaN(parsed.getTime())) {
+        const err = new Error('month must be a valid date in yyyyMM format');
+        err.code = -32602;
+        throw err;
+      }
+    }
+
     const data = await queryProductResearch(user, {
-      marketplace: String(args.marketplace),
-      month: args.month ? String(args.month) : undefined,
-      keyword: args.keyword ? String(args.keyword) : undefined,
-      matchType: args.matchType !== undefined ? Number(args.matchType) : undefined,
-      excludeKeywords: args.excludeKeywords ? String(args.excludeKeywords) : undefined,
-      includeBrands: args.includeBrands ? String(args.includeBrands) : undefined,
-      excludeBrands: args.excludeBrands ? String(args.excludeBrands) : undefined,
-      includeSellers: args.includeSellers ? String(args.includeSellers) : undefined,
-      excludeSellers: args.excludeSellers ? String(args.excludeSellers) : undefined,
-      nodeIdPaths: Array.isArray(args.nodeIdPaths) ? args.nodeIdPaths : (args.nodeIdPath ? [String(args.nodeIdPath)] : undefined),
-      nodeIdPathEqual: args.nodeIdPathEqual !== undefined ? !!args.nodeIdPathEqual : undefined,
-      filterSub: args.filterSub !== undefined ? (args.filterSub === true || args.filterSub === 'Y') : undefined,
-      weightUnit: args.weightUnit ? String(args.weightUnit) : 'g',
-      variation: args.variation ? String(args.variation) : undefined,
-      fulfillment: args.fulfillment ? String(args.fulfillment) : undefined,
-      sellerNation: args.sellerNation ? String(args.sellerNation) : undefined,
-      dimensionType: args.dimensionType ? String(args.dimensionType) : undefined,
-      badgeBS: args.badgeBS ? String(args.badgeBS) : undefined,
-      badgeAC: args.badgeAC ? String(args.badgeAC) : undefined,
-      badgeNR: args.badgeNR ? String(args.badgeNR) : undefined,
-      availableMonth: args.availableMonth !== undefined ? Number(args.availableMonth) : undefined,
+      market: String(args.marketplace.toUpperCase()),
+      // 商品资格，低价商品
+      eligibility: [],
+      lowPrice: 'N',
+      filterSub: false,
+      monthName: args.month != null ? `bsr_sales_monthly_${args.month}` : 'bsr_sales_nearly',
+      nodeIdPaths: args.nodeIdPaths != null ? (Array.isArray(args.nodeIdPaths) ? args.nodeIdPaths : []) : [],
+      order: {
+        field: args.order && args.order.field != null ? String(args.order.field) : 'amz_unit',
+        desc: args.order && args.order.desc != null ? !!args.order.desc : true
+      },
       page: args.page ? Number(args.page) : 1,
-      size: args.size ? Number(args.size) : 50,
-      orderField: args.order && args.order.field ? String(args.order.field) : (args.orderField || 'total_units'),
-      orderDesc: args.order && args.order.desc !== undefined ? !!args.order.desc : (args.orderDesc !== undefined ? !!args.orderDesc : true),
-      // 范围过滤
-      minPrice: args.minPrice != null ? Number(args.minPrice) : undefined,
-      maxPrice: args.maxPrice != null ? Number(args.maxPrice) : undefined,
-      minRating: args.minRating != null ? Number(args.minRating) : undefined,
-      maxRating: args.maxRating != null ? Number(args.maxRating) : undefined,
-      minRatings: args.minRatings != null ? Number(args.minRatings) : undefined,
-      maxRatings: args.maxRatings != null ? Number(args.maxRatings) : undefined,
-      minRatingsCv: args.minRatingsCv != null ? Number(args.minRatingsCv) : undefined,
-      maxRatingsCv: args.maxRatingsCv != null ? Number(args.maxRatingsCv) : undefined,
-      minSellers: args.minSellers != null ? Number(args.minSellers) : undefined,
-      maxSellers: args.maxSellers != null ? Number(args.maxSellers) : undefined,
-      minProfit: args.minProfit != null ? Number(args.minProfit) : undefined,
-      maxProfit: args.maxProfit != null ? Number(args.maxProfit) : undefined,
-      minBsr: args.minBsr != null ? Number(args.minBsr) : undefined,
-      maxBsr: args.maxBsr != null ? Number(args.maxBsr) : undefined,
-      minBsrCv: args.minBsrCv != null ? Number(args.minBsrCv) : undefined,
-      maxBsrCv: args.maxBsrCv != null ? Number(args.maxBsrCv) : undefined,
-      minBsrCr: args.minBsrCr != null ? Number(args.minBsrCr) : undefined,
-      maxBsrCr: args.maxBsrCr != null ? Number(args.maxBsrCr) : undefined,
-      minUnits: args.minUnits != null ? Number(args.minUnits) : undefined,
-      maxUnits: args.maxUnits != null ? Number(args.maxUnits) : undefined,
-      minAmzUnit: args.minAmzUnit != null ? Number(args.minAmzUnit) : undefined,
-      maxAmzUnit: args.maxAmzUnit != null ? Number(args.maxAmzUnit) : undefined,
-      minRevenue: args.minRevenue != null ? Number(args.minRevenue) : undefined,
-      maxRevenue: args.maxRevenue != null ? Number(args.maxRevenue) : undefined,
-      minRevenueCr: args.minRevenueCr != null ? Number(args.minRevenueCr) : undefined,
-      maxRevenueCr: args.maxRevenueCr != null ? Number(args.maxRevenueCr) : undefined,
-      minUnitsCr: args.minUnitsCr != null ? Number(args.minUnitsCr) : undefined,
-      maxUnitsCr: args.maxUnitsCr != null ? Number(args.maxUnitsCr) : undefined,
-      minWeights: args.minWeights != null ? Number(args.minWeights) : undefined,
-      maxWeights: args.maxWeights != null ? Number(args.maxWeights) : undefined,
-      minVariations: args.minVariations != null ? Number(args.minVariations) : undefined,
-      maxVariations: args.maxVariations != null ? Number(args.maxVariations) : undefined,
-      minSubBsrRank: args.minSubBsrRank != null ? Number(args.minSubBsrRank) : undefined,
-      maxSubBsrRank: args.maxSubBsrRank != null ? Number(args.maxSubBsrRank) : undefined,
-      minFba: args.minFba != null ? Number(args.minFba) : undefined,
-      maxFba: args.maxFba != null ? Number(args.maxFba) : undefined,
-      minLqs: args.minLqs != null ? Number(args.minLqs) : undefined,
-      maxLqs: args.maxLqs != null ? Number(args.maxLqs) : undefined
+      size: args.size ? Number(args.size) : 60,
+      // 包装尺寸类型，枚举值：SS（小号标准尺寸）、LS（大号标准尺寸）、SB（小号大件）
+      // 、LB（大号大件）、ELO（超大尺寸：0至50磅）、EL5O（超大尺寸：50至70磅）
+      // 、EL7O（超大尺寸：70至150磅）、EL15O（超大尺寸：150磅以上）、O（其他尺寸）
+      pkgDimensionTypeList: args.pkgDimensionTypeList != null ? (Array.isArray(args.pkgDimensionTypeList) ? args.pkgDimensionTypeList : []) : [],
+      // productTags（产品标识）枚举值：BestSeller、AmazonChoice、NewRelease、A+、NonA+
+      productTags: args.productTags != null ? (Array.isArray(args.productTags) ? args.productTags : []) : [],
+      // 2：模糊匹配，3：词组匹配，4、精准匹配
+      selectType: args.matchType != null ? String(args.matchType) : '2',
+      // 卖家所属地
+      sellerNationList: args.sellerNationList != null ? (Array.isArray(args.sellerNationList) ? args.sellerNationList : []) : [],
+      // 配送方式：AMZ、FBA、FBM
+      sellerTypes: args.fulfillment != null ? [args.fulfillment] : [],
+      // 是否包含变体
+      symbolFlag: args.variation != null ? !args.variation : false,
+      // 重量单位，枚举值：g、kg、oz、lb
+      weightUnit: args.weightUnit != null ? String(args.weightUnit) : 'g',
+      // 关键词
+      ...(args.keyword ? { keywords: String(args.keyword) } : {}),
+      // 排除关键词
+      ...(args.excludeKeywords ? { outOfKeywords: String(args.excludeKeywords) } : {}),
+      // 包含品牌
+      ...(args.includeBrands ? { includeBrands: String(args.includeBrands) } : {}),
+      // 排除品牌
+      ...(args.excludeBrands ? { excludeBrands: String(args.excludeBrands) } : {}),
+      // 包含卖家
+      ...(args.includeSellers ? { includeSellers: String(args.includeSellers) } : {}),
+      // 排除卖家
+      ...(args.excludeSellers ? { excludeSellers: String(args.excludeSellers) } : {}),
+      //nodeIdPathEqual: args.nodeIdPathEqual !== undefined ? !!args.nodeIdPathEqual : undefined,
+      // 上架时间
+      ...(args.putawayMonth ? { putawayMonth: String(args.availableMonth) } : {}),
+      // 价格
+      ...(args.minPrice ? { minPrice: String(args.minPrice) } : {}),
+      ...(args.maxPrice ? { maxPrice: String(args.maxPrice) } : {}),
+      // 评论数（界面上是评分数）
+      ...(args.minReviews ? { minReviews: String(args.minReviews) } : {}),
+      ...(args.maxReviews ? { maxReviews: String(args.maxReviews) } : {}),
+      // 评分值
+      ...(args.minReviewRating ? { minReviewRating: String(args.minReviewRating) } : {}),
+      ...(args.maxReviewRating ? { maxReviewRating: String(args.maxReviewRating) } : {}),
+      // 评论新增数
+      ...(args.minReviewsGrouth ? { minReviewsGrouth: String(args.minReviewsGrouth) } : {}),
+      ...(args.maxReviewsGrouth ? { maxReviewsGrouth: String(args.maxReviewsGrouth) } : {}),
+      // 卖家数量
+      ...(args.minSellers ? { minSellers: String(args.minSellers) } : {}),
+      ...(args.maxSellers ? { maxSellers: String(args.maxSellers) } : {}),
+      // 毛利率
+      ...(args.minProfit ? { minProfit: String(args.minProfit) } : {}),
+      ...(args.maxProfit ? { maxProfit: String(args.maxProfit) } : {}),
+      // BSR
+      ...(args.minRanking ? { minRanking: String(args.minRanking) } : {}),
+      ...(args.maxRanking ? { maxRanking: String(args.maxRanking) } : {}),
+      // BSR增长数
+      ...(args.minRankingCv ? { minRankingCv: String(args.minRankingCv) } : {}),
+      ...(args.maxRankingCv ? { maxRankingCv: String(args.maxRankingCv) } : {}),
+      // BSR增长率
+      ...(args.minRankingCr ? { minRankingCr: String(args.minRankingCr) } : {}),
+      ...(args.maxRankingCr ? { maxRankingCr: String(args.maxRankingCr) } : {}),
+      // 月销量
+      ...(args.minSales ? { minSales: String(args.minSales) } : {}),
+      ...(args.maxSales ? { maxSales: String(args.maxSales) } : {}),
+      // 子体销量
+      ...(args.minAmzUnit ? { minAmzUnit: String(args.minAmzUnit) } : {}),
+      ...(args.maxAmzUnit ? { maxAmzUnit: String(args.maxAmzUnit) } : {}),
+      // 月销售额
+      ...(args.minAmount ? { minAmount: String(args.minAmount) } : {}),
+      ...(args.maxAmount ? { maxAmount: String(args.maxAmount) } : {}),
+      // 月销量环比增长率      
+      ...(args.minTotalUnitsGrowth ? { minTotalUnitsGrowth: String(args.minTotalUnitsGrowth) } : {}),
+      ...(args.maxTotalUnitsGrowth ? { maxTotalUnitsGrowth: String(args.maxTotalUnitsGrowth) } : {}),
+      // 包装重量
+      ...(args.minWeights ? { minWeights: String(args.minWeights) } : {}),
+      ...(args.maxWeights ? { maxWeights: String(args.maxWeights) } : {}),
+      // 变体数量
+      ...(args.minVariations ? { minVariations: String(args.minVariations) } : {}),
+      ...(args.maxVariations ? { maxVariations: String(args.maxVariations) } : {}),
+      // FBA运费
+      ...(args.minFba ? { minFba: String(args.minFba) } : {}),
+      ...(args.maxFba ? { maxFba: String(args.maxFba) } : {}),
+      // LQS
+      ...(args.minLqs ? { lqsFrom: String(args.minLqs) } : {}),
+      ...(args.maxLqs ? { lqsTo: String(args.maxLqs) } : {}),
     });
 
     return buildSuccess(args, data);
