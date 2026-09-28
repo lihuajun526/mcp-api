@@ -1,11 +1,13 @@
 const { queryAsinCompetitor } = require('../../services/queries/asinCompetitorQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { isEmpty } = require('../../utils/stringUtils');
 
 module.exports = {
+  // 查询ASIN竞品数据
   name: 'asin_competitor',
 
   async handle(args, user) {
-    if (!args.marketplace || !args.asin) {
+    if (isEmpty(args.marketplace) || isEmpty(args.asin)) {
       const err = new Error('marketplace and asin are required');
       err.code = -32602;
       throw err;
