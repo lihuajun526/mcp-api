@@ -2,6 +2,7 @@ const express = require('express');
 const config = require('../config');
 const authService = require('../services/authService');
 const toolHandlers = require('./tools');
+const { assertMarketplace } = require('../utils/validation');
 
 const router = express.Router();
 
@@ -72,6 +73,11 @@ router.post('/mcp', async (req, res) => {
       const params = body.params || {};
       const toolName = params.name;
       const args = params.arguments || {};
+
+      // 全部工具统一校验并归一化 marketplace 枚举（非法值直接返回 JSON-RPC -32602）
+      if (args.marketplace !== undefined && args.marketplace !== null && args.marketplace !== '') {
+        args.marketplace = assertMarketplace(args.marketplace);
+      }
 
       const handler = toolHandlers[toolName];
       if (!handler) {

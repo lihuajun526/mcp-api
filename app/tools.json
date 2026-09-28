@@ -18,8 +18,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "month": {
@@ -49,7 +48,7 @@
         },
         "asins": {
           "type": "array",
-          "description": "ASIN 列表，最多 40 个，例如 [\"B0GYPQ75WH\"]",
+          "description": "ASIN 列表，最多 40 个，例如 [\"B0GYPQ75WH\"]；也兼容传入单个 ASIN 字符串（自动转为数组）",
           "items": {
             "type": "string",
             "minLength": 10,
@@ -80,9 +79,12 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 50，最大 100",
-          "minimum": 1,
-          "maximum": 100
+          "description": "每页条数，默认 60，仅支持 20/60/100",
+          "enum": [
+            20,
+            60,
+            100
+          ]
         },
         "order": {
           "type": "object",
@@ -131,8 +133,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "asin": {
@@ -181,8 +182,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "month": {
@@ -299,9 +299,12 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 50，最大 100",
-          "minimum": 1,
-          "maximum": 100
+          "description": "每页条数，默认 60，仅支持 20/60/100",
+          "enum": [
+            20,
+            60,
+            100
+          ]
         },
         "order": {
           "type": "object",
@@ -502,8 +505,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -548,8 +550,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -626,8 +627,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -672,8 +672,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "includeKeywords": {
@@ -863,8 +862,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "asinList": {
@@ -1135,8 +1133,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -1187,8 +1184,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "asins": {
@@ -1283,8 +1279,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "keyword": {
@@ -1336,8 +1331,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "keyword": {
@@ -1546,8 +1540,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "date": {
@@ -1722,8 +1715,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "date": {
@@ -1890,8 +1882,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "asin": {
@@ -1942,8 +1933,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "asinList": {
@@ -1995,8 +1985,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "asinList": {
@@ -2081,8 +2070,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "nodeIdPath": {
@@ -2226,8 +2214,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -2277,8 +2264,7 @@
             "IT",
             "ES",
             "JP",
-            "IN",
-            "AU"
+            "IN"
           ]
         },
         "asin": {

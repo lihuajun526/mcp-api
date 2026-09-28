@@ -13,22 +13,45 @@ const config = require('../config');
  *   - version: 数据版本号，升级转换器时 +1 使旧缓存失效
  *   - hash: 请求参数归一化后的 SHA1
  */
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 
+// 递归排序对象 key，保证字段顺序不同但内容相同的请求生成一致的字符串
+function stableValue(value) {
+  if (Array.isArray(value)) {
+    return value.map(stableValue);
+  }
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      out[key] = stableValue(value[key]);
+    }
+    return out;
+  }
+  return value;
+}
+
+/**
+ * 归一化请求参数生成缓存键内容。
+ * 缓存的是「该次请求返回的完整结果」，分页与排序同样决定返回内容，
+ * 因此 page / size / order 必须纳入缓存键，否则不同分页/排序会互相命中错误结果。
+ * 同时对 marketplace、ASIN 列表做大小写与顺序归一化，提升命中率。
+ */
 function normalizeRequest(request) {
-  // 只保留影响数据内容的业务参数，剔除 page/size/order 等与数据内容无关的分页排序参数
-  const { marketplace, asin, asins, monthName, lowPrice, symbolFlag, nodeIdPaths, categoryId, bsr } = request || {};
-  const list = asins && asins.length ? asins : [asin];
-  return JSON.stringify({
-    marketplace: marketplace ? String(marketplace).toUpperCase() : null,
-    asins: (list || []).map((s) => String(s || '').toUpperCase()).sort(),
-    monthName: monthName || 'bsr_sales_nearly',
-    lowPrice: lowPrice || 'N',
-    symbolFlag: symbolFlag !== undefined ? symbolFlag : true,
-    nodeIdPaths: nodeIdPaths || [],
-    categoryId: categoryId ? String(categoryId) : null,
-    bsr: bsr !== undefined && bsr !== null ? Number(bsr) : null
-  });
+  const src = request || {};
+  const normalized = {};
+  for (const key of Object.keys(src).sort()) {
+    let value = src[key];
+    if (value === undefined || value === null || value === '') continue;
+    if (Array.isArray(value) && value.length === 0) continue;
+    if (key === 'marketplace' || key === 'market') {
+      value = String(value).toUpperCase();
+    } else if (key === 'asins' || key === 'asinList') {
+      const list = Array.isArray(value) ? value : [value];
+      value = list.map((v) => String(v == null ? '' : v).toUpperCase()).sort();
+    }
+    normalized[key] = stableValue(value);
+  }
+  return JSON.stringify(normalized);
 }
 
 function cacheKey(provider, endpointCode, request) {

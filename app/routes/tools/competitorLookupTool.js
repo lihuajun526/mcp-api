@@ -1,5 +1,13 @@
 const { queryCompetingLookup } = require('../../services/queries/competitorLookupQuery');
 const { buildSuccess } = require('../../toolResponse');
+const {
+  assertMarketplace,
+  assertMonth,
+  resolvePageSize,
+  assertMatchType,
+  toSymbolFlag,
+  toStringArray
+} = require('../../utils/validation');
 
 module.exports = {
   // 查竞品
@@ -12,32 +20,27 @@ module.exports = {
       throw err;
     }
 
-    if (args.month != null) {
-      const monthStr = String(args.month);
-      const parsed = new Date(monthStr.substring(0, 4), parseInt(monthStr.substring(4, 6), 10) - 1);
-      if (!/^\d{6}$/.test(monthStr) || isNaN(parsed.getTime())) {
-        const err = new Error('month must be a valid date in yyyyMM format');
-        err.code = -32602;
-        throw err;
-      }
-    }
+    const marketplace = assertMarketplace(args.marketplace);
+    const month = args.month != null && args.month !== '' ? assertMonth(args.month) : null;
+    const size = resolvePageSize(args.size);
+    const matchType = assertMatchType(args.matchType);
 
     const data = await queryCompetingLookup(user, {
-      market: String(args.marketplace.toUpperCase()),
-      monthName: args.month ? 'bsr_sales_monthly_' + args.month : 'bsr_sales_nearly',
-      asins: Array.isArray(args.asins) ? args.asins.map((a) => String(a)) : [],
+      market: marketplace,
+      monthName: month ? 'bsr_sales_monthly_' + month : 'bsr_sales_nearly',
+      asins: toStringArray(args.asins),
       ...(args.brand ? { includeBrands: String(args.brand) } : {}),
       ...(args.sellerName ? { includeSellers: String(args.sellerName) } : {}),
       nodeIdPaths: args.nodeIdPath ? [args.nodeIdPath] : [],
       ...(args.nodeIdPathEqual !== undefined ? { nodeIdPathEqual: !!args.nodeIdPathEqual } : {}),
       ...(args.keyword ? { keywords: String(args.keyword) } : {}),
-      ...(args.matchType !== undefined ? { matchType: Number(args.matchType) } : {}),
-      symbolFlag: args.variation != null ? !args.variation : false,
+      ...(matchType != null ? { matchType } : {}),
+      symbolFlag: toSymbolFlag(args.variation),
       lowPrice: "N",
       page: args.page ? Number(args.page) : 1,
-      size: args.size ? Number(args.size) : 60,
+      size,
       order: {
-        field: args.order && args.order.field ? String(args.order.field) : 'amz_unit',
+        field: args.order && args.order.field ? String(args.order.field) : 'total_units',
         desc: args.order && args.order.desc !== undefined ? !!args.order.desc : true
       }
     });

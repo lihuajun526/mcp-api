@@ -1,5 +1,12 @@
 const { queryProductResearch } = require('../../services/queries/productResearchQuery');
 const { buildSuccess } = require('../../toolResponse');
+const {
+  assertMarketplace,
+  assertMonth,
+  resolvePageSize,
+  assertMatchType,
+  toSymbolFlag
+} = require('../../utils/validation');
 
 module.exports = {
   // 选产品
@@ -12,30 +19,25 @@ module.exports = {
       throw err;
     }
 
-    if (args.month != null) {
-      const monthStr = String(args.month);
-      const parsed = new Date(monthStr.substring(0, 4), parseInt(monthStr.substring(4, 6), 10) - 1);
-      if (!/^\d{6}$/.test(monthStr) || isNaN(parsed.getTime())) {
-        const err = new Error('month must be a valid date in yyyyMM format');
-        err.code = -32602;
-        throw err;
-      }
-    }
+    const marketplace = assertMarketplace(args.marketplace);
+    const month = args.month != null && args.month !== '' ? assertMonth(args.month) : null;
+    const size = resolvePageSize(args.size);
+    const matchType = assertMatchType(args.matchType);
 
     const data = await queryProductResearch(user, {
-      market: String(args.marketplace.toUpperCase()),
+      market: marketplace,
       // 商品资格，低价商品
       eligibility: [],
       lowPrice: 'N',
       filterSub: false,
-      monthName: args.month != null ? `bsr_sales_monthly_${args.month}` : 'bsr_sales_nearly',
+      monthName: month != null ? `bsr_sales_monthly_${month}` : 'bsr_sales_nearly',
       nodeIdPaths: args.nodeIdPaths != null ? (Array.isArray(args.nodeIdPaths) ? args.nodeIdPaths : []) : [],
       order: {
-        field: args.order && args.order.field != null ? String(args.order.field) : 'amz_unit',
+        field: args.order && args.order.field != null ? String(args.order.field) : 'total_units',
         desc: args.order && args.order.desc != null ? !!args.order.desc : true
       },
       page: args.page ? Number(args.page) : 1,
-      size: args.size ? Number(args.size) : 60,
+      size,
       // 包装尺寸类型，枚举值：SS（小号标准尺寸）、LS（大号标准尺寸）、SB（小号大件）
       // 、LB（大号大件）、ELO（超大尺寸：0至50磅）、EL5O（超大尺寸：50至70磅）
       // 、EL7O（超大尺寸：70至150磅）、EL15O（超大尺寸：150磅以上）、O（其他尺寸）
@@ -43,13 +45,13 @@ module.exports = {
       // productTags（产品标识）枚举值：BestSeller、AmazonChoice、NewRelease、A+、NonA+
       productTags: args.productTags != null ? (Array.isArray(args.productTags) ? args.productTags : []) : [],
       // 2：模糊匹配，3：词组匹配，4、精准匹配
-      selectType: args.matchType != null ? String(args.matchType) : '2',
+      selectType: matchType != null ? String(matchType) : '2',
       // 卖家所属地
       sellerNationList: args.sellerNationList != null ? (Array.isArray(args.sellerNationList) ? args.sellerNationList : []) : [],
       // 配送方式：AMZ、FBA、FBM
       sellerTypes: args.fulfillment != null ? [args.fulfillment] : [],
       // 是否包含变体
-      symbolFlag: args.variation != null ? !args.variation : false,
+      symbolFlag: toSymbolFlag(args.variation),
       // 重量单位，枚举值：g、kg、oz、lb
       weightUnit: args.weightUnit != null ? String(args.weightUnit) : 'g',
       // 关键词

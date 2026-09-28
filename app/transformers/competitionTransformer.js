@@ -53,12 +53,13 @@ function parseJsonString(v) {
 /**
  * 将第三方 competing-lookup 的 items 转换为查竞品 MCP 输出结构。
  * 输出字段参考 open.sellersprite.com 查竞品(Competitor Lookup)接口：
- * asin / title / price / monthlySalesUnits / monthlySalesRevenue / bsr /
- * bsrGrowthRate / bsrGrowthCount / rating / ratings / ratingsGrowth /
- * ratingsRate / brand / sellerName / sellerNation / fulfillment /
- * availableDate / profit / nodeLabelPath / imageUrl / monthlySalesUnitsGrowthRate /
+ * asin / nodeId / symbol / title / sku / price / monthlySalesUnits / monthlySalesRevenue / bsr /
+ * bsrId / bsrGrowthRate / bsrGrowthCount / rating / ratings / ratingsGrowth /
+ * ratingsRate / brand / brandUrl / sellerId / sellerName / sellerNation / fulfillment /
+ * availableDate / amzUnitDate / profit / nodeLabelPath / imageUrl / monthlySalesUnitsGrowthRate /
  * listingQualityScore / variationNum / parent / badgeBestSeller /
- * badgeAmazonChoice / badgeEbc / badgeVideo / salesTrend / subcategories
+ * badgeAmazonChoice / badgeEbc / badgeVideo / salesTrend / subcategories /
+ * dimension / dimensionsType / pkgDimensions / pkgDimensionType / pkgWeight
  */
 function transformCompetitionItem(item) {
   if (!item || typeof item !== 'object') {
@@ -95,6 +96,8 @@ function transformCompetitionItem(item) {
 
   return {
     asin: get(item, 'asin'),
+    nodeId: toInt(get(item, 'nodeId', 'node_id')),
+    symbol: get(item, 'symbol'),
     asinUrl: `https://www.amazon.com/dp/${get(item, 'asin') || ''}`,
     title: get(item, 'title'),
     price: toFloat(get(item, 'price')),
@@ -105,15 +108,19 @@ function transformCompetitionItem(item) {
     reviews: toInt(get(item, 'reviews')),
     questions: toInt(get(item, 'questions')),
     monthlySalesUnits: toInt(get(item, 'amzUnit', 'monthly_sales_units')),
+    amzUnitDate: toInt(get(item, 'amzUnitDate', 'amz_unit_date')),
     monthlySalesRevenue: toFloat(get(item, 'totalAmount', 'monthly_sales_revenue')),
     monthlySalesUnitsGrowthRate: toFloat(get(item, 'totalUnitsGrowth', 'monthly_sales_units_growth_rate')),
     monthlySalesRevenueGrowthRate: toFloat(get(item, 'totalAmountGrowth', 'monthly_sales_revenue_growth_rate')),
     averagePrice: toFloat(get(item, 'averagePrice', 'average_price')),
+    bsrId: get(item, 'bsrId', 'bsr_id'),
     bsr: toInt(get(item, 'bsrRank', 'bsr')),
     bsrLabel: get(item, 'bsrLabel', 'bsr_label'),
     bsrGrowthRate: toFloat(get(item, 'bsrRankCr', 'bsr_growth_rate')),
     bsrGrowthCount: toInt(get(item, 'bsrRankCv', 'bsr_growth_count')),
     brand: get(item, 'brand'),
+    brandUrl: get(item, 'brandUrl', 'brand_url'),
+    sellerId: get(item, 'sellerId', 'seller_id'),
     sellerName: get(item, 'sellerName', 'seller_name'),
     sellerNation: get(item, 'sellerNation', 'seller_nation'),
     sellerType: get(item, 'sellerType', 'seller_type'),
@@ -156,10 +163,16 @@ function transformCompetitionItem(item) {
     monthlySalesUnitsTrend,
     subcategories,
     variations: toInt(get(item, 'variations', 'variation_num')),
+    sku: get(item, 'sku'),
     coupon: get(item, 'coupon'),
     deliveryPrice: toFloat(get(item, 'deliveryPrice', 'delivery_price')),
     primeExclusivePrice: toFloat(get(item, 'primeExclusivePrice', 'prime_exclusive_price')),
+    dimension: get(item, 'dimensions', 'dimension'),
     dimensions: get(item, 'dimensions'),
+    dimensionsType: get(item, 'dimensionType', 'dimensionsType', 'dimension_type'),
+    pkgDimensions: get(item, 'pkgDimensions', 'pkg_dimensions'),
+    pkgDimensionType: get(item, 'pkgDimensionType', 'pkg_dimension_type'),
+    pkgWeight: get(item, 'pkgWeight', 'pkg_weight'),
     weight: get(item, 'weight'),
     sellers: toInt(get(item, 'sellers'))
   };

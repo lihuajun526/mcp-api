@@ -66,7 +66,7 @@ npm run crawl:category
 | `CACHE_READ_ENABLED` | 是否读缓存（命中则返回） | `true` |
 | `CACHE_TTL_SECONDS` | 缓存有效期 | `300` |
 
-缓存键：`mcp:cache:{provider}:{接口}:v1:{请求参数SHA1}`，对 ASIN 大小写与顺序做了归一化，分页参数不影响命中。
+缓存键：`mcp:cache:{provider}:{接口}:v2:{请求参数SHA1}`，对 `marketplace` 大小写、ASIN 大小写与顺序做了归一化；分页（`page`/`size`）与排序（`order`）参数会参与缓存键，避免不同分页/排序命中到错误结果。
 
 ## MCP 工具列表
 
