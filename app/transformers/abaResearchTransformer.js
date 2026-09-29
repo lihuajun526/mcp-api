@@ -28,12 +28,12 @@ function normalizeTop3Asin(raw) {
   };
 }
 
+// 官方返回 top3Brands 为 List<String>（品牌名列表）；兼容上游返回对象结构
 function normalizeTop3Brand(raw) {
-  if (!raw || typeof raw !== 'object') return null;
-  return {
-    brand: raw.brand || null,
-    clickRate: toFloat(raw.clickRate)
-  };
+  if (raw == null) return null;
+  if (typeof raw === 'string') return raw;
+  if (typeof raw === 'object') return raw.brand || null;
+  return null;
 }
 
 function normalizeItem(raw) {

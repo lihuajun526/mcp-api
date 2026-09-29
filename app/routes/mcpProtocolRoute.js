@@ -2,6 +2,7 @@ const express = require('express');
 const config = require('../config');
 const authService = require('../services/authService');
 const toolHandlers = require('./tools');
+const proxyTools = require('./tools/proxyTools');
 const { assertMarketplace } = require('../utils/validation');
 
 const router = express.Router();
@@ -59,7 +60,10 @@ router.post('/mcp', async (req, res) => {
     }
 
     if (method === 'list_tools' || method === 'tools/list') {
-      return res.json(ok(id, { tools: authService.readTools() }));
+      // 本地工具 + 卖家精灵官方 MCP 代理工具（ss_ 前缀）；
+      // 代理工具失败开放：上游不可用时仅返回本地工具，不影响存量能力
+      const proxied = await proxyTools.listProxiedTools();
+      return res.json(ok(id, { tools: [...authService.readTools(), ...proxied] }));
     }
 
     if (method === 'tools/call') {
@@ -74,7 +78,28 @@ router.post('/mcp', async (req, res) => {
       const toolName = params.name;
       const args = params.arguments || {};
 
-      // 全部工具统一校验并归一化 marketplace 枚举（非法值直接返回 JSON-RPC -32602）
+      const isProxy = proxyTools.isProxyTool(toolName);
+
+      if (isProxy) {
+        // 代理工具：站点集合以官方 MCP 为准（含 BR/AU/AE，本地校验未覆盖），
+        // 仅做大写归一化，具体合法性交给上游校验并返回明确错误
+        if (args.marketplace !== undefined && args.marketplace !== null && args.marketplace !== '') {
+          args.marketplace = String(args.marketplace).trim().toUpperCase();
+        }
+        try {
+          // 传入 user 以支持积分扣除（与本地工具行为对称）
+          const result = await proxyTools.handleProxyCall(toolName, args, user);
+          return res.json(ok(id, result));
+        } catch (e) {
+          if (typeof e.code === 'number') {
+            return res.json(fail(id, e.code, e.message));
+          }
+          console.error(`proxy tool ${toolName} failed:`, e.message, e.url ? `| upstream: ${e.url}` : '');
+          return res.json(ok(id, errorEnvelope(e)));
+        }
+      }
+
+      // 本地工具统一校验并归一化 marketplace 枚举（非法值直接返回 JSON-RPC -32602）
       if (args.marketplace !== undefined && args.marketplace !== null && args.marketplace !== '') {
         args.marketplace = assertMarketplace(args.marketplace);
       }

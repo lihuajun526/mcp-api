@@ -21,10 +21,12 @@ async function fetchKeywordResearch(request, session) {
   const size = Math.min(Number(request.size) || 100, 200);
   const page = Math.max(Number(request.page) || 1, 1);
 
+  // 官方参数名 → 上游页面参数名映射；未提供的筛选项传空串
   const params = {
     station,
     'order.field': request.orderField || 'searches',
-    'order.desc': request.orderDesc !== false ? 'false' : 'true',
+    // 官方 order.desc 默认 true（降序），与上游语义一致，直接透传
+    'order.desc': request.orderDesc !== false ? 'true' : 'false',
     supplement: request.supplement || 'N',
     usestatic: 'R',
     exportGkImages: 'false',
@@ -33,14 +35,19 @@ async function fetchKeywordResearch(request, session) {
     adminDes: 'N',
     presetMode: '',
     itemImageRange: '2',
-    keywordBidMatchType: request.keywordBidMatchType || 'exact',
+    keywordBidMatchType: 'exact',
     month: request.month || '',
+    departments: Array.isArray(request.departments)
+      ? request.departments.join(',')
+      : (request.departments || ''),
     minSearches: request.minSearches || '',
     maxSearches: request.maxSearches || '',
-    minYearlyGrowth: request.minYearlyGrowth || '',
-    maxYearlyGrowth: request.maxYearlyGrowth || '',
-    minGrowthTrendMin: '',
-    maxGrowthTrendMin: '',
+    // 月搜索量增长率（官方 minSearchesCr/maxSearchesCr）
+    minGrowth: request.minSearchesCr != null ? request.minSearchesCr : '',
+    maxGrowth: request.maxSearchesCr != null ? request.maxSearchesCr : '',
+    // 近3个月增长值（官方 minSearchNearlyCv/maxSearchNearlyCv）
+    minGrowthTrendMin: request.minSearchNearlyCv != null ? request.minSearchNearlyCv : '',
+    maxGrowthTrendMin: request.maxSearchNearlyCv != null ? request.maxSearchNearlyCv : '',
     minProducts: request.minProducts || '',
     maxProducts: request.maxProducts || '',
     minPurchases: request.minPurchases || '',
@@ -49,20 +56,25 @@ async function fetchKeywordResearch(request, session) {
     maxImpressions: '',
     minSPR: '',
     maxSPR: '',
-    minGoodsValue: '',
-    maxGoodsValue: '',
+    // 货流值（官方 minGoodsValue/maxGoodsValue）
+    minGoodsValue: request.minGoodsValue != null ? request.minGoodsValue : '',
+    maxGoodsValue: request.maxGoodsValue != null ? request.maxGoodsValue : '',
     minAvgPrice: request.minAvgPrice || '',
     maxAvgPrice: request.maxAvgPrice || '',
-    minAvgReviews: '',
-    maxAvgReviews: '',
+    // 评分数（官方 minRatings/maxRatings）
+    minAvgReviews: request.minRatings != null ? request.minRatings : '',
+    maxAvgReviews: request.maxRatings != null ? request.maxRatings : '',
     minWordCount: request.minWordCount || '',
     maxWordCount: request.maxWordCount || '',
-    minGrowth: request.minGrowth || '',
-    maxGrowth: request.maxGrowth || '',
-    minYearlyGrowthRate: '',
-    maxYearlyGrowthRate: '',
-    minGrowthRateTrendMin: '',
-    maxGrowthRateTrendMin: '',
+    // 同比增长值（官方 minSearchMonthCv/maxSearchMonthCv）
+    minYearlyGrowth: request.minSearchMonthCv != null ? request.minSearchMonthCv : '',
+    maxYearlyGrowth: request.maxSearchMonthCv != null ? request.maxSearchMonthCv : '',
+    // 同比增长率（官方 minSearchMonthCr/maxSearchMonthCr）
+    minYearlyGrowthRate: request.minSearchMonthCr != null ? request.minSearchMonthCr : '',
+    maxYearlyGrowthRate: request.maxSearchMonthCr != null ? request.maxSearchMonthCr : '',
+    // 近3个月增长率（官方 minSearchNearlyCr/maxSearchNearlyCr）
+    minGrowthRateTrendMin: request.minSearchNearlyCr != null ? request.minSearchNearlyCr : '',
+    maxGrowthRateTrendMin: request.maxSearchNearlyCr != null ? request.maxSearchNearlyCr : '',
     marketPeriod: request.marketPeriod || '',
     minSupplyDemandRatio: request.minSupplyDemandRatio || '',
     maxSupplyDemandRatio: request.maxSupplyDemandRatio || '',
@@ -72,19 +84,25 @@ async function fetchKeywordResearch(request, session) {
     maxClicks: '',
     minTitleDensity: '',
     maxTitleDensity: '',
-    minMonopolyClickRate: '',
-    maxMonopolyClickRate: '',
+    // 点击集中度（官方 minAraClickRate/maxAraClickRate）
+    minMonopolyClickRate: request.minAraClickRate != null ? request.minAraClickRate : '',
+    maxMonopolyClickRate: request.maxAraClickRate != null ? request.maxAraClickRate : '',
     minCvsShareRate: '',
     maxCvsShareRate: '',
     minBid: request.minBid || '',
     maxBid: request.maxBid || '',
-    minAvgRating: '',
-    maxAvgRating: '',
-    includeKeywords: request.includeKeywords || '',
+    // 评分值（官方 minRating/maxRating）
+    minAvgRating: request.minRating != null ? request.minRating : '',
+    maxAvgRating: request.maxRating != null ? request.maxRating : '',
+    includeKeywords: request.keywords || '',
     excludeKeywords: request.excludeKeywords || '',
     page,
     size
   };
+
+  if (request.withYearlyGrowth != null) {
+    params.withYearlyGrowth = request.withYearlyGrowth === true || request.withYearlyGrowth === 'true' ? 'true' : 'false';
+  }
 
   const headers = {
     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -102,8 +120,8 @@ async function fetchKeywordResearch(request, session) {
 }
 
 async function queryKeywordResearch(user, request) {
-  if (!request || !request.marketplace || !request.includeKeywords) {
-    throw new BusinessError('marketplace、includeKeywords不能为空', 400);
+  if (!request || !request.marketplace || !request.keywords) {
+    throw new BusinessError('marketplace、keywords不能为空', 400);
   }
 
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);

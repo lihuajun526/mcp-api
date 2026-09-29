@@ -11,6 +11,10 @@ module.exports = {
       throw err;
     }
 
+    // 官方排序参数为对象 order { field, desc }，兼容历史平铺写法 orderField/orderDesc
+    const orderField = (args.order && args.order.field) || args.orderField;
+    const orderDesc = args.order && args.order.desc != null ? args.order.desc : args.orderDesc;
+
     const data = await queryKeywordMiner(user, {
       marketplace: String(args.marketplace),
       keyword: String(args.keyword),
@@ -18,12 +22,11 @@ module.exports = {
       historyDate: args.historyDate ? String(args.historyDate) : '',
       page: args.page,
       size: args.size,
-      orderField: args.orderField,
-      orderDesc: args.orderDesc,
+      orderField,
+      orderDesc,
       filterRootWord: args.filterRootWord,
       matchType: args.matchType,
       amazonChoice: args.amazonChoice,
-      keywordBidMatchType: args.keywordBidMatchType,
       includeKeywords: Array.isArray(args.includeKeywords) ? args.includeKeywords : undefined,
       excludeKeywords: Array.isArray(args.excludeKeywords) ? args.excludeKeywords : undefined,
       minSearch: args.minSearch,

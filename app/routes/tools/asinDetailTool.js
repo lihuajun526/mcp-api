@@ -2,7 +2,7 @@ const { queryAsinDetail } = require('../../services/queries/asinDetailQuery');
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
-  name: 'asin_detail_lookup',
+  name: 'asin_detail',
 
   async handle(args, user) {
     if (!args.marketplace || !args.asin) {

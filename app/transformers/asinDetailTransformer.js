@@ -51,10 +51,24 @@ function toStringArray(v) {
   return s ? [s] : [];
 }
 
-function transformAsinDetailResponse(root) {
-  const data = root && root.data ? root.data : {};
-  const items = Array.isArray(data.items) ? data.items : [];
-  const out = items.map((item) => ({
+function mapSubcategories(sub) {
+  if (!sub) {
+    return [];
+  }
+  const list = Array.isArray(sub) ? sub : [sub];
+  return list.map((s) => ({
+    rank: toInt(get(s, 'rank')),
+    code: get(s, 'code'),
+    label: get(s, 'label')
+  }));
+}
+
+/**
+ * 将第三方 /v3/api/competing-lookup 单条 item 转换为官方 ASIN 详情(asin_detail)返回结构。
+ * 字段命名与 open.sellersprite.com ASIN 详情接口返回参数一致。
+ */
+function mapDetail(item) {
+  return {
     asin: get(item, 'asin'),
     asinUrl: get(item, 'asinUrl'),
     // 上架日期
@@ -73,7 +87,7 @@ function transformAsinDetailResponse(root) {
     bsrRank: toInt(get(item, 'bsrRank', 'bsr_rank')),
     createdTime: toLong(get(item, 'createdTime', 'created_time')),
     dimensions: get(item, 'dimensions', 'dimension'),
-    firstRatingDate: toLong(get(item, 'firstRatingDate', 'first_rating_date')),
+    firstRatingDate: toLong(get(item, 'firstRatingDate', 'firstReviewDate', 'first_rating_date')),
     imageUrl: get(item, 'imageUrl', 'image_url'),
     lqs: toInt(get(item, 'lqs')),
     nodeId: get(item, 'nodeId', 'node_id'),
@@ -84,7 +98,7 @@ function transformAsinDetailResponse(root) {
     price: toFloat(get(item, 'price')),
     questions: toInt(get(item, 'questions')),
     rating: toFloat(get(item, 'rating')),
-    ratings: toInt(get(item, 'ratings')),
+    ratings: toInt(get(item, 'ratings', 'reviews')),
     reviews: toInt(get(item, 'reviews')),
     variantRatings: toInt(get(item, 'variantRatings', 'variant_ratings')),
     variantReviews: toInt(get(item, 'variantReviews', 'variant_reviews')),
@@ -92,7 +106,7 @@ function transformAsinDetailResponse(root) {
     sellerName: get(item, 'sellerName', 'seller_name'),
     fulfillment: get(item, 'fulfillment'),
     sellers: toInt(get(item, 'sellers')),
-    skuList: toStringArray(get(item, 'skuList', 'sku_list')),
+    skuList: toStringArray(get(item, 'skuList', 'sku_list', 'sku')),
     marketplace: get(item, 'marketplace', 'market'),
     title: get(item, 'title'),
     features: toStringArray(get(item, 'features')),
@@ -113,28 +127,24 @@ function transformAsinDetailResponse(root) {
     variations: toInt(get(item, 'variations')),
     weight: get(item, 'weight'),
     zoomImageUrl: get(item, 'zoomImageUrl', 'zoom_image_url'),
-    subcategories: (() => {
-      const sub = get(item, 'subcategories', 'subCategory');
-      if (!sub || typeof sub !== 'object') {
-        return null;
-      }
-      return {
-        rank: toInt(get(sub, 'rank')),
-        code: get(sub, 'code'),
-        label: get(sub, 'label')
-      };
-    })(),
+    subcategories: mapSubcategories(get(item, 'subcategories', 'subCategory')),
     deliveryPrice: toFloat(get(item, 'deliveryPrice', 'delivery_price')),
-    primePrice: toFloat(get(item, 'primePrice', 'prime_price')),
+    primePrice: toFloat(get(item, 'primePrice', 'prime_price', 'primeExclusivePrice')),
     coupon: get(item, 'coupon')
-  }));
-
-  return {
-    page: toInt(data.page) || 0,
-    size: toInt(data.size) || 0,
-    total: toInt(data.total) || 0,
-    items: out
   };
+}
+
+/**
+ * 官方 asin_detail 返回 data 为单个商品对象；上游 competing-lookup 为分页结构，
+ * 这里取首条 item 并压平为单对象。
+ */
+function transformAsinDetailResponse(root) {
+  const data = root && root.data ? root.data : {};
+  const items = Array.isArray(data.items) ? data.items : [];
+  if (items.length === 0) {
+    return {};
+  }
+  return mapDetail(items[0]);
 }
 
 module.exports = {

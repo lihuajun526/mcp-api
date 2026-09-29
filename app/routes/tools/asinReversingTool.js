@@ -2,7 +2,7 @@ const { queryAsinReversing } = require('../../services/queries/asinReversingQuer
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
-  name: 'asin_reversing',
+  name: 'traffic_keyword',
 
   async handle(args, user) {
     if (!args.marketplace || !args.asin) {
@@ -14,10 +14,14 @@ module.exports = {
     const data = await queryAsinReversing(user, {
       marketplace: String(args.marketplace),
       asin: String(args.asin),
+      keyword: args.keyword,
       page: args.page,
       size: args.size,
       month: args.month,
-      badges: args.badges
+      badges: args.badges,
+      trafficKeywordTypes: args.trafficKeywordTypes,
+      conversionKeywordTypes: args.conversionKeywordTypes,
+      order: args.order
     });
 
     return buildSuccess(args, data);

@@ -2,7 +2,7 @@ const { queryAsinSales } = require('../../services/queries/asinSalesQuery');
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
-  name: 'asin_sales',
+  name: 'asin_prediction',
 
   async handle(args, user) {
     if (!args.marketplace || !args.asin) {

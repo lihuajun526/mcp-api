@@ -25,7 +25,7 @@ module.exports = {
       marketplace: String(args.marketplace),
       asinList: Array.isArray(args.asinList) ? args.asinList : [String(args.asinList)],
       relations: Array.isArray(args.relations) ? args.relations : [String(args.relations)],
-      variations: args.variations !== false,
+      variations: args.variations === true,
       page: Number(args.page) || 1,
       size: Number(args.size) || 50,
       orderField: args.order && args.order.field ? String(args.order.field) : (args.orderField ? String(args.orderField) : 'createdTime'),

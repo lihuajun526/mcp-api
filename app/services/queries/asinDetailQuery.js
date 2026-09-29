@@ -49,13 +49,11 @@ async function queryAsinDetail(user, request) {
   const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinDetail(request, session);
   const transformed = sanitizeInternalFields(transformAsinDetailResponse(raw));
-  for (const item of transformed.items || []) {
-    if (!item.marketplace) {
-      item.marketplace = request.marketplace;
-    }
-    if (!item.asinUrl && item.asin) {
-      item.asinUrl = `https://www.amazon.com/dp/${item.asin}`;
-    }
+  if (transformed && !transformed.marketplace) {
+    transformed.marketplace = request.marketplace;
+  }
+  if (transformed && !transformed.asinUrl && transformed.asin) {
+    transformed.asinUrl = `https://www.amazon.com/dp/${transformed.asin}`;
   }
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);

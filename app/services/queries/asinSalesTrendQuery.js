@@ -12,14 +12,17 @@ const ENDPOINT_CODE = 'ASIN_SALES_TREND';
 
 async function fetchAsinSalesTrend(request, session) {
   const url = `${config.sellerSprite.openApiBaseUrl}${config.sellerSprite.asinSalesTrendPath}/${request.marketplace}/${request.asin}/sales-trend`;
-  if (!session.secretKey) {
+  // 优先使用全局配置的 open API 密钥，回退到会话中的密钥
+  const secretKey = config.sellerSprite.openApiSecretKey || session.secretKey;
+  if (!secretKey) {
     throw new UpstreamError('当前数据服务会话未配置访问凭证，无法调用该接口', {
       url,
-      hint: '请联系管理员补充数据服务凭证后重试'
+      hint: '请联系管理员配置 SELLERSPRITE_OPEN_API_SECRET_KEY 环境变量后重试'
     });
   }
   const headers = {
-    'secret-key': session.secretKey,
+    'secret-key': secretKey,
+    'content-type': 'application/json;charset=UTF-8',
     accept: 'application/json'
   };
   return upstreamClient.get(url, { headers, timeout: config.sellerSprite.timeoutMs });

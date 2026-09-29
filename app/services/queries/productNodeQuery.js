@@ -1,5 +1,7 @@
 const db = require('../../db');
 
+const SELECT_COLUMNS = 'node_id, label, products, node_label_locale, node_label_path_locale';
+
 async function queryProductNode(user, request) {
   const site = request.marketplace;
   const nodeIdPath = request.nodeIdPath ? String(request.nodeIdPath).trim() : '';
@@ -11,7 +13,7 @@ async function queryProductNode(user, request) {
   if (nodeIdPath) {
     // 查指定节点的直接子类目
     sql = `
-      SELECT node_id, label, node_label_locale, node_label_path_locale
+      SELECT ${SELECT_COLUMNS}
       FROM amz_category
       WHERE site = ? AND parent_node_id = ?
       ORDER BY products DESC
@@ -21,7 +23,7 @@ async function queryProductNode(user, request) {
     // 按 nodeId 或类目名称搜索
     const like = `%${keyword}%`;
     sql = `
-      SELECT node_id, label, node_label_locale, node_label_path_locale
+      SELECT ${SELECT_COLUMNS}
       FROM amz_category
       WHERE site = ?
         AND (node_id LIKE ? OR label LIKE ? OR node_label_locale LIKE ?)
@@ -32,7 +34,7 @@ async function queryProductNode(user, request) {
   } else {
     // 返回顶层根类目
     sql = `
-      SELECT node_id, label, node_label_locale, node_label_path_locale
+      SELECT ${SELECT_COLUMNS}
       FROM amz_category
       WHERE site = ? AND (parent_node_id IS NULL OR parent_node_id = '')
       ORDER BY products DESC
@@ -45,6 +47,7 @@ async function queryProductNode(user, request) {
   return rows.map((row) => ({
     nodeIdPath: row.node_id,
     nodeLabelPath: row.label,
+    products: row.products != null ? Number(row.products) : null,
     nodeLabelLocale: row.node_label_locale,
     nodeLabelPathLocale: row.node_label_path_locale
   }));

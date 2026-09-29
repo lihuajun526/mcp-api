@@ -128,10 +128,13 @@ function parseDataRow($, row) {
 
   // TD[14] (操作列): 获取 nodeIdPath
   const nodeIdPath = getNodeIdPathFromOpsCell($, tds.eq(tds.length - 1));
+  const nodeIdSegment = nodeIdPath ? String(nodeIdPath).split(':').pop() : '';
+  const nodeId = /^\d+$/.test(nodeIdSegment) ? Number(nodeIdSegment) : null;
 
   return {
     ranking: ranking ? Math.trunc(ranking) : null,
     nodeIdPath,
+    nodeId,
     nodeLabelName,
     nodeLabelLocale,
     topProducts,    // 样本数量 - 商品数
@@ -196,7 +199,7 @@ function parsePagination($) {
  */
 function transformMarketResearchResponse(html, request) {
   const reqPage = Number(request.page) || 1;
-  const reqSize = Number(request.size) || 20;
+  const reqSize = Number(request.size) || 50;
 
   if (!html || typeof html !== 'string') {
     return { marketplace: request.marketplace, page: reqPage, size: reqSize, total: 0, pages: 0, items: [] };
@@ -215,7 +218,7 @@ function transformMarketResearchResponse(html, request) {
   $('tbody tr.bg-white').each((i, row) => {
     if ($(row).find('td[colspan]').length > 0) return; // 跳过展开详情行
     const item = parseDataRow($, row);
-    if (item) items.push(item);
+    if (item) items.push({ marketplace: request.marketplace || null, ...item });
   });
 
   return {

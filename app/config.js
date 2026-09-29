@@ -42,9 +42,26 @@ module.exports = {
     marketResearchPath: process.env.SELLERSPRITE_MARKET_RESEARCH_PATH || '/v2/market-research',
     productResearchPath: process.env.SELLERSPRITE_PRODUCT_RESEARCH_PATH || '/v3/api/product-research',
     openApiBaseUrl: process.env.SELLERSPRITE_OPEN_API_BASE_URL || 'https://api.sellersprite.com',
+    // open API 认证密钥（secret-key header），用于 asin_sales_trend 等走 open API 的接口
+    // 优先取独立环境变量，回退到 MCP 密钥（同一账号下通常相同）
+    openApiSecretKey: process.env.SELLERSPRITE_OPEN_API_SECRET_KEY || process.env.SELLERSPRITE_MCP_SECRET_KEY || '',
     productNodePath: process.env.SELLERSPRITE_PRODUCT_NODE_PATH || '/v1/product/node',
     asinSalesTrendPath: process.env.SELLERSPRITE_ASIN_SALES_TREND_PATH || '/v1/asin',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
+  },
+  // 卖家精灵官方 MCP 代理转发（补齐本地缺失工具）
+  sellerSpriteMcp: {
+    enabled: process.env.SELLERSPRITE_MCP_ENABLED !== 'false',
+    url: process.env.SELLERSPRITE_MCP_URL || 'https://mcp.sellersprite.com/mcp',
+    // 注意：MCP Key 与开放 API Key 不通用，需在开放平台【我的密钥】单独创建 MCP 密钥
+    secretKey: process.env.SELLERSPRITE_MCP_SECRET_KEY || '',
+    prefix: process.env.SELLERSPRITE_MCP_TOOL_PREFIX || 'ss_',
+    // 转发工具白名单：空 = 默认差集（24 个本地缺失工具），* = 全部非 secret 工具，逗号分隔 = 指定子集
+    tools: process.env.SELLERSPRITE_MCP_TOOLS || '',
+    timeoutMs: Number(process.env.SELLERSPRITE_MCP_TIMEOUT_MS || 30000),
+    refreshMs: Number(process.env.SELLERSPRITE_MCP_REFRESH_MS || 600000),
+    // 出站代理：'none' 强制直连；显式 URL 用指定代理；默认读取 HTTPS_PROXY/https_proxy 环境变量
+    proxy: process.env.SELLERSPRITE_MCP_PROXY || process.env.HTTPS_PROXY || process.env.https_proxy || ''
   },
   cache: {
     enabled: process.env.CACHE_ENABLED === 'true' ? true : false,

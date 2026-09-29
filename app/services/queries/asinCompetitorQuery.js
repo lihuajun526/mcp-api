@@ -47,7 +47,9 @@ async function queryAsinCompetitor(user, request) {
 
   const session = await sessionService.pickSession(PROVIDER);
   const raw = await fetchAsinCompetitor(request, session);
-  const transformed = sanitizeInternalFields(transformCompetitionResponse(raw, request));
+  // 官方 /api/62 返回结构为数组（非分页信封），仅取 items 字段
+  const paged = transformCompetitionResponse(raw, request);
+  const transformed = sanitizeInternalFields(paged.items || []);
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);

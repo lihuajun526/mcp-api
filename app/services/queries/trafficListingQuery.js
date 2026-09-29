@@ -26,7 +26,7 @@ async function fetchTrafficListing(request, session) {
     desc: request.orderDesc !== false,
     orderField: request.orderField || 'createdTime',
     relations: Array.isArray(request.relations) ? request.relations : [],
-    queryVariations: request.variations !== false,
+    queryVariations: request.variations === true,
     asinList: Array.isArray(request.asinList) ? request.asinList : [request.asinList]
   };
 

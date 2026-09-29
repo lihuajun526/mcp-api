@@ -78,7 +78,7 @@ function parseRelationAsinList($td) {
     const reviewText = $a('.text-primary').last().text().trim();
     const reviewMatch = reviewText.match(/([\d,]+)\(([\d.]+)\)/);
     const ratings = reviewMatch ? toInt(reviewMatch[1]) : null;
-    const rating  = reviewMatch ? toFloat(reviewMatch[2]) : null;
+    const rating = reviewMatch ? toFloat(reviewMatch[2]) : null;
 
     items.push({ asin, imageUrl, price, ratings, rating });
   });
@@ -100,14 +100,14 @@ function parseAraAsinList($td) {
     // 文本形如 "点击: 13.33%\n转化: 0.00%"
     const labelText = $item('p').text();
     const clickMatch = labelText.match(/点击:\s*([\d.]+)%/);
-    const convMatch  = labelText.match(/转化:\s*([\d.]+)%/);
+    const convMatch = labelText.match(/转化:\s*([\d.]+)%/);
 
     items.push({
       asin,
       title: null,
       imageUrl: null,
-      clickRate:            clickMatch ? toFloat(clickMatch[1]) / 100 : null,
-      conversionShareRate:  convMatch  ? toFloat(convMatch[1])  / 100 : null
+      clickRate: clickMatch ? toFloat(clickMatch[1]) / 100 : null,
+      conversionShareRate: convMatch ? toFloat(convMatch[1]) / 100 : null
     });
   });
   return items;
@@ -122,8 +122,8 @@ function parseRow($, $tr) {
   const td = i => tds.eq(i);
 
   // TD 2 ── 关键词 + 中文翻译
-  const $td2  = td(2);
-  const keyword   = $td2.find('[data-keyword]').first().attr('data-keyword') || null;
+  const $td2 = td(2);
+  const keyword = $td2.find('[data-keyword]').first().attr('data-keyword') || null;
   if (!keyword) return null;
   const keywordCn = $td2.find('.span-keywords-transport, .keyword-cn-color').first().text().trim() || null;
 
@@ -131,38 +131,41 @@ function parseRow($, $tr) {
   const relationAsinList = parseRelationAsinList(td(3));
 
   // TD 4 ── 搜索量历史趋势（data-y 属性）
-  const trendRaw     = td(4).find('[data-y]').attr('data-y');
+  const trendRaw = td(4).find('[data-y]').attr('data-y');
   const searchesTrend = parseTrendDataY(trendRaw);
 
   // TD 5 ── 月搜索量（第一个 div）
   const searches = toInt(td(5).find('div').first().text());
 
   // TD 6 ── 月购买量 / 购买率
-  const $td6Divs  = td(6).find('> div, .pr-4');
+  const $td6Divs = td(6).find('> div, .pr-4');
   const purchases = toInt($td6Divs.eq(0).text());
   const purchaseRateRaw = $td6Divs.eq(1).text().replace('%', '').trim();
-  const purchaseRate    = toFloat(purchaseRateRaw) != null ? toFloat(purchaseRateRaw) / 100 : null;
+  const purchaseRate = toFloat(purchaseRateRaw) != null ? toFloat(purchaseRateRaw) / 100 : null;
 
-  // TD 7 ── 展示量 / 点击量（不在目标输出字段中，跳过）
+  // TD 7 ── 展示量 / 点击量
+  const $td7Divs = td(7).find('> div');
+  const impressions = toInt($td7Divs.eq(0).text());
+  const clicks = toInt($td7Divs.eq(1).text());
 
   // TD 8 ── 月增长率
   const growthRaw = td(8).find('div').first().text().replace('%', '').trim();
-  const growth    = toFloat(growthRaw);
+  const growth = toFloat(growthRaw);
 
   // TD 9 ── 同比增长 & 近3月增长
-  const $td9Divs   = td(9).find('> div');
-  const yoy        = parseChangeBlock(text($td9Divs.eq(0)));
-  const nearly     = parseChangeBlock(text($td9Divs.eq(1)));
+  const $td9Divs = td(9).find('> div');
+  const yoy = parseChangeBlock(text($td9Divs.eq(0)));
+  const nearly = parseChangeBlock(text($td9Divs.eq(1)));
 
   // TD 10 ── ABA 集中度（整体点击率 + 前3 ARA ASIN）
   const $td10 = td(10);
   const araClickRateRaw = $td10.find('[pop-type="click_rate"]').first().text().replace('%', '').trim();
-  const araClickRate    = toFloat(araClickRateRaw) != null ? toFloat(araClickRateRaw) / 100 : null;
-  const araAsinList     = parseAraAsinList($td10);
+  const araClickRate = toFloat(araClickRateRaw) != null ? toFloat(araClickRateRaw) / 100 : null;
+  const araAsinList = parseAraAsinList($td10);
 
   // ARA 转化份额（紧跟弹出框之后的 .text-muted，若有数值则解析）
   const araShareRateRaw = $td10.find('.text-muted').last().text().replace('%', '').trim();
-  const araShareRate    = (araShareRateRaw && araShareRateRaw !== 'N/A')
+  const araShareRate = (araShareRateRaw && araShareRateRaw !== 'N/A')
     ? toFloat(araShareRateRaw) / 100
     : null;
 
@@ -170,41 +173,43 @@ function parseRow($, $tr) {
 
   // TD 12 ── 货流值（goodsValue）
   const goodsValueRaw = td(12).find('div').first().text().replace('%', '').trim();
-  const goodsValue    = toFloat(goodsValueRaw) != null ? toFloat(goodsValueRaw) / 100 : null;
+  const goodsValue = toFloat(goodsValueRaw) != null ? toFloat(goodsValueRaw) / 100 : null;
 
   // TD 13 ── PPC 竞价（读取 hidden input: ppc-item-obj）
   const ppcStr = td(13).find('[ppc-item-obj]').attr('value') || '';
-  const ppc    = parsePpcObj(ppcStr);
-  const bid    = ppc.bid    != null ? ppc.bid    : null;
+  const ppc = parsePpcObj(ppcStr);
+  const bid = ppc.bid != null ? ppc.bid : null;
   const bidMin = ppc.bidMin != null ? ppc.bidMin : null;
   const bidMax = ppc.bidMax != null ? ppc.bidMax : null;
 
   // TD 15 ── 需供比 / 商品数
-  const $td15     = td(15);
+  const $td15 = td(15);
   const $td15Rows = $td15.find('> div');
-  const sdrText   = text($td15Rows.eq(0).find('.pr-2').length ? $td15Rows.eq(0).find('.pr-2') : $td15Rows.eq(0));
-  const prodText  = text($td15Rows.eq(1).find('span').length  ? $td15Rows.eq(1).find('span')  : $td15Rows.eq(1));
+  const sdrText = text($td15Rows.eq(0).find('.pr-2').length ? $td15Rows.eq(0).find('.pr-2') : $td15Rows.eq(0));
+  const prodText = text($td15Rows.eq(1).find('span').length ? $td15Rows.eq(1).find('span') : $td15Rows.eq(1));
   const supplyDemandRatio = (sdrText && sdrText !== 'N/A') ? toFloat(sdrText) : null;
-  const products          = toInt(prodText);
+  const products = toInt(prodText);
 
   // TD 16 ── 市场分析：均价 / 评分数 / 评分值
-  const $td16    = td(16);
-  const avgPrice   = toFloat($td16.find('.currency-value').first().text());
+  const $td16 = td(16);
+  const avgPrice = toFloat($td16.find('.currency-value').first().text());
   const avgRatings = toInt($td16.find('[pop-type="reviews"]').first().text());
   const ratingText = $td16.find('[pop-type="rating"]').first().text().replace(/[()]/g, '').trim();
-  const avgRating  = toFloat(ratingText);
+  const avgRating = toFloat(ratingText);
 
   return {
-    keyword,
+    keywords: keyword,
     keywordCn,
     searches,
+    clicks,
+    impressions,
     purchases,
     purchaseRate,
     growth,
     searchMonthlyCv: yoy.cv,
     searchMonthlyCr: yoy.cr,
-    searchNearlyCv:  nearly.cv,
-    searchNearlyCr:  nearly.cr,
+    searchNearlyCv: nearly.cv,
+    searchNearlyCr: nearly.cr,
     supplyDemandRatio,
     products,
     araClickRate,
@@ -221,15 +226,15 @@ function parseRow($, $tr) {
     searchesTrend,
     // HTML 中不可见的字段，给出默认值，由上层按需填充
     searchDepartments: [],
-    month:             null,
-    supplement:        null,
-    marketplace:       null,
-    currency:          null,
-    marketPeriod:      null,
-    brand:             null,
-    hasBrandWord:      false,
-    brands:            [],
-    categories:        [],
+    month: null,
+    supplement: null,
+    marketplace: null,
+    currency: null,
+    marketPeriod: null,
+    brand: null,
+    hasBrandWord: false,
+    brands: [],
+    categories: [],
     titleDensityExact: null
   };
 }
@@ -238,7 +243,7 @@ function parseRow($, $tr) {
 function parsePagination($) {
   // 用 .pager-def-inputs 定位到正确的分页 nav，避免与顶部导航混淆
   const $pagerInput = $('.pager-def-inputs');
-  const $pagerNav   = $pagerInput.closest('nav');
+  const $pagerNav = $pagerInput.closest('nav');
 
   // 每页条数：data-size（如 100）
   const size = toInt($pagerInput.attr('data-size')) || 100;
@@ -251,11 +256,11 @@ function parsePagination($) {
 
   // 范围显示：如 "1-100/1000+"，取 .text-primary 文本 + 其后兄弟文本
   const $rangeSiblings = $pagerNav.find('.text-primary').first();
-  const rangeText      = $rangeSiblings.text().trim();            // "1-100"
+  const rangeText = $rangeSiblings.text().trim();            // "1-100"
   // 取 text-primary 父节点的完整文本，从中解析 "1-100/1000+"
-  const parentText     = $rangeSiblings.parent().text().replace(/\s+/g, '').trim(); // "1-100/1000+"
-  const totalM         = parentText.match(/[\d]+-[\d]+\/([\d+,]+)/);
-  const totalStr       = totalM ? totalM[1].replace(/,/g, '') : null;
+  const parentText = $rangeSiblings.parent().text().replace(/\s+/g, '').trim(); // "1-100/1000+"
+  const totalM = parentText.match(/[\d]+-[\d]+\/([\d+,]+)/);
+  const totalStr = totalM ? totalM[1].replace(/,/g, '') : null;
 
   let total = null;
   if (totalStr) {
@@ -275,17 +280,17 @@ function parseOrder($) {
   // 从分页链接里取 order.field 和 order.desc
   const href = $('nav a.page-link').first().attr('href') || '';
   const fieldM = href.match(/order\.field=([^&]+)/);
-  const descM  = href.match(/order\.desc=(true|false)/);
+  const descM = href.match(/order\.desc=(true|false)/);
   return {
     field: fieldM ? fieldM[1] : '',
-    desc:  descM  ? descM[1] === 'true' : true
+    desc: descM ? descM[1] === 'true' : true
   };
 }
 
 // ── 市场货币映射 ──────────────────────────────────────────────────────────────
 const MARKET_CURRENCY = {
   US: '$', CA: 'CA$', MX: 'MX$', UK: '£', DE: '€',
-  FR: '€', IT: '€',  ES: '€',   JP: '円', IN: '₹', AU: 'A$'
+  FR: '€', IT: '€', ES: '€', JP: '円', IN: '₹', AU: 'A$'
 };
 
 // ── 主入口 ────────────────────────────────────────────────────────────────────
@@ -316,11 +321,11 @@ function transformKeywordResearchResponse(html, request) {
   const $ = cheerio.load(html);
 
   const pagination = parsePagination($);
-  const order      = parseOrder($);
+  const order = parseOrder($);
 
   const marketplace = request.marketplace || 'US';
-  const currency    = MARKET_CURRENCY[marketplace] || '$';
-  const monthRaw    = request.month || '';
+  const currency = MARKET_CURRENCY[marketplace] || '$';
+  const monthRaw = request.month || '';
   // 支持 "202607" 或 "2026-07" 两种格式，统一输出 "2026.07"
   const month = monthRaw
     ? monthRaw.replace('-', '').replace(/^(\d{4})(\d{2})$/, '$1.$2')
@@ -331,30 +336,30 @@ function transformKeywordResearchResponse(html, request) {
 
   // 结果表格只有一个 tbody
   $('tbody tr').each((_, trEl) => {
-    const $tr  = $(trEl);
+    const $tr = $(trEl);
     const item = parseRow($, $tr);
     if (!item) return;
 
     item.marketplace = marketplace;
-    item.currency    = currency;
-    item.month       = month;
-    item.supplement  = supplement;
+    item.currency = currency;
+    item.month = month;
+    item.supplement = supplement;
 
     items.push(item);
   });
 
   return {
-    guestId:      null,
-    pages:        pagination.pages,
-    page:         pagination.page,
-    size:         pagination.size,
-    total:        pagination.total,
-    took:         0,
-    url:          null,
+    guestId: null,
+    pages: pagination.pages,
+    page: pagination.page,
+    size: pagination.size,
+    total: pagination.total,
+    took: 0,
+    url: null,
     order,
     items,
-    terminal:     null,
-    hasNextPage:  null,
+    terminal: null,
+    hasNextPage: null,
     guestVisited: false
   };
 }

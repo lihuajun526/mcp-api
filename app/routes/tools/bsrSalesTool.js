@@ -2,7 +2,7 @@ const { queryBsrSales } = require('../../services/queries/bsrSalesQuery');
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
-  name: 'bsr_sales',
+  name: 'bsr_prediction',
 
   async handle(args, user) {
     if (!args.marketplace || !args.categoryId || !args.bsr) {

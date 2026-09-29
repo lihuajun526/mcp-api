@@ -50,16 +50,26 @@ function parseJsonString(v) {
   }
 }
 
+// 子体销售额（官方 amzSales）：上游未直接返回，按 子体近30日销量 × 价格 推导
+function toAmzSales(amzUnit, price) {
+  if (amzUnit === null || price === null) {
+    return null;
+  }
+  return Math.round(amzUnit * price * 100) / 100;
+}
+
 /**
- * 将第三方 competing-lookup 的 items 转换为查竞品 MCP 输出结构。
- * 输出字段参考 open.sellersprite.com 查竞品(Competitor Lookup)接口：
- * asin / nodeId / symbol / title / sku / price / monthlySalesUnits / monthlySalesRevenue / bsr /
- * bsrId / bsrGrowthRate / bsrGrowthCount / rating / ratings / ratingsGrowth /
- * ratingsRate / brand / brandUrl / sellerId / sellerName / sellerNation / fulfillment /
- * availableDate / amzUnitDate / profit / nodeLabelPath / imageUrl / monthlySalesUnitsGrowthRate /
- * listingQualityScore / variationNum / parent / badgeBestSeller /
- * badgeAmazonChoice / badgeEbc / badgeVideo / salesTrend / subcategories /
- * dimension / dimensionsType / pkgDimensions / pkgDimensionType / pkgWeight
+ * 将第三方 competing-lookup / product-research 的 items 转换为官方返回结构。
+ * 字段名对齐 open.sellersprite.com 官方文档：
+ * - 查竞品(api/1) / 选产品(api/2) / 查ASIN竞品数据(api/62)
+ * 官方字段：asin / brand / brandUrl / imageUrl / title / parent / nodeId / nodeIdPath /
+ * nodeLabelPath / symbol / bsrId / bsr / bsrCr / bsrCv / units / unitsGr / amzUnit / amzSales /
+ * amzUnitDate / revenue / price / primePrice / profit / fba / ratings / ratingsRate / rating /
+ * ratingsCv / ratingDelta / lqs / availableDate / fulfillment / variations / sellers /
+ * sellerId / sellerName / sellerNation / badge{bestSeller,amazonChoice,newRelease,ebc,video} /
+ * weight / dimension / dimensionsType / pkgDimensions / pkgDimensionType / pkgWeight / sku /
+ * subcategories / deliveryPrice / averagePrice
+ * 另保留若干上游有值且有意义、但官方未列出的额外字段（见文件末尾注释）。
  */
 function transformCompetitionItem(item) {
   if (!item || typeof item !== 'object') {
@@ -75,10 +85,10 @@ function transformCompetitionItem(item) {
   }
 
   const amzUnitTrendRaw = parseJsonString(get(item, 'amzUnitTrend', 'amz_unit_trend'));
-  const monthlySalesUnitsTrend = [];
+  const amzUnitTrend = [];
   if (amzUnitTrendRaw && typeof amzUnitTrendRaw === 'object') {
     for (const dk of Object.keys(amzUnitTrendRaw).sort()) {
-      monthlySalesUnitsTrend.push({ dk, units: toInt(amzUnitTrendRaw[dk]) });
+      amzUnitTrend.push({ dk, units: toInt(amzUnitTrendRaw[dk]) });
     }
   }
 
@@ -94,87 +104,83 @@ function transformCompetitionItem(item) {
     }));
   })();
 
+  const fulfillment = (() => {
+    const t = get(item, 'fulfillment', 'sellerType', 'seller_type');
+    if (t === 'AMZ' || t === 'FBA' || t === 'FBM') {
+      return t;
+    }
+    return null;
+  })();
+
+  const amzUnit = toInt(get(item, 'amzUnit', 'amz_unit'));
+  const price = toFloat(get(item, 'price'));
+
   return {
     asin: get(item, 'asin'),
-    nodeId: toInt(get(item, 'nodeId', 'node_id')),
-    symbol: get(item, 'symbol'),
-    asinUrl: `https://www.amazon.com/dp/${get(item, 'asin') || ''}`,
-    title: get(item, 'title'),
-    price: toFloat(get(item, 'price')),
-    imageUrl: get(item, 'imageUrl', 'image_url'),
-    bigImageUrl: get(item, 'bigImageUrl', 'big_image_url'),
-    rating: toFloat(get(item, 'rating')),
-    ratings: toInt(get(item, 'ratings')),
-    reviews: toInt(get(item, 'reviews')),
-    questions: toInt(get(item, 'questions')),
-    monthlySalesUnits: toInt(get(item, 'amzUnit', 'monthly_sales_units')),
-    amzUnitDate: toInt(get(item, 'amzUnitDate', 'amz_unit_date')),
-    monthlySalesRevenue: toFloat(get(item, 'totalAmount', 'monthly_sales_revenue')),
-    monthlySalesUnitsGrowthRate: toFloat(get(item, 'totalUnitsGrowth', 'monthly_sales_units_growth_rate')),
-    monthlySalesRevenueGrowthRate: toFloat(get(item, 'totalAmountGrowth', 'monthly_sales_revenue_growth_rate')),
-    averagePrice: toFloat(get(item, 'averagePrice', 'average_price')),
-    bsrId: get(item, 'bsrId', 'bsr_id'),
-    bsr: toInt(get(item, 'bsrRank', 'bsr')),
-    bsrLabel: get(item, 'bsrLabel', 'bsr_label'),
-    bsrGrowthRate: toFloat(get(item, 'bsrRankCr', 'bsr_growth_rate')),
-    bsrGrowthCount: toInt(get(item, 'bsrRankCv', 'bsr_growth_count')),
     brand: get(item, 'brand'),
     brandUrl: get(item, 'brandUrl', 'brand_url'),
+    imageUrl: get(item, 'imageUrl', 'image_url'),
+    title: get(item, 'title'),
+    parent: get(item, 'parent'),
+    nodeId: toInt(get(item, 'nodeId', 'node_id')),
+    nodeIdPath: get(item, 'nodeIdPath', 'node_id_path'),
+    nodeLabelPath: get(item, 'nodeLabelPath', 'node_label_path'),
+    symbol: get(item, 'symbol'),
+    bsrId: get(item, 'bsrId', 'bsr_id'),
+    bsr: toInt(get(item, 'bsrRank', 'bsr')),
+    bsrCr: toFloat(get(item, 'bsrRankCr', 'bsr_growth_rate')),
+    bsrCv: toInt(get(item, 'bsrRankCv', 'bsr_growth_count')),
+    units: toInt(get(item, 'totalUnits', 'total_units')),
+    unitsGr: toFloat(get(item, 'totalUnitsGrowth', 'units_growth')),
+    amzUnit,
+    amzSales: toAmzSales(amzUnit, price),
+    amzUnitDate: toInt(get(item, 'amzUnitDate', 'amz_unit_date')),
+    revenue: toFloat(get(item, 'totalAmount', 'total_amount')),
+    price,
+    primePrice: toFloat(get(item, 'primeExclusivePrice', 'primePrice', 'prime_price')),
+    profit: toFloat(get(item, 'profit')),
+    fba: toFloat(get(item, 'fba')),
+    ratings: toInt(get(item, 'reviews', 'ratings')),
+    ratingsRate: toFloat(get(item, 'reviewsRate', 'reviews_rate')),
+    rating: toFloat(get(item, 'rating')),
+    ratingsCv: toInt(get(item, 'reviewsIncreasement', 'reviews_increasement')),
+    ratingDelta: toInt(get(item, 'reviewsDelta', 'reviews_delta')),
+    lqs: toFloat(get(item, 'lqs')),
+    availableDate: toInt(get(item, 'availableDate', 'available_date')),
+    fulfillment,
+    variations: toInt(get(item, 'variations', 'variation_num')),
+    sellers: toInt(get(item, 'sellers')),
     sellerId: get(item, 'sellerId', 'seller_id'),
     sellerName: get(item, 'sellerName', 'seller_name'),
     sellerNation: get(item, 'sellerNation', 'seller_nation'),
-    sellerType: get(item, 'sellerType', 'seller_type'),
-    fulfillment: (() => {
-      const t = get(item, 'sellerType', 'seller_type');
-      if (t === 'AMZ') return 'AMZ';
-      if (t === 'FBA') return 'FBA';
-      if (t === 'FBM') return 'FBM';
-      return null;
-    })(),
-    availableDate: toInt(get(item, 'availableDate', 'available_date')),
-    firstReviewDate: toInt(get(item, 'firstReviewDate', 'first_review_date')),
-    availableDays: toInt(get(item, 'availableDays', 'available_days')),
-    profit: toFloat(get(item, 'profit')),
-    fba: toFloat(get(item, 'fba')),
-    lqs: toInt(get(item, 'lqs')),
-    listingQualityScore: toInt(get(item, 'lqs', 'listing_quality_score')),
-    variationNum: toInt(get(item, 'variations', 'variation_num')),
-    parent: get(item, 'parent'),
-    nodeIdPath: get(item, 'nodeIdPath', 'node_id_path'),
-    nodeLabelPath: get(item, 'nodeLabelPath', 'node_label_path'),
-    nodeLabelPathLocale: get(item, 'nodeLabelPathLocale', 'node_label_path_locale'),
-    badges: {
+    badge: {
       bestSeller: toFlag(get(item, 'bestSeller', 'best_seller')),
       amazonChoice: toFlag(get(item, 'amazonChoice', 'amazon_choice')),
       newRelease: toFlag(get(item, 'newRelease', 'new_release')),
       ebc: toFlag(get(item, 'ebc')),
       video: toFlag(get(item, 'video'))
     },
-    badgeBestSeller: toFlag(get(item, 'bestSeller', 'best_seller')),
-    badgeAmazonChoice: toFlag(get(item, 'amazonChoice', 'amazon_choice')),
-    badgeEbc: toFlag(get(item, 'ebc')),
-    badgeVideo: toFlag(get(item, 'video')),
-    reviewsRate: toFloat(get(item, 'reviewsRate', 'reviews_rate')),
-    reviewsIncreasement: toInt(get(item, 'reviewsIncreasement', 'reviews_increasement')),
-    reviewsDelta: toInt(get(item, 'reviewsDelta', 'reviews_delta')),
-    totalUnits: toInt(get(item, 'totalUnits', 'total_units')),
-    totalAmount: toFloat(get(item, 'totalAmount', 'total_amount')),
-    salesTrend,
-    monthlySalesUnitsTrend,
-    subcategories,
-    variations: toInt(get(item, 'variations', 'variation_num')),
-    sku: get(item, 'sku'),
-    coupon: get(item, 'coupon'),
-    deliveryPrice: toFloat(get(item, 'deliveryPrice', 'delivery_price')),
-    primeExclusivePrice: toFloat(get(item, 'primeExclusivePrice', 'prime_exclusive_price')),
+    weight: get(item, 'weight'),
     dimension: get(item, 'dimensions', 'dimension'),
-    dimensions: get(item, 'dimensions'),
     dimensionsType: get(item, 'dimensionType', 'dimensionsType', 'dimension_type'),
     pkgDimensions: get(item, 'pkgDimensions', 'pkg_dimensions'),
     pkgDimensionType: get(item, 'pkgDimensionType', 'pkg_dimension_type'),
     pkgWeight: get(item, 'pkgWeight', 'pkg_weight'),
-    weight: get(item, 'weight'),
-    sellers: toInt(get(item, 'sellers'))
+    sku: get(item, 'sku'),
+    subcategories,
+    deliveryPrice: toFloat(get(item, 'deliveryPrice', 'delivery_price')),
+    averagePrice: toFloat(get(item, 'averagePrice', 'average_price')),
+    // ---- 超出官方文档的额外字段（上游有值且有意义）----
+    bsrLabel: get(item, 'bsrLabel', 'bsr_label'),
+    nodeLabelPathLocale: get(item, 'nodeLabelPathLocale', 'node_label_path_locale'),
+    bigImageUrl: get(item, 'bigImageUrl', 'big_image_url'),
+    questions: toInt(get(item, 'questions')),
+    availableDays: toInt(get(item, 'availableDays', 'available_days')),
+    firstReviewDate: toInt(get(item, 'firstReviewDate', 'first_review_date')),
+    coupon: get(item, 'coupon'),
+    revenueGr: toFloat(get(item, 'totalAmountGrowth', 'revenue_growth')),
+    salesTrend,
+    amzUnitTrend
   };
 }
 
@@ -183,14 +189,13 @@ function transformCompetitionResponse(root, request) {
   const items = Array.isArray(data.items) ? data.items : [];
   const out = items.map(transformCompetitionItem).filter(Boolean);
 
-  if (request && request.marketplace) {
-    for (const item of out) {
-      item.marketplace = request.marketplace;
-    }
-  }
+  const marketplace =
+    request && (request.marketplace || request.market)
+      ? request.marketplace || request.market
+      : null;
 
   return {
-    marketplace: request && request.marketplace ? request.marketplace : null,
+    marketplace,
     page: toInt(data.page) || 0,
     size: toInt(data.size) || 0,
     total: toInt(data.total) || 0,

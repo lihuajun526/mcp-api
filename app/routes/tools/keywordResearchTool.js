@@ -5,44 +5,66 @@ module.exports = {
   name: 'keyword_research',
 
   async handle(args, user) {
-    if (!args.marketplace || !args.includeKeywords) {
-      const err = new Error('marketplace and includeKeywords are required');
+    // 官方参数名为 keywords（String），必填
+    if (!args.marketplace || !args.keywords) {
+      const err = new Error('marketplace and keywords are required');
       err.code = -32602;
       throw err;
     }
 
+    // 官方排序参数为对象 order { field, desc }，兼容历史平铺写法 orderField/orderDesc
+    const orderField = (args.order && args.order.field) || args.orderField;
+    const orderDesc = args.order && args.order.desc != null ? args.order.desc : args.orderDesc;
+
     const data = await queryKeywordResearch(user, {
       marketplace: String(args.marketplace),
-      includeKeywords: String(args.includeKeywords),
+      keywords: String(args.keywords),
       excludeKeywords: args.excludeKeywords ? String(args.excludeKeywords) : '',
+      departments: Array.isArray(args.departments)
+        ? args.departments
+        : (args.departments ? [String(args.departments)] : undefined),
       month: args.month ? String(args.month).replace('-', '') : '',
       page: args.page,
       size: args.size,
-      orderField: args.orderField,
-      orderDesc: args.orderDesc,
+      orderField,
+      orderDesc,
       supplement: args.supplement,
       minSearches: args.minSearches,
       maxSearches: args.maxSearches,
-      minYearlyGrowth: args.minYearlyGrowth,
-      maxYearlyGrowth: args.maxYearlyGrowth,
+      minSearchesCr: args.minSearchesCr,
+      maxSearchesCr: args.maxSearchesCr,
       minProducts: args.minProducts,
       maxProducts: args.maxProducts,
       minPurchases: args.minPurchases,
       maxPurchases: args.maxPurchases,
-      minGrowth: args.minGrowth,
-      maxGrowth: args.maxGrowth,
-      minAvgPrice: args.minAvgPrice,
-      maxAvgPrice: args.maxAvgPrice,
-      minWordCount: args.minWordCount,
-      maxWordCount: args.maxWordCount,
-      minSupplyDemandRatio: args.minSupplyDemandRatio,
-      maxSupplyDemandRatio: args.maxSupplyDemandRatio,
       minPurchaseRate: args.minPurchaseRate,
       maxPurchaseRate: args.maxPurchaseRate,
+      withYearlyGrowth: args.withYearlyGrowth,
+      minSearchMonthCv: args.minSearchMonthCv,
+      maxSearchMonthCv: args.maxSearchMonthCv,
+      minSearchMonthCr: args.minSearchMonthCr,
+      maxSearchMonthCr: args.maxSearchMonthCr,
+      minSearchNearlyCv: args.minSearchNearlyCv,
+      maxSearchNearlyCv: args.maxSearchNearlyCv,
+      minSearchNearlyCr: args.minSearchNearlyCr,
+      maxSearchNearlyCr: args.maxSearchNearlyCr,
+      marketPeriod: args.marketPeriod,
+      minAvgPrice: args.minAvgPrice,
+      maxAvgPrice: args.maxAvgPrice,
+      minRatings: args.minRatings,
+      maxRatings: args.maxRatings,
+      minRating: args.minRating,
+      maxRating: args.maxRating,
       minBid: args.minBid,
       maxBid: args.maxBid,
-      marketPeriod: args.marketPeriod,
-      keywordBidMatchType: args.keywordBidMatchType
+      minAraClickRate: args.minAraClickRate,
+      maxAraClickRate: args.maxAraClickRate,
+      minGoodsValue: args.minGoodsValue,
+      maxGoodsValue: args.maxGoodsValue,
+      minSupplyDemandRatio: args.minSupplyDemandRatio,
+      maxSupplyDemandRatio: args.maxSupplyDemandRatio,
+      minWordCount: args.minWordCount,
+      maxWordCount: args.maxWordCount
     });
 
     return buildSuccess(args, data);

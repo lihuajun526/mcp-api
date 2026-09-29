@@ -25,9 +25,50 @@ const MARKET_CODE_MAP = {
   AU: 'AU'
 };
 
+// Open API 排序字段名 → 第三方 order 整数（与 traffic_extend 的 orderColumn 枚举保持一致）
+const ORDER_FIELD_MAP = {
+  searches: 5,
+  purchases: 6,
+  purchaseRate: 7,
+  products: 8,
+  supplyDemandRatio: 10,
+  monopolyClickRate: 11,
+  trafficPercentage: 12,
+  bid: 13,
+  avgPrice: 14,
+  updatedTime: 15,
+  searchesRank: 2,
+  titleDensity: 4,
+  top3ClickingRate: 16,
+  top3ConversionRate: 17
+};
+
+// 官方 order.field 为字符串，第三方 order 为整数编码；无映射时回退默认 12
+function resolveOrder(order) {
+  if (order === null || order === undefined) {
+    return 12;
+  }
+  const rawField = typeof order === 'object' ? order.field : order;
+  if (rawField === null || rawField === undefined || rawField === '') {
+    return 12;
+  }
+  const n = Number(rawField);
+  if (Number.isFinite(n) && n > 0) {
+    return Math.trunc(n);
+  }
+  return ORDER_FIELD_MAP[rawField] || 12;
+}
+
+function resolveOrderDesc(order) {
+  if (order && typeof order === 'object' && order.desc !== undefined) {
+    return order.desc !== false;
+  }
+  return true;
+}
+
 async function fetchAsinReversing(request, session) {
   const market = MARKET_CODE_MAP[request.marketplace] || request.marketplace;
-  const size = Math.min(Number(request.size) || 100, 200);
+  const size = Math.min(Math.max(Number(request.size) || 50, 1), 100);
   const page = Math.max(Number(request.page) || 1, 1);
   const skip = (page - 1) * size;
 
@@ -39,15 +80,24 @@ async function fetchAsinReversing(request, session) {
     badges: Array.isArray(request.badges) && request.badges.length > 0
       ? request.badges
       : ['NATURAL_SEARCHING', 'AMAZON_CHOICE', 'EDITORIAL_RECOMMENDATIONS', 'FOUR_STAR', 'SPONSOR_BRAND', 'SPONSOR_VIDEO', 'HIGHLY_RATED', 'ADS'],
-    conversionKeywordTypes: [],
-    trafficKeywordTypes: [],
-    order: 12,
-    desc: true,
+    conversionKeywordTypes: Array.isArray(request.conversionKeywordTypes) && request.conversionKeywordTypes.length > 0
+      ? request.conversionKeywordTypes
+      : [],
+    trafficKeywordTypes: Array.isArray(request.trafficKeywordTypes) && request.trafficKeywordTypes.length > 0
+      ? request.trafficKeywordTypes
+      : [],
+    order: resolveOrder(request.order),
+    desc: resolveOrderDesc(request.order),
     exactly: false,
     ac: false,
     keywordBidMatchType: 'exact',
     filterDeletedKeywords: false
   };
+
+  // 关键词过滤（透传给上游）
+  if (request.keyword && String(request.keyword).trim()) {
+    payload.keyword = String(request.keyword).trim();
+  }
 
   const headers = {
     accept: session.accept || 'application/json, text/plain, */*',

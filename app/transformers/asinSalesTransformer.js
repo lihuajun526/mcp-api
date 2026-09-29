@@ -23,45 +23,68 @@ function get(obj, ...keys) {
   return null;
 }
 
+// 上游日期为 2025/07/01，官方返回为 2025-07-01
+function formatDate(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return String(value).replace(/\//g, '-');
+}
+
 /**
- * 将第三方 sales-estimator/asin.json 响应转换为 ASIN 销量预测 MCP 输出结构。
- * 输出字段参考 open.sellersprite.com BSR 销量预测接口：
- * marketplace / asin / category / categoryId / estMonSales /
- * dailyAmounts / dailyPrices / bsrs / monsAmounts / monStats
+ * 将第三方 sales-estimator/asin.json 响应转换为官方 asin_prediction(ASIN 销量预测)返回结构：
+ * asinDetail / dailyItemList / monthItemList
  */
 function transformAsinSalesResponse(root, request) {
   const data = root && root.data ? root.data : {};
 
-  const dailyAmounts = Array.isArray(data.dailyAmounts)
-    ? data.dailyAmounts.slice(-365).map(toFloat)
-    : [];
+  const dates = Array.isArray(data.dates) ? data.dates : [];
+  const dailySales = Array.isArray(data.dailySales) ? data.dailySales : [];
+  const dailyAmounts = Array.isArray(data.dailyAmounts) ? data.dailyAmounts : [];
+  const dailyPrices = Array.isArray(data.dailyPrices) ? data.dailyPrices : [];
+  const bsrs = Array.isArray(data.bsrs) ? data.bsrs : [];
 
-  const dailyPrices = Array.isArray(data.dailyPrices)
-    ? data.dailyPrices.slice(-365).map(toFloat)
-    : [];
+  const dailyLen = Math.max(dates.length, dailySales.length, dailyAmounts.length, dailyPrices.length, bsrs.length);
+  const dailyItemList = [];
+  for (let i = 0; i < dailyLen; i += 1) {
+    dailyItemList.push({
+      date: formatDate(dates[i]),
+      bsr: toInt(bsrs[i]),
+      sales: toInt(dailySales[i]),
+      amount: toFloat(dailyAmounts[i]),
+      price: toFloat(dailyPrices[i])
+    });
+  }
 
-  const bsrs = Array.isArray(data.bsrs)
-    ? data.bsrs.slice(-365).map(toInt)
-    : [];
+  const mons = Array.isArray(data.mons) ? data.mons : [];
+  const monsSales = Array.isArray(data.monsSales) ? data.monsSales : [];
+  const monsAmounts = Array.isArray(data.monsAmounts) ? data.monsAmounts : [];
+  const monsAvgPrices = Array.isArray(data.monsAvgPrices) ? data.monsAvgPrices : [];
 
-  const monsAmounts = Array.isArray(data.monsAmounts)
-    ? data.monsAmounts.map(toFloat)
-    : [];
+  const monthLen = Math.max(mons.length, monsSales.length, monsAmounts.length, monsAvgPrices.length);
+  const monthItemList = [];
+  for (let i = 0; i < monthLen; i += 1) {
+    monthItemList.push({
+      date: mons[i] !== undefined && mons[i] !== null ? String(mons[i]) : null,
+      sales: toInt(monsSales[i]),
+      amount: toFloat(monsAmounts[i]),
+      price: toFloat(monsAvgPrices[i])
+    });
+  }
 
-  const monStats = data.monStats && typeof data.monStats === 'object'
-    ? data.monStats
-    : {};
-
-  return {
-    marketplace: (request && request.marketplace) || null,
+  const asinDetail = {
     asin: get(data, 'asin') || (request && request.asin) || null,
-    categoryId: get(data, 'cid'),
+    title: get(data, 'title'),
+    brand: get(data, 'brand'),
+    availableDate: toInt(get(data, 'availableDate')),
     category: get(data, 'category'),
-    monthlySales: toInt(get(data, 'estMonSales')),
-    dailyAmounts,
-    dailyPrices,
-    bsrs
+    categoryId: get(data, 'cid'),
+    imageUrl: get(data, 'zoomImageUrl', 'imageUrl'),
+    ratings: toInt(get(data, 'ratings', 'reviews')),
+    rating: toFloat(get(data, 'rating'))
   };
+
+  return { asinDetail, dailyItemList, monthItemList };
 }
 
 module.exports = {

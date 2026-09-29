@@ -30,16 +30,40 @@ function normalizeTop3Asin(raw) {
   if (!raw || typeof raw !== 'object') return null;
   return {
     asin: raw.asin || null,
-    title: raw.asinUrl || raw.asinTitle || raw.title || null,
     imageUrl: raw.asinImage || raw.imageUrl || null,
-    price: toFloat(raw.asinPrice != null ? raw.asinPrice : raw.price),
-    reviews: toInt(raw.asinReviews != null ? raw.asinReviews : raw.reviews),
-    rating: toFloat(raw.asinRating != null ? raw.asinRating : raw.rating),
-    rankPage: toInt(raw.rankPage),
-    rankIndex: toInt(raw.rankIndex),
-    position: toInt(raw.position),
-    products: toInt(raw.products)
+    clickRate: toFloat(raw.clickRate),
+    conversionRate: toFloat(raw.conversionRate != null ? raw.conversionRate : raw.conversionShareRate)
   };
+}
+
+// 官方 top10Asins：上游由 top10Asins 或 gkDatas 承载，字段已与官方基本一致
+function normalizeTop10Asins(raw) {
+  const list = Array.isArray(raw.top10Asins) ? raw.top10Asins
+    : Array.isArray(raw.gkDatas) ? raw.gkDatas
+      : [];
+  return list.map(item => {
+    if (!item || typeof item !== 'object') return null;
+    return {
+      station: item.station || null,
+      keyword: item.keyword || null,
+      asin: item.asin || null,
+      asinUrl: item.asinUrl || item.asinTitle || null,
+      asinImage: item.asinImage || item.imageUrl || null,
+      bigAsinImage: item.bigAsinImage || null,
+      asinPrice: toFloat(item.asinPrice),
+      asinReviews: toInt(item.asinReviews),
+      asinRating: toFloat(item.asinRating),
+      asinBrand: item.asinBrand || null,
+      asinTitle: item.asinTitle || item.asinUrl || null,
+      rankPage: toInt(item.rankPage),
+      rankIndex: toInt(item.rankIndex),
+      position: toInt(item.position),
+      products: toInt(item.products),
+      badges: item.badges || null,
+      ad: item.ad != null ? item.ad : null,
+      amazonChoice: item.amazonChoice != null ? item.amazonChoice : null
+    };
+  }).filter(Boolean);
 }
 
 function normalizeItem(raw) {
@@ -75,9 +99,7 @@ function normalizeItem(raw) {
     top3Asins: Array.isArray(raw.top3Asins)
       ? raw.top3Asins.map(normalizeTop3Asin).filter(Boolean)
       : [],
-    top10Asins: Array.isArray(raw.top10Asins)
-      ? raw.top10Asins.map(normalizeTop3Asin).filter(Boolean)
-      : []
+    top10Asins: normalizeTop10Asins(raw)
   };
 }
 

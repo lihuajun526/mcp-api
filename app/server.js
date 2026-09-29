@@ -5,12 +5,13 @@ const redis = require('./redis');
 const db = require('./db');
 const httpRoutes = require('./routes/httpRoutes');
 const mcpProtocolRoute = require('./routes/mcpProtocolRoute');
+const sellerSpriteMcpClient = require('./services/sellerSpriteMcpClient');
 
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 
 app.get('/health', (req, res) => {
-  res.json({ ok: true, service: 'mcp-api-node' });
+  res.json({ ok: true, service: 'mcp-api-node', sellerSpriteMcp: sellerSpriteMcpClient.getStatus() });
 });
 
 app.use(httpRoutes);
@@ -38,6 +39,7 @@ const server = app.listen(config.port, () => {
 
 async function shutdown() {
   server.close();
+  sellerSpriteMcpClient.stop(); // 停止上游工具列表定时刷新
   await redis.quit().catch(() => {});
   await db.pool.end().catch(() => {});
   process.exit(0);

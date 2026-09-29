@@ -1,4 +1,5 @@
 const { queryTrafficKeywordStat } = require('../../services/queries/trafficKeywordStatQuery');
+const { assertMonth } = require('../../utils/validation');
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
@@ -19,7 +20,7 @@ module.exports = {
     const data = await queryTrafficKeywordStat(user, {
       marketplace: String(args.marketplace),
       asin: String(args.asin),
-      month: args.month ? String(args.month) : '',
+      month: args.month != null && args.month !== '' ? assertMonth(args.month) : '',
       forceReStat: args.forceReStat === true,
       badges: Array.isArray(args.badges) ? args.badges : []
     });

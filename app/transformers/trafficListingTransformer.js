@@ -10,6 +10,18 @@ function toFloat(v) {
   return Number.isFinite(n) ? n : null;
 }
 
+// 官方 badge 为固定 5 个子字段的对象，统一归一化，避免上游额外字段泄漏
+const BADGE_FIELDS = ['bestSeller', 'amazonChoice', 'newRelease', 'ebc', 'video'];
+
+function normalizeBadge(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const badge = {};
+  for (const field of BADGE_FIELDS) {
+    badge[field] = raw[field] != null ? raw[field] : null;
+  }
+  return badge;
+}
+
 function normalizeItem(raw) {
   if (!raw || typeof raw !== 'object') return null;
   return {
@@ -42,9 +54,10 @@ function normalizeItem(raw) {
     sellerId: raw.sellerId || null,
     sellerName: raw.sellerName || null,
     sellerNation: raw.sellerNation || null,
-    badge: raw.badge || null,
+    badge: normalizeBadge(raw.badge),
     weight: raw.weight || null,
-    dimension: raw.dimension || null,
+    dimension: raw.dimension || raw.dimensions || null,
+    dimensionType: raw.dimensionType || raw.dimensionsType || null,
     sku: raw.sku || null
   };
 }

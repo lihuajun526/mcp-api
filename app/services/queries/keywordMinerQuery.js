@@ -60,7 +60,7 @@ async function fetchKeywordMiner(request, session) {
     orderBy: resolveOrderBy(request.orderField),
     desc: request.orderDesc !== false,
     filterRootWord: request.filterRootWord != null ? Number(request.filterRootWord) : 0,
-    matchType: request.matchType != null ? Number(request.matchType) : 0,
+    matchType: request.matchType != null ? Number(request.matchType) : 2, // 默认模糊匹配（对齐官方）
     amazonChoice: request.amazonChoice === true || request.amazonChoice === 'true',
     keywordBidMatchType: request.keywordBidMatchType || 'exact'
   };
