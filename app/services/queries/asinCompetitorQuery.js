@@ -12,8 +12,8 @@ const ENDPOINT_CODE = 'ASIN_COMPETITOR';
 
 async function fetchAsinCompetitor(request, session) {
   const payload = {
-    market: request.marketplace,
-    monthName: 'bsr_sales_nearly',
+    market: request.marketplace,  // 上游字段名为 market（与 competitor_lookup 一致）
+    monthName: request.month ? 'bsr_sales_monthly_' + request.month : 'bsr_sales_nearly',
     asins: [request.asin],
     page: 1,
     size: request.size || 20,
@@ -24,9 +24,10 @@ async function fetchAsinCompetitor(request, session) {
   };
 
   const headers = {
-    accept: session.accept || 'application/json, text/plain, */*',
+    accept: 'application/json, text/plain, */*',
+    origin: 'https://www.sellersprite.com',
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9',
-    'content-type': session.contentType || 'application/json;charset=UTF-8',
+    'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
     'user-agent': session.userAgent || 'Mozilla/5.0'
   };
