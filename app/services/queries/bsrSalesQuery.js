@@ -1,7 +1,6 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -25,7 +24,7 @@ async function fetchBsrSales(request, session) {
     'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
     'x-requested-with': 'XMLHttpRequest',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || 'Mozilla/5.0'
+    'user-agent': session.userAgent || config.sellerSprite.userAgent
   };
 
   return upstreamClient.post(
@@ -36,10 +35,6 @@ async function fetchBsrSales(request, session) {
 }
 
 async function queryBsrSales(user, request) {
-  if (!request || !request.marketplace || !request.categoryId || !request.bsr) {
-    throw new BusinessError('marketplace、categoryId、bsr不能为空', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) {
     return cached;

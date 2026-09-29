@@ -106,7 +106,7 @@ async function fetchTrafficExtend(request, session) {
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8',
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || 'Mozilla/5.0',
+    'user-agent': session.userAgent || config.sellerSprite.userAgent,
     referer: `${config.sellerSprite.baseUrl}/v3/traffic/extend/asin`
   };
   if (session.xToken) {
@@ -121,10 +121,7 @@ async function fetchTrafficExtend(request, session) {
 }
 
 async function queryTrafficExtend(user, request) {
-  if (!request || !request.marketplace || !Array.isArray(request.asinList) || request.asinList.length === 0) {
-    throw new BusinessError('marketplace 和 asinList 不能为空', 400);
-  }
-  if (request.asinList.length > 20) {
+  if (Array.isArray(request.asinList) && request.asinList.length > 20) {
     throw new BusinessError('asinList 最多支持 20 个 ASIN', 400);
   }
 

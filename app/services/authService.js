@@ -19,9 +19,12 @@ const RATE_LIMIT_SCRIPT = [
   'return 1'
 ].join(' ');
 
+let _toolsCache = null;
 function readTools() {
-  const raw = fs.readFileSync(config.mcp.toolsPath, 'utf8');
-  return JSON.parse(raw);
+  if (!_toolsCache) {
+    _toolsCache = JSON.parse(fs.readFileSync(config.mcp.toolsPath, 'utf8'));
+  }
+  return _toolsCache;
 }
 
 async function authenticate(apiKey) {

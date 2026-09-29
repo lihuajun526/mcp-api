@@ -1,7 +1,6 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -10,24 +9,39 @@ const { transformAsinDetailResponse } = require('../../transformers/asinDetailTr
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'ASIN_DETAIL';
 
+// marketplace 公开代码 → Amazon 站点域名
+const MARKETPLACE_DOMAIN = {
+  US: 'www.amazon.com',
+  CA: 'www.amazon.ca',
+  MX: 'www.amazon.com.mx',
+  UK: 'www.amazon.co.uk',
+  DE: 'www.amazon.de',
+  FR: 'www.amazon.fr',
+  IT: 'www.amazon.it',
+  ES: 'www.amazon.es',
+  JP: 'www.amazon.co.jp',
+  IN: 'www.amazon.in',
+  AU: 'www.amazon.com.au'
+};
+
 async function fetchAsinDetail(request, session) {
   const payload = {
     market: request.marketplace,
     monthName: 'bsr_sales_nearly',
     asins: [request.asin],
     page: 1,
-    size: 60,
+    size: 20,
     symbolFlag: true,
     nodeIdPaths: [],
-    order: { field: 'amz_unit', desc: true },
+    order: { field: 'total_units', desc: true },
     lowPrice: 'N'
   };
   const headers = {
-    accept: session.accept || 'application/json, text/plain, */*',
-    'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9',
-    'content-type': session.contentType || 'application/json;charset=UTF-8',
+    accept: 'application/json, text/plain, */*',
+    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+    'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || 'Mozilla/5.0'
+    'user-agent': session.userAgent || config.sellerSprite.userAgent
   };
   return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.competingLookupPath}`,
@@ -37,10 +51,6 @@ async function fetchAsinDetail(request, session) {
 }
 
 async function queryAsinDetail(user, request) {
-  if (!request || !request.marketplace || !request.asin) {
-    throw new BusinessError('marketplace和asin不能为空', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) {
     return cached;
@@ -53,7 +63,8 @@ async function queryAsinDetail(user, request) {
     transformed.marketplace = request.marketplace;
   }
   if (transformed && !transformed.asinUrl && transformed.asin) {
-    transformed.asinUrl = `https://www.amazon.com/dp/${transformed.asin}`;
+    const domain = MARKETPLACE_DOMAIN[transformed.marketplace] || 'www.amazon.com';
+    transformed.asinUrl = `https://${domain}/dp/${transformed.asin}`;
   }
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);

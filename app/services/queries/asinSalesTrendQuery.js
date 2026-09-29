@@ -1,7 +1,7 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError, UpstreamError } = require('../../errors');
+const { UpstreamError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -43,10 +43,6 @@ async function fetchAsinSalesTrendViaMcp(request) {
 }
 
 async function queryAsinSalesTrend(user, request) {
-  if (!request || !request.marketplace || !request.asin) {
-    throw new BusinessError('marketplace 和 asin 不能为空', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) return cached;
 

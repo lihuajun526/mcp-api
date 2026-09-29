@@ -216,12 +216,10 @@ class SellerSpriteMcpClient {
     const payload = { jsonrpc: '2.0', id, method, params: params || {} };
     const body = await this._post(payload, timeoutMs || this.cfg.timeoutMs);
     if (body.error) {
-      const err = new UpstreamError(body.error.message || `JSON-RPC error ${body.error.code}`, {
+      throw new UpstreamError(body.error.message || `JSON-RPC error ${body.error.code}`, {
         upstreamCode: body.error.code,
         hint: '上游协议层错误'
       });
-      err.upstreamCode = body.error.code;
-      throw err;
     }
     return body.result;
   }

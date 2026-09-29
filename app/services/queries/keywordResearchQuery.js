@@ -1,7 +1,6 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -108,7 +107,7 @@ async function fetchKeywordResearch(request, session) {
     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || 'Mozilla/5.0',
+    'user-agent': session.userAgent || config.sellerSprite.userAgent,
     referer: `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordResearchPath}`
   };
 
@@ -120,10 +119,6 @@ async function fetchKeywordResearch(request, session) {
 }
 
 async function queryKeywordResearch(user, request) {
-  if (!request || !request.marketplace || !request.keywords) {
-    throw new BusinessError('marketplace、keywords不能为空', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) {
     return cached;

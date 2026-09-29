@@ -25,28 +25,29 @@ module.exports = {
   },
   sellerSprite: {
     baseUrl: process.env.SELLERSPRITE_BASE_URL || 'https://www.sellersprite.com',
-    competingLookupPath: process.env.SELLERSPRITE_COMPETING_LOOKUP_PATH || '/v3/api/competing-lookup',
-    asinSalesPath: process.env.SELLERSPRITE_ASIN_SALES_PATH || '/v2/tools/sales-estimator/asin.json',
-    asinReversingPath: process.env.SELLERSPRITE_ASIN_REVERSING_PATH || '/v3/api/relation/reversing',
-    bsrSalesPath: process.env.SELLERSPRITE_BSR_SALES_PATH || '/v2/tools/sales-estimator/bsr.json',
-    keywordResearchPath: process.env.SELLERSPRITE_KEYWORD_RESEARCH_PATH || '/v2/keyword-research',
-    keywordMinerPath: process.env.SELLERSPRITE_KEYWORD_MINER_PATH || '/v3/api/keyword-miner',
-    trafficExtendPath: process.env.SELLERSPRITE_TRAFFIC_EXTEND_PATH || '/v3/api/traffic/extend/asin',
-    keywordOrderPath: process.env.SELLERSPRITE_KEYWORD_ORDER_PATH || '/v2/aba/reverse/search',
-    googleTrendPath: process.env.SELLERSPRITE_GOOGLE_TREND_PATH || '/v2/keyword/google-trends.json',
-    keywordConversionPath: process.env.SELLERSPRITE_KEYWORD_CONVERSION_PATH || '/v3/api/keyword-conv',
-    abaResearchPath: process.env.SELLERSPRITE_ABA_RESEARCH_PATH || '/v3/api/aba-research',
-    trafficKeywordStatPath: process.env.SELLERSPRITE_TRAFFIC_KEYWORD_STAT_PATH || '/v3/api/relation/stat-keywords',
-    trafficListingStatPath: process.env.SELLERSPRITE_TRAFFIC_LISTING_STAT_PATH || '/v3/api/relation/multi-stat-traffics',
-    trafficListingPath: process.env.SELLERSPRITE_TRAFFIC_LISTING_PATH || '/v3/api/relation/traffic',
-    marketResearchPath: process.env.SELLERSPRITE_MARKET_RESEARCH_PATH || '/v2/market-research',
-    productResearchPath: process.env.SELLERSPRITE_PRODUCT_RESEARCH_PATH || '/v3/api/product-research',
+    competingLookupPath: '/v3/api/competing-lookup',
+    asinSalesPath: '/v2/tools/sales-estimator/asin.json',
+    asinReversingPath: '/v3/api/relation/reversing',
+    bsrSalesPath: '/v2/tools/sales-estimator/bsr.json',
+    keywordResearchPath: '/v2/keyword-research',
+    keywordMinerPath: '/v3/api/keyword-miner',
+    trafficExtendPath: '/v3/api/traffic/extend/asin',
+    keywordOrderPath: '/v2/aba/reverse/search',
+    googleTrendPath: '/v2/keyword/google-trends.json',
+    keywordConversionPath: '/v3/api/keyword-conv',
+    abaResearchPath: '/v3/api/aba-research',
+    trafficKeywordStatPath: '/v3/api/relation/stat-keywords',
+    trafficListingStatPath: '/v3/api/relation/multi-stat-traffics',
+    trafficListingPath: '/v3/api/relation/traffic',
+    marketResearchPath: '/v2/market-research',
+    productResearchPath: '/v3/api/product-research',
     openApiBaseUrl: process.env.SELLERSPRITE_OPEN_API_BASE_URL || 'https://api.sellersprite.com',
     // open API 认证密钥（secret-key header），用于 asin_sales_trend 等走 open API 的接口
     // 优先取独立环境变量，回退到 MCP 密钥（同一账号下通常相同）
     openApiSecretKey: process.env.SELLERSPRITE_OPEN_API_SECRET_KEY || process.env.SELLERSPRITE_MCP_SECRET_KEY || '',
-    productNodePath: process.env.SELLERSPRITE_PRODUCT_NODE_PATH || '/v1/product/node',
-    asinSalesTrendPath: process.env.SELLERSPRITE_ASIN_SALES_TREND_PATH || '/v1/asin',
+    productNodePath: '/v1/product/node',
+    asinSalesTrendPath: '/v1/asin',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },
   // 卖家精灵官方 MCP 代理转发（补齐本地缺失工具）
@@ -64,8 +65,8 @@ module.exports = {
     proxy: process.env.SELLERSPRITE_MCP_PROXY || process.env.HTTPS_PROXY || process.env.https_proxy || ''
   },
   cache: {
-    enabled: process.env.CACHE_ENABLED === 'true' ? true : false,
-    readEnabled: process.env.CACHE_READ_ENABLED === 'true' ? true : false,
+    enabled: process.env.CACHE_ENABLED === 'true',
+    readEnabled: process.env.CACHE_READ_ENABLED === 'true',
     ttlSeconds: Number(process.env.CACHE_TTL_SECONDS || 300)
   },
   categoryCrawler: {

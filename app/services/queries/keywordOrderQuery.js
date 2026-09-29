@@ -55,7 +55,7 @@ async function fetchKeywordOrder(request, session) {
     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || 'Mozilla/5.0',
+    'user-agent': session.userAgent || config.sellerSprite.userAgent,
     referer: `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordOrderPath}`
   };
 
@@ -67,10 +67,6 @@ async function fetchKeywordOrder(request, session) {
 }
 
 async function queryKeywordOrder(user, request) {
-  if (!request || !request.marketplace || !request.asins ||
-      (Array.isArray(request.asins) && request.asins.length === 0)) {
-    throw new BusinessError('marketplace 和 asins 不能为空', 400);
-  }
   if (Array.isArray(request.asins) && request.asins.length > 20) {
     throw new BusinessError('asins 最多支持 20 个', 400);
   }

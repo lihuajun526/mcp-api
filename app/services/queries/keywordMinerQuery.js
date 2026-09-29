@@ -1,7 +1,6 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -109,7 +108,7 @@ async function fetchKeywordMiner(request, session) {
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8',
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || 'Mozilla/5.0',
+    'user-agent': session.userAgent || config.sellerSprite.userAgent,
     referer: `${config.sellerSprite.baseUrl}/v3/keyword-miner/`
   };
   if (session.xToken) {
@@ -124,10 +123,6 @@ async function fetchKeywordMiner(request, session) {
 }
 
 async function queryKeywordMiner(user, request) {
-  if (!request || !request.marketplace || !request.keyword) {
-    throw new BusinessError('marketplace 和 keyword 不能为空', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) {
     return cached;

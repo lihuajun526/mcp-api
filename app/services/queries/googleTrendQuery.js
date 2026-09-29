@@ -1,7 +1,6 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -52,7 +51,7 @@ async function fetchGoogleTrend(request, session) {
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
-    'user-agent': session.userAgent || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0',
+    'user-agent': session.userAgent || config.sellerSprite.userAgent,
     'x-requested-with': 'XMLHttpRequest'
   };
 
@@ -63,10 +62,6 @@ async function fetchGoogleTrend(request, session) {
 }
 
 async function queryGoogleTrend(user, request) {
-  if (!request || !request.marketplace) {
-    throw new BusinessError('marketplace 不能为空', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) return cached;
 

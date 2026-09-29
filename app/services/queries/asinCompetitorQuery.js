@@ -1,7 +1,6 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -29,7 +28,7 @@ async function fetchAsinCompetitor(request, session) {
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9',
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || 'Mozilla/5.0'
+    'user-agent': session.userAgent || config.sellerSprite.userAgent
   };
   return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.competingLookupPath}`,
@@ -39,10 +38,6 @@ async function fetchAsinCompetitor(request, session) {
 }
 
 async function queryAsinCompetitor(user, request) {
-  if (!request || !request.marketplace || !request.asin) {
-    throw new BusinessError('marketplace 和 asin 不能为空', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) return cached;
 

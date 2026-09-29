@@ -1,3 +1,4 @@
+const { createHash } = require('crypto');
 const redis = require('../redis');
 const config = require('../config');
 
@@ -55,7 +56,6 @@ function normalizeRequest(request) {
 }
 
 function cacheKey(provider, endpointCode, request) {
-  const { createHash } = require('crypto');
   const hash = createHash('sha1').update(normalizeRequest(request)).digest('hex').slice(0, 16);
   return `mcp:cache:${provider}:${endpointCode}:${CACHE_VERSION}:${hash}`;
 }
@@ -71,11 +71,7 @@ async function get(provider, endpointCode, request) {
   const key = cacheKey(provider, endpointCode, request);
   try {
     const raw = await redis.get(key);
-    if (!raw) {
-      return null;
-    }
-    const ttl = await redis.ttl(key);
-    return { ...JSON.parse(raw), _cache: { hit: true, key, ttl } };
+    return raw ? JSON.parse(raw) : null;
   } catch (e) {
     // 缓存异常不影响主流程
     return null;

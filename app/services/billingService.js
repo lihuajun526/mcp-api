@@ -23,7 +23,7 @@ async function deductAndRecord(userId, endpointCode, costPoints, provider) {
     }
     const points = Number(users[0].points || 0);
     if (points < costPoints) {
-      throw new BusinessError('点数余额不足', 400);
+      throw new BusinessError('积分余额不足', 400);
     }
     await conn.query('UPDATE user_account SET points = points - ? WHERE id = ?', [costPoints, userId]);
     await conn.query(
