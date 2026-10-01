@@ -7,7 +7,7 @@
   "scripts": {
     "start:prod": "ENV_FILE=.env.prod node app/server.js",
     "start:local": "ENV_FILE=.env.local nodemon app/server.js",
-    "crawl:category": "node scripts/collect_amz_category.js",
+    "crawl:category": "ENV_FILE=.env.local node scripts/collect_amz_category.js",
     "test:mcp-proxy": "node scripts/test_mcp_proxy.js"
   },
   "dependencies": {

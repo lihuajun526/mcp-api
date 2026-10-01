@@ -130,7 +130,7 @@ async function processOneTask(payload) {
   const task = JSON.parse(payload);
   const response = await fetchChildren(task.nodeId || null);
   const items = Array.isArray(response.items) ? response.items : [];
-
+  console.log(`[collector] nodeId=${task.nodeId || 'ROOT'} depth=${task.depth} items=${items.length}`);
   for (const item of items) {
     await upsertCategory(item, task);
     if (Number(item.children || 0) > 0) {

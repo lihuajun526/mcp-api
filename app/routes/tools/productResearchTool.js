@@ -47,10 +47,11 @@ module.exports = {
       // 商品资格，低价商品
       eligibility: [],
       lowPrice: 'N',
+      smallAndLight: 'N',
       filterSub,
       monthName: month != null ? `bsr_sales_monthly_${month}` : 'bsr_sales_nearly',
       nodeIdPaths: Array.isArray(args.nodeIdPaths) ? args.nodeIdPaths : [],
-      ...(args.nodeIdPathEqual !== undefined ? { nodeIdPathEqual: !!args.nodeIdPathEqual } : {}),
+      //...(args.nodeIdPathEqual !== undefined ? { nodeIdPathEqual: !!args.nodeIdPathEqual } : {}),
       order: {
         field: args.order && args.order.field != null ? String(args.order.field) : 'total_units',
         desc: args.order && args.order.desc != null ? !!args.order.desc : true
@@ -138,8 +139,8 @@ module.exports = {
       ...(args.minVariations != null ? { minVariations: String(args.minVariations) } : {}),
       ...(args.maxVariations != null ? { maxVariations: String(args.maxVariations) } : {}),
       // 官方 minSubBsrRank/maxSubBsrRank（子类排名，filterSub=Y 生效）
-      ...(args.minSubBsrRank != null ? { minSubBsrRank: String(args.minSubBsrRank) } : {}),
-      ...(args.maxSubBsrRank != null ? { maxSubBsrRank: String(args.maxSubBsrRank) } : {}),
+      ...(filterSub && args.minSubBsrRank != null ? { minSubBsrRank: String(args.minSubBsrRank) } : {}),
+      ...(filterSub && args.maxSubBsrRank != null ? { maxSubBsrRank: String(args.maxSubBsrRank) } : {}),
       // FBA运费
       ...(args.minFba != null ? { minFba: String(args.minFba) } : {}),
       ...(args.maxFba != null ? { maxFba: String(args.maxFba) } : {}),

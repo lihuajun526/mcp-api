@@ -216,10 +216,6 @@
             "type": "string"
           }
         },
-        "nodeIdPathEqual": {
-          "type": "boolean",
-          "description": "类目查询方式：true=精确当前类目，false=含子类目（默认 false）"
-        },
         "filterSub": {
           "type": "string",
           "description": "是否筛选子类目：Y=是；仅在指定类目时才生效（官方为 String，默认不传）",
@@ -1781,15 +1777,6 @@
           "type": "integer",
           "description": "最大点击量"
         },
-        "minImpressions": {
-          "type": "integer",
-          "description": "最小曝光量",
-          "minimum": 0
-        },
-        "maxImpressions": {
-          "type": "integer",
-          "description": "最大曝光量"
-        },
         "returnFields": {
           "type": "array",
           "items": {
@@ -1939,15 +1926,6 @@
           "type": "integer",
           "description": "最大词数"
         },
-        "minSPR": {
-          "type": "integer",
-          "description": "最小SPR",
-          "minimum": 0
-        },
-        "maxSPR": {
-          "type": "integer",
-          "description": "最大SPR"
-        },
         "minTitleDensity": {
           "type": "integer",
           "description": "最小标题密度",
@@ -1956,15 +1934,6 @@
         "maxTitleDensity": {
           "type": "integer",
           "description": "最大标题密度"
-        },
-        "minClicks": {
-          "type": "integer",
-          "description": "最小点击量",
-          "minimum": 0
-        },
-        "maxClicks": {
-          "type": "integer",
-          "description": "最大点击量"
         },
         "minImpressions": {
           "type": "integer",
@@ -2749,15 +2718,6 @@
         "maxSPR": {
           "type": "integer",
           "description": "最大SPR"
-        },
-        "minTitleDensity": {
-          "type": "integer",
-          "description": "最小标题密度",
-          "minimum": 0
-        },
-        "maxTitleDensity": {
-          "type": "integer",
-          "description": "最大标题密度"
         },
         "minRelevancy": {
           "type": "number",
