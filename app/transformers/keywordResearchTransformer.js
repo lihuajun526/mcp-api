@@ -14,6 +14,11 @@ function toFloat(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+// 保留4位小数（用于百分比 /100 后的值）
+function round4(v) {
+  return v != null ? Math.round(v * 10000) / 10000 : null;
+}
+
 // 取元素纯文本，去掉多余空白
 function text($el) {
   return $el.text().replace(/\s+/g, ' ').trim();
@@ -97,6 +102,11 @@ function parseAraAsinList($td) {
     if (!asinMatch) return;
     const asin = asinMatch[1];
 
+    // 图片 URL 来自 .popover-img 的 background-image style
+    const imgStyle = $item('.popover-img').attr('style') || '';
+    const imgMatch = imgStyle.match(/url\(\s*['"]?([^'")\s]+)['"]?\s*\)/);
+    const imageUrl = imgMatch ? imgMatch[1] : null;
+
     // 文本形如 "点击: 13.33%\n转化: 0.00%"
     const labelText = $item('p').text();
     const clickMatch = labelText.match(/点击:\s*([\d.]+)%/);
@@ -104,10 +114,9 @@ function parseAraAsinList($td) {
 
     items.push({
       asin,
-      title: null,
-      imageUrl: null,
-      clickRate: clickMatch ? toFloat(clickMatch[1]) / 100 : null,
-      conversionShareRate: convMatch ? toFloat(convMatch[1]) / 100 : null
+      imageUrl,
+      clickRate: round4(clickMatch ? toFloat(clickMatch[1]) / 100 : null),
+      conversionShareRate: round4(convMatch ? toFloat(convMatch[1]) / 100 : null)
     });
   });
   return items;
@@ -141,7 +150,7 @@ function parseRow($, $tr) {
   const $td6Divs = td(6).find('> div, .pr-4');
   const purchases = toInt($td6Divs.eq(0).text());
   const purchaseRateRaw = $td6Divs.eq(1).text().replace('%', '').trim();
-  const purchaseRate = toFloat(purchaseRateRaw) != null ? toFloat(purchaseRateRaw) / 100 : null;
+  const purchaseRate = round4(toFloat(purchaseRateRaw) != null ? toFloat(purchaseRateRaw) / 100 : null);
 
   // TD 7 ── 展示量 / 点击量
   const $td7Divs = td(7).find('> div');
@@ -160,20 +169,20 @@ function parseRow($, $tr) {
   // TD 10 ── ABA 集中度（整体点击率 + 前3 ARA ASIN）
   const $td10 = td(10);
   const araClickRateRaw = $td10.find('[pop-type="click_rate"]').first().text().replace('%', '').trim();
-  const araClickRate = toFloat(araClickRateRaw) != null ? toFloat(araClickRateRaw) / 100 : null;
+  const araClickRate = round4(toFloat(araClickRateRaw) != null ? toFloat(araClickRateRaw) / 100 : null);
   const araAsinList = parseAraAsinList($td10);
 
   // ARA 转化份额（紧跟弹出框之后的 .text-muted，若有数值则解析）
   const araShareRateRaw = $td10.find('.text-muted').last().text().replace('%', '').trim();
-  const araShareRate = (araShareRateRaw && araShareRateRaw !== 'N/A')
+  const araShareRate = round4((araShareRateRaw && araShareRateRaw !== 'N/A')
     ? toFloat(araShareRateRaw) / 100
-    : null;
+    : null);
 
   // TD 11 ── ABA 排名（跳过，不在目标输出字段中）
 
   // TD 12 ── 货流值（goodsValue）
   const goodsValueRaw = td(12).find('div').first().text().replace('%', '').trim();
-  const goodsValue = toFloat(goodsValueRaw) != null ? toFloat(goodsValueRaw) / 100 : null;
+  const goodsValue = round4(toFloat(goodsValueRaw) != null ? toFloat(goodsValueRaw) / 100 : null);
 
   // TD 13 ── PPC 竞价（读取 hidden input: ppc-item-obj）
   const ppcStr = td(13).find('[ppc-item-obj]').attr('value') || '';

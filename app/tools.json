@@ -701,13 +701,6 @@
           "type": "string",
           "description": "排除的关键字，例如 portable"
         },
-        "departments": {
-          "type": "array",
-          "description": "查询类目 code 列表，例如 [\"automotive\",\"baby-products\"]，见关键词选品类目接口",
-          "items": {
-            "type": "string"
-          }
-        },
         "month": {
           "type": "string",
           "description": "筛选日期，格式 yyyyMM，支持近24个月，例如 202607；留空表示最近月份"
