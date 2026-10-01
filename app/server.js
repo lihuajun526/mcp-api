@@ -30,7 +30,7 @@ app.use((err, req, res, next) => {
     return res.status(502).json({ success: false, message: err.message, data });
   }
   console.error('Unhandled error:', err);
-  return res.status(500).json({ success: false, message: err.message || 'Internal Server Error', data: null });
+  return res.status(500).json({ success: false, message: 'Internal Server Error', data: null });
 });
 
 const server = app.listen(config.port, () => {

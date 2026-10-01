@@ -4,12 +4,12 @@ const config = require('../../config');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
-const { transformAsinSalesResponse } = require('../../transformers/asinSalesTransformer');
+const { transformAsinPredictionResponse } = require('../../transformers/asinPredictionTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'ASIN_SALES';
+const ENDPOINT_CODE = 'ASIN_PREDICTION';
 
-async function fetchAsinSales(request, session) {
+async function fetchAsinPrediction(request, session) {
   const body = new URLSearchParams();
   body.append('station', request.marketplace);
   body.append('asin', request.asin);
@@ -33,15 +33,15 @@ async function fetchAsinSales(request, session) {
   );
 }
 
-async function queryAsinSales(user, request) {
+async function queryAsinPrediction(user, request) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) {
     return cached;
   }
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinSales(request, session);
-  const transformed = sanitizeInternalFields(transformAsinSalesResponse(raw, request));
+  const raw = await fetchAsinPrediction(request, session);
+  const transformed = sanitizeInternalFields(transformAsinPredictionResponse(raw, request));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
@@ -50,4 +50,4 @@ async function queryAsinSales(user, request) {
   return transformed;
 }
 
-module.exports = { queryAsinSales };
+module.exports = { queryAsinPrediction };

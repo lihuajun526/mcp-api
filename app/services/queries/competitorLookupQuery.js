@@ -19,7 +19,7 @@ async function fetchCompetingLookup(request, session) {
     'sec-fetch-site': 'same-origin',
     'sec-fetch-mode': 'cors',
     'sec-fetch-dest': 'empty',
-    'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9',
+    'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
     'user-agent': session.userAgent

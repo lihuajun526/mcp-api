@@ -60,17 +60,17 @@ class SellerSpriteMcpClient {
    */
   async ensureReady() {
     if (!this.cfg.enabled) {
-      throw new UpstreamError('卖家精灵 MCP 转发未启用', { hint: '检查 SELLERSPRITE_MCP_ENABLED 配置' });
+      throw new UpstreamError('工具转发服务未启用', { hint: '请联系管理员' });
     }
     if (!this.cfg.secretKey) {
-      throw new UpstreamError('缺少卖家精灵 MCP 密钥', { hint: '配置 SELLERSPRITE_MCP_SECRET_KEY（注意与 API Key 不通用）' });
+      throw new UpstreamError('工具转发服务配置不完整', { hint: '请联系管理员' });
     }
     if (this.state === STATE.READY) return;
 
     const now = Date.now();
     if (now < this._nextRetryAt) {
-      throw new UpstreamError(`卖家精灵 MCP 暂时不可用，${Math.ceil((this._nextRetryAt - now) / 1000)}s 后重试`, {
-        hint: '上游连接失败处于退避冷却期',
+      throw new UpstreamError(`工具转发服务暂时不可用，${Math.ceil((this._nextRetryAt - now) / 1000)}s 后重试`, {
+        hint: '服务连接失败处于冷却期',
         cause: this._lastError || undefined
       });
     }
@@ -93,8 +93,8 @@ class SellerSpriteMcpClient {
         this._nextRetryAt = Date.now() + this._backoffMs;
         this._backoffMs = Math.min(this._backoffMs * 2, BACKOFF_MAX_MS);
         console.error(`[sellersprite-mcp] connect failed: ${e.message} (retry in ${this._backoffMs / 1000}s)`);
-        throw new UpstreamError('卖家精灵 MCP 连接失败', {
-          hint: '检查网络与 SELLERSPRITE_MCP_SECRET_KEY 是否有效',
+        throw new UpstreamError('工具转发服务连接失败', {
+          hint: '请联系管理员检查服务配置',
           cause: e
         });
       })
@@ -178,8 +178,8 @@ class SellerSpriteMcpClient {
     // 上游执行失败：{ content: [{type:'text',text:'错误信息'}], isError: true }
     if (result && result.isError) {
       const text = extractText(result);
-      throw new UpstreamError(text || `上游工具 ${name} 执行失败`, {
-        hint: '上游返回执行错误，请检查参数后重试；若提示密钥/额度问题请联系管理员'
+      throw new UpstreamError(text || '工具执行失败', {
+        hint: '请检查参数后重试；如持续失败请联系管理员'
       });
     }
 
@@ -199,7 +199,7 @@ class SellerSpriteMcpClient {
 
     if (envelope && typeof envelope === 'object' && 'code' in envelope) {
       if (envelope.code !== 'OK') {
-        throw new UpstreamError(envelope.message || `上游返回 ${envelope.code}`, {
+        throw new UpstreamError(envelope.message || `服务返回错误码 ${envelope.code}`, {
           upstreamCode: envelope.code,
           hint: hintByUpstreamCode(envelope.code)
         });
@@ -218,7 +218,7 @@ class SellerSpriteMcpClient {
     if (body.error) {
       throw new UpstreamError(body.error.message || `JSON-RPC error ${body.error.code}`, {
         upstreamCode: body.error.code,
-        hint: '上游协议层错误'
+        hint: '协议层错误，请稍后重试'
       });
     }
     return body.result;
@@ -257,10 +257,10 @@ class SellerSpriteMcpClient {
       });
     } catch (e) {
       const status = e.response && e.response.status;
-      const err = new UpstreamError(`上游请求失败: ${e.message}`, {
+      const err = new UpstreamError('服务请求失败', {
         httpStatus: status || null,
         upstreamCode: 'NETWORK',
-        hint: status === 401 || status === 403 ? 'MCP 密钥无效或未授权' : '网络异常或上游不可用',
+        hint: status === 401 || status === 403 ? '请联系管理员检查服务密钥' : '网络异常，请稍后重试',
         url: this.cfg.url
       });
       throw err;
@@ -278,7 +278,7 @@ class SellerSpriteMcpClient {
     try {
       return JSON.parse(resp.data);
     } catch (e) {
-      throw new UpstreamError('上游响应非 JSON，解析失败', { upstreamCode: 'NETWORK', url: this.cfg.url });
+      throw new UpstreamError('服务响应解析失败', { upstreamCode: 'NETWORK', url: this.cfg.url });
     }
   }
 }
@@ -322,7 +322,7 @@ function parseSsePayload(raw) {
       // 继续尝试下一个块
     }
   }
-  throw new UpstreamError('上游 SSE 响应解析失败', { upstreamCode: 'NETWORK' });
+  throw new UpstreamError('服务响应解析失败', { upstreamCode: 'NETWORK' });
 }
 
 /** 按上游业务错误码给出下一步建议 */
@@ -331,15 +331,15 @@ function hintByUpstreamCode(code) {
     case 'ERROR_SECRET_KEY':
     case 'ERROR_SECRET_KEY_INVALID':
     case 'ERROR_UNAUTHORIZED':
-      return 'MCP 密钥无效，请检查 SELLERSPRITE_MCP_SECRET_KEY';
+      return '请联系管理员检查服务密钥';
     case 'ERROR_SECRET_KEY_OVERDUE':
-      return 'MCP 密钥已过期，请到卖家精灵开放平台续期';
+      return '服务密钥已过期，请联系管理员续期';
     case 'ERROR_VISIT_MAX':
-      return '上游调用次数已达上限，请升级套餐或下月再试';
+      return '调用次数已达上限，请联系管理员';
     case 'ERROR_PARAM':
-      return '参数错误，请对照官方文档检查入参';
+      return '参数错误，请检查入参';
     default:
-      return '上游业务错误，请稍后重试';
+      return '服务异常，请稍后重试';
   }
 }
 

@@ -91,7 +91,7 @@ async function listProxiedTools() {
     .filter((t) => !localTools[t.name]) // 防御：与本地实现重名的一律不转发
     .map((t) => ({
       name: prefix + t.name,
-      description: `[卖家精灵官方MCP转发] ${t.description || ''}`.slice(0, 1024),
+      description: (t.description || '').slice(0, 1024),
       inputSchema: t.inputSchema || { type: 'object', properties: {} }
     }));
 }

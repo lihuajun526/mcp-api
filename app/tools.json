@@ -29,15 +29,6 @@
           "type": "string",
           "description": "关键词，例如 desk lamp"
         },
-        "matchType": {
-          "type": "integer",
-          "description": "关键词匹配方式：1=词组匹配，2=模糊匹配（默认），3=精准匹配",
-          "enum": [
-            1,
-            2,
-            3
-          ]
-        },
         "brand": {
           "type": "string",
           "description": "品牌名称，例如 Apple"
@@ -59,10 +50,6 @@
         "nodeIdPath": {
           "type": "string",
           "description": "类目节点 id 字符串，例如 172282:281407，通过 product_node 工具获取"
-        },
-        "nodeIdPathEqual": {
-          "type": "boolean",
-          "description": "类目查询方式：true=精确查当前类目，false=包含子类目（默认 false）"
         },
         "variation": {
           "type": "string",

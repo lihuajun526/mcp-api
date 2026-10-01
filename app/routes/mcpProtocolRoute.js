@@ -4,6 +4,7 @@ const authService = require('../services/authService');
 const toolHandlers = require('./tools');
 const proxyTools = require('./tools/proxyTools');
 const { assertMarketplace } = require('../utils/validation');
+const { BusinessError, UpstreamError } = require('../errors');
 
 const router = express.Router();
 
@@ -21,13 +22,15 @@ function fail(id, code, message) {
  */
 function errorEnvelope(e) {
   // 注意：不向外暴露 e.url 等第三方/内部实现信息；url 仅记录到服务端日志
+  // 仅对已知业务错误类型透出 message，未知系统错误（如数据库连接失败）使用通用提示，避免暴露内部实现细节
+  const isSafeError = e instanceof BusinessError || e instanceof UpstreamError;
   const data = {};
   if (e.upstreamCode !== undefined && e.upstreamCode !== null) data.upstreamCode = e.upstreamCode;
   if (e.httpStatus !== undefined && e.httpStatus !== null) data.httpStatus = e.httpStatus;
   if (e.hint) data.hint = e.hint;
   return {
     code: e.errorCode || 'INTERNAL_ERROR',
-    message: e.message || 'internal error',
+    message: isSafeError ? (e.message || 'internal error') : 'internal error',
     data: Object.keys(data).length ? data : null
   };
 }
@@ -80,12 +83,12 @@ router.post('/mcp', async (req, res) => {
 
       const isProxy = proxyTools.isProxyTool(toolName);
 
+      // 统一校验并归一化 marketplace 枚举（非法值直接返回 JSON-RPC -32602）
+      if (args.marketplace !== undefined && args.marketplace !== null && args.marketplace !== '') {
+        args.marketplace = assertMarketplace(args.marketplace);
+      }
+
       if (isProxy) {
-        // 代理工具：站点集合以官方 MCP 为准（含 BR/AU/AE，本地校验未覆盖），
-        // 仅做大写归一化，具体合法性交给上游校验并返回明确错误
-        if (args.marketplace !== undefined && args.marketplace !== null && args.marketplace !== '') {
-          args.marketplace = String(args.marketplace).trim().toUpperCase();
-        }
         try {
           // 传入 user 以支持积分扣除（与本地工具行为对称）
           const result = await proxyTools.handleProxyCall(toolName, args, user);
@@ -97,11 +100,6 @@ router.post('/mcp', async (req, res) => {
           console.error(`proxy tool ${toolName} failed:`, e.message, e.url ? `| upstream: ${e.url}` : '');
           return res.json(ok(id, errorEnvelope(e)));
         }
-      }
-
-      // 本地工具统一校验并归一化 marketplace 枚举（非法值直接返回 JSON-RPC -32602）
-      if (args.marketplace !== undefined && args.marketplace !== null && args.marketplace !== '') {
-        args.marketplace = assertMarketplace(args.marketplace);
       }
 
       const handler = toolHandlers[toolName];
@@ -126,8 +124,11 @@ router.post('/mcp', async (req, res) => {
 
     return res.json(fail(id, -32601, `Method not found: ${method}`));
   } catch (e) {
-    const code = e.code && typeof e.code === 'number' ? e.code : -32000;
-    return res.json(fail(id, code, e.message || 'internal error'));
+    // 已知安全错误（参数校验/业务/上游）透出 message；系统级错误（如数据库连接失败）只记日志、返回通用提示
+    const isSafeError = typeof e.code === 'number' || e instanceof BusinessError || e instanceof UpstreamError;
+    if (!isSafeError) console.error('Unhandled MCP error:', e);
+    const code = typeof e.code === 'number' ? e.code : -32000;
+    return res.json(fail(id, code, isSafeError ? (e.message || 'internal error') : 'internal error'));
   }
 });
 

@@ -26,8 +26,8 @@ module.exports = {
       asinList: Array.isArray(args.asinList) ? args.asinList : [String(args.asinList)],
       relations: Array.isArray(args.relations) ? args.relations : [String(args.relations)],
       variations: args.variations === true,
-      page: Number(args.page) || 1,
-      size: Number(args.size) || 50,
+      page: (args.page && !isNaN(Number(args.page))) ? Number(args.page) : 1,
+      size: (args.size && !isNaN(Number(args.size))) ? Number(args.size) : 50,
       orderField: args.order && args.order.field ? String(args.order.field) : (args.orderField ? String(args.orderField) : 'createdTime'),
       orderDesc: args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false)
     });

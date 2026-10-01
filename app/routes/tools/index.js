@@ -4,7 +4,7 @@ const tools = [
   require('./asinCompetitorTool'),
   require('./productResearchTool'),
   require('./bsrSalesTool'),
-  require('./asinSalesTool'),
+  require('./asinPredictionTool'),
   require('./asinReversingTool'),
   require('./keywordResearchTool'),
   require('./keywordMinerTool'),

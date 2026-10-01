@@ -41,12 +41,8 @@ module.exports = {
     trafficListingPath: '/v3/api/relation/traffic',
     marketResearchPath: '/v2/market-research',
     productResearchPath: '/v3/api/product-research',
-    openApiBaseUrl: process.env.SELLERSPRITE_OPEN_API_BASE_URL || 'https://api.sellersprite.com',
-    // open API 认证密钥（secret-key header），用于 asin_sales_trend 等走 open API 的接口
-    // 优先取独立环境变量，回退到 MCP 密钥（同一账号下通常相同）
-    openApiSecretKey: process.env.SELLERSPRITE_OPEN_API_SECRET_KEY || process.env.SELLERSPRITE_MCP_SECRET_KEY || '',
     productNodePath: '/v1/product/node',
-    asinSalesTrendPath: '/v1/asin',
+    chartMonthlyPath: '/v2/competitor-lookup/chart-monthly.json',
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0',
     timeoutMs: Number(process.env.SELLERSPRITE_TIMEOUT_MS || 10000)
   },

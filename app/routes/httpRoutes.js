@@ -7,7 +7,7 @@ const { queryAsinCompetitor } = require('../services/queries/asinCompetitorQuery
 const { queryProductResearch } = require('../services/queries/productResearchQuery');
 const { queryBsrSales } = require('../services/queries/bsrSalesQuery');
 const { queryAsinReversing } = require('../services/queries/asinReversingQuery');
-const { queryAsinSales } = require('../services/queries/asinSalesQuery');
+const { queryAsinPrediction } = require('../services/queries/asinPredictionQuery');
 const { queryKeywordResearch } = require('../services/queries/keywordResearchQuery');
 const { queryTrafficExtend } = require('../services/queries/trafficExtendQuery');
 const { queryKeywordOrder } = require('../services/queries/keywordOrderQuery');
@@ -74,7 +74,7 @@ router.post('/api/v1/mcp/asin/sales', async (req, res, next) => {
     const apiKey = req.header(config.mcp.apiKeyHeader);
     const user = await authService.authenticate(apiKey);
     await authService.consumeRateLimit(user.userId, user.qpsLimit);
-    const data = await queryAsinSales(user, req.body || {});
+    const data = await queryAsinPrediction(user, req.body || {});
     res.json({ success: true, message: 'OK', data });
   } catch (e) {
     next(e);

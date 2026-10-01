@@ -19,7 +19,7 @@ class UpstreamError extends Error {
   constructor(message, options = {}) {
     super(message);
     this.name = 'UpstreamError';
-    this.errorCode = 'UPSTREAM_ERROR';
+    this.errorCode = 'SERVICE_ERROR';
     this.upstreamCode = options.upstreamCode !== undefined ? options.upstreamCode : null;
     this.httpStatus = options.httpStatus !== undefined ? options.httpStatus : null;
     this.url = options.url || null;

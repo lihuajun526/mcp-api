@@ -53,7 +53,7 @@ async function fetchKeywordOrder(request, session) {
 
   const headers = {
     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8',
+    'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
     cookie: session.cookie || '',
     'user-agent': session.userAgent || config.sellerSprite.userAgent,
     referer: `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordOrderPath}`

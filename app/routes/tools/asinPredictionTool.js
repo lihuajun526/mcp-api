@@ -1,4 +1,4 @@
-const { queryAsinSales } = require('../../services/queries/asinSalesQuery');
+const { queryAsinPrediction } = require('../../services/queries/asinPredictionQuery');
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
@@ -11,7 +11,7 @@ module.exports = {
       throw err;
     }
 
-    const detail = await queryAsinSales(user, {
+    const detail = await queryAsinPrediction(user, {
       marketplace: String(args.marketplace),
       asin: String(args.asin)
     });

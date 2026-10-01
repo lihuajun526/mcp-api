@@ -16,7 +16,7 @@ module.exports = {
     const data = await queryAsinCompetitor(user, {
       marketplace: String(args.marketplace),
       asin: String(args.asin),
-      size: args.size ? Number(args.size) : 20
+      size: (args.size && !isNaN(Number(args.size))) ? Number(args.size) : 20
     });
 
     return buildSuccess(args, data);

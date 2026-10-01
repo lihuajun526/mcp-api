@@ -55,7 +55,7 @@ module.exports = {
         field: args.order && args.order.field != null ? String(args.order.field) : 'total_units',
         desc: args.order && args.order.desc != null ? !!args.order.desc : true
       },
-      page: args.page ? Number(args.page) : 1,
+      page: (args.page && !isNaN(Number(args.page))) ? Number(args.page) : 1,
       size,
       // 官方 dimensionType（尺寸类型集合，逗号分隔）-> 上游 pkgDimensionTypeList
       // 枚举：SS（小号标准尺寸）、LS（大号标准尺寸）、SB（小号大件）

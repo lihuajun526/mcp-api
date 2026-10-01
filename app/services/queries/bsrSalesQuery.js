@@ -20,7 +20,7 @@ async function fetchBsrSales(request, session) {
 
   const headers = {
     accept: session.accept || 'application/json, text/javascript, */*; q=0.01',
-    'accept-language': session.acceptLanguage || 'zh,en;q=0.9',
+    'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
     'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
     'x-requested-with': 'XMLHttpRequest',
     cookie: session.cookie || '',

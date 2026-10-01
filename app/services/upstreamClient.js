@@ -24,7 +24,7 @@ const SESSION_HINT = '数据服务会话已失效，请联系管理员更新会�
 const RATE_LIMIT_HINT = '触发数据服务限流，请稍后重试或降低调用频率';
 const TIMEOUT_HINT = '数据服务响应超时，请稍后重试；如持续超时请联系管理员';
 const SERVER_HINT = '数据服务暂时不可用，请稍后重试';
-const EMPTY_DATA_HINT = '数据服务查询配额可能已耗尽或会话权限不足，请联系管理员处理后重试';
+const EMPTY_DATA_HINT = '查询异常，请联系管理员处理后重试';
 const GENERIC_HINT = '请检查请求参数后重试；如持续失败请联系管理员';
 
 function bodyMessage(data) {
@@ -64,7 +64,7 @@ function wrapAxiosError(e, url) {
       url, httpStatus: status, hint, cause: e
     });
   }
-  return new UpstreamError(`数据服务调用失败: ${e && e.message ? e.message : '未知错误'}`, { url, hint: GENERIC_HINT, cause: e });
+  return new UpstreamError('数据服务调用失败', { url, hint: GENERIC_HINT, cause: e });
 }
 
 /**
