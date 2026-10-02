@@ -140,7 +140,7 @@ function transformKeywordConversionResponse(pager, request) {
     total,
     took: 0,
     url: null,
-    order: { field: '', desc: request.orderDesc !== false },
+    order: { field: '', desc: true },
     items,
     terminal: null,
     hasNextPage: respPage < pages,

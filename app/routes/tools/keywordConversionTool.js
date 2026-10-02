@@ -1,9 +1,23 @@
 const { queryKeywordConversion } = require('../../services/queries/keywordConversionQuery');
 const { buildSuccess } = require('../../toolResponse');
 
-// Open API 时间类型 → 第三方 timeType
-// Open API: WEEK | 90D  ；第三方: W | 90D
-const TIME_TYPE_MAP = { WEEK: 'W', W: 'W', '90D': '90D' };
+// 对外时间类型 WEEK | 90D → 上游 timeType：WEEK→w、90D→90D
+const TIME_TYPE_MAP = { WEEK: 'w', '90D': '90D' };
+
+// 分页大小仅支持 20/50/100，默认 50
+const PAGE_SIZES = [20, 50, 100];
+const DEFAULT_PAGE_SIZE = 50;
+
+function resolvePageSize(value) {
+  if (value == null || value === '') return DEFAULT_PAGE_SIZE;
+  const size = Number(value);
+  if (!PAGE_SIZES.includes(size)) {
+    const err = new Error(`size must be one of: ${PAGE_SIZES.join(', ')}`);
+    err.code = -32602;
+    throw err;
+  }
+  return size;
+}
 
 const RANGE_FIELDS = [
   'minSearches', 'maxSearches',
@@ -31,9 +45,9 @@ module.exports = {
       throw err;
     }
 
-    const timeType = TIME_TYPE_MAP[args.timeType] || 'W';
+    const timeType = TIME_TYPE_MAP[args.timeType] || 'w'; // 默认 WEEK
     const page = Math.max(Number(args.page) || 1, 1);
-    const size = Math.min(Number(args.size) || 100, 100);
+    const size = resolvePageSize(args.size);
 
     const params = {
       marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
@@ -41,10 +55,9 @@ module.exports = {
       pageSize: size,
       market: String(args.marketplace),
       timeType,
-      bidMatchType: args.bidMatchType || 'exact',
-      desc: args.orderDesc !== false,
+      bidMatchType: args.keywordBidMatchType || 'exact', // PPC竞价模式：phrase/exact/broad
       keywordMatchType: 'all',
-      matchType: args.matchType != null ? Number(args.matchType) : 1,
+      matchType: args.matchType != null ? Number(args.matchType) : 1, // 0=词组匹配，1=广泛匹配（默认）
       keyword: String(args.keyword)
     };
 

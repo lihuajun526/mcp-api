@@ -1428,26 +1428,29 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，最大 100，默认 100",
-          "minimum": 1,
-          "maximum": 100
-        },
-        "orderDesc": {
-          "type": "boolean",
-          "description": "是否降序，默认 true"
-        },
-        "bidMatchType": {
-          "type": "string",
-          "description": "PPC出价匹配类型：exact（精准，默认）、phrase（词组）、broad（广泛）",
+          "description": "每页条数，默认 50，仅支持 20/50/100",
           "enum": [
-            "exact",
+            20,
+            50,
+            100
+          ]
+        },
+        "keywordBidMatchType": {
+          "type": "string",
+          "description": "PPC竞价模式：phrase=词组匹配，exact=精准匹配（默认），broad=广泛匹配",
+          "enum": [
             "phrase",
+            "exact",
             "broad"
           ]
         },
         "matchType": {
           "type": "integer",
-          "description": "关键词匹配方式：1=广泛匹配（默认），2=词组匹配，3=精准匹配"
+          "description": "包含词匹配方式：0=词组匹配，1=广泛匹配（默认）",
+          "enum": [
+            0,
+            1
+          ]
         },
         "includeKeywords": {
           "type": "array",
@@ -2583,7 +2586,7 @@
   },
   {
     "name": "keyword_miner",
-    "description": "关键词挖掘：拓展关键词的衍生词以及含有该词根的长尾关键词。输入一个关键词，返回相关长尾词的搜索量、购买量、购买率、商品数、广告竞品数、供需比、均价、评分数、评分值、PPC 竞价、SPR、标题密度、相关度、亚马逊推荐词标识、ABA 搜索排名、点击量、展示量等数据。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、page、size、pages、total、order、items(marketplace/keyword/keywordCn/keywordJp/departments/searches/purchases/purchaseRate/monopolyClickRate/products/adProducts/supplyDemandRatio/avgPrice/avgRatings/avgRating/bidMin/bidMax/bid/cvsShareRate/wordCount/titleDensity/spr/relevancy/amazonChoice/searchRank/clicks/impressions 等)。",
+    "description": "关键词挖掘：拓展关键词的衍生词以及含有该词根的长尾关键词。输入一组关键词（keywordList，最多 200 个），返回相关长尾词的搜索量、购买量、购买率、商品数、广告竞品数、供需比、均价、评分数、评分值、PPC 竞价、SPR、标题密度、相关度、亚马逊推荐词标识、ABA 搜索排名、点击量、展示量等数据。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、page、size、pages、total、order、items(marketplace/keyword/keywordCn/keywordJp/departments/searches/purchases/purchaseRate/monopolyClickRate/products/adProducts/supplyDemandRatio/avgPrice/avgRatings/avgRating/bidMin/bidMax/bid/cvsShareRate/wordCount/titleDensity/spr/relevancy/amazonChoice/searchRank/clicks/impressions 等)。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2603,13 +2606,11 @@
             "IN"
           ]
         },
-        "keyword": {
-          "type": "string",
-          "description": "必填，关键词，例如 phone stand"
-        },
         "keywordList": {
           "type": "array",
-          "description": "批量查询关键词列表，例如 [\"phone stand\"]",
+          "description": "必填，批量查询关键词列表，例如 [\"phone stand\"]，最多 200 个",
+          "minItems": 1,
+          "maxItems": 200,
           "items": {
             "type": "string"
           }
@@ -2625,17 +2626,20 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 50，最大 100",
-          "minimum": 1,
-          "maximum": 100
+          "description": "每页条数，默认 50，仅支持 20/50/100",
+          "enum": [
+            20,
+            50,
+            100
+          ]
         },
         "order": {
           "type": "object",
-          "description": "排序设置（见表2.4；加入筛选条件后不能以相关度 relevancy 排序）",
+          "description": "排序设置",
           "properties": {
             "field": {
               "type": "string",
-              "description": "排序字段，默认 searches；可选：searches、purchases、purchaseRate、products、adProducts、supplyDemandRatio、monopolyClickRate、spr、bid、avgPrice、avgRating、avgRatings、cvsShareRate、relevancy、searchRank、wordCount、titleDensity、clicks、impressions"
+              "description": "排序字段，默认 relevancy；可选：relevancy、searchRank、searches、purchases、purchaseRate、impressions、clicks、spr、titleDensity、products、supplyDemandRatio、adProducts、monopolyClickRate、cvsShareRate、bid、avgPrice、avgRatings、avgRating"
             },
             "desc": {
               "type": "boolean",
@@ -2653,10 +2657,19 @@
         },
         "matchType": {
           "type": "integer",
-          "description": "匹配方式：2=广泛匹配（默认），3=词组匹配",
+          "description": "匹配方式：0=词组匹配，1=广泛匹配（默认）",
           "enum": [
-            2,
-            3
+            0,
+            1
+          ]
+        },
+        "keywordBidMatchType": {
+          "type": "string",
+          "description": "PPC竞价模式：phrase=词组匹配，exact=精准匹配（默认），broad=广泛匹配",
+          "enum": [
+            "phrase",
+            "exact",
+            "broad"
           ]
         },
         "amazonChoice": {
@@ -2818,7 +2831,7 @@
       },
       "required": [
         "marketplace",
-        "keyword"
+        "keywordList"
       ],
       "additionalProperties": false
     }
