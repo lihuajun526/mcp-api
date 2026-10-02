@@ -9,64 +9,9 @@ const { transformAbaResearchResponse } = require('../../transformers/abaResearch
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'ABA_RESEARCH_WEEKLY';
 
-// marketplace 公开代码 → 第三方 market 代码 (US→COM)
-const MARKET_CODE_MAP = {
-  US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
-};
-
-async function fetchAbaResearchWeekly(request, session) {
-  const market = MARKET_CODE_MAP[request.marketplace] || request.marketplace;
-  const page = Math.max(Number(request.page) || 1, 1);
-  const size = Math.min(Number(request.size) || 40, 40);
-
-  const payload = {
-    market,
-    reverseType: 'W',
-    page,
-    size,
-    departments: Array.isArray(request.departments) ? request.departments : [],
-    keywordBidMatchType: 'exact',
-    order: {
-      field: request.orderField || 'searchfrequencyrank',
-      desc: request.orderDesc !== false
-    }
-  };
-
-  // 日期 (按周: yyyMMdd 格式的周六日期, 转为表名 ara_YYYYMMDD)
-  if (request.date) {
-    payload.table = `ara_${request.date}`;
-  }
-
-  // 关键词筛选
-  if (request.includeKeywords) payload.q = String(request.includeKeywords);
-  if (request.excludeKeywords) payload.excludeKeywords = String(request.excludeKeywords);
-  if (request.exactFlag != null) payload.exactFlag = Boolean(request.exactFlag);
-
-  // 搜索增长量/率
-  if (request.rankGrowthValue != null) payload.rankGrowthValue = Number(request.rankGrowthValue);
-  if (request.rankGrowthRate != null) payload.rankGrowthRate = Number(request.rankGrowthRate);
-
-  // 范围筛选参数
-  const rangeFields = [
-    'minRankGrowthRate', 'maxRankGrowthRate',
-    'minSearchRank', 'maxSearchRank',
-    'minSearches', 'maxSearches',
-    'minMonopolyClickRate', 'maxMonopolyClickRate',
-    'minConversionRate', 'maxConversionRate',
-    'minWordCount', 'maxWordCount',
-    'minSPR', 'maxSPR',
-    'minTitleDensity', 'maxTitleDensity',
-    'minClicks', 'maxClicks',
-    'minImpressions', 'maxImpressions'
-  ];
-  for (const field of rangeFields) {
-    if (request[field] != null && request[field] !== '') {
-      payload[field] = Number(request[field]);
-    }
-  }
-
-  if (request.searchModel != null) payload.searchModel = Number(request.searchModel);
+async function fetchAbaResearchWeekly(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...payload } = params;
 
   const headers = {
     accept: 'application/json, text/plain, */*',
@@ -87,20 +32,20 @@ async function fetchAbaResearchWeekly(request, session) {
   );
 }
 
-async function queryAbaResearchWeekly(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryAbaResearchWeekly(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAbaResearchWeekly(request, session);
+  const raw = await fetchAbaResearchWeekly(params, session);
 
   const rawData = raw && raw.data ? raw.data : raw;
-  const transformed = sanitizeInternalFields(transformAbaResearchResponse(rawData, request));
+  const transformed = sanitizeInternalFields(transformAbaResearchResponse(rawData, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

@@ -1,7 +1,6 @@
 const upstreamClient = require('../upstreamClient');
 const { sanitizeInternalFields } = require('../../toolResponse');
 const config = require('../../config');
-const { BusinessError } = require('../../errors');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
@@ -11,8 +10,6 @@ const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'COMPETING_LOOKUP';
 
 async function fetchCompetingLookup(request, session) {
-  const asins = Array.isArray(request.asins) ? request.asins : (request.asins ? [request.asins] : []);
-  const nodeIdPaths = request.nodeIdPath ? [request.nodeIdPath] : (request.nodeIdPaths || []);
   const headers = {
     accept: 'application/json, text/plain, */*',
     origin: 'https://www.sellersprite.com',
@@ -32,11 +29,6 @@ async function fetchCompetingLookup(request, session) {
 }
 
 async function queryCompetingLookup(user, request) {
-  
-  if (request.asins && request.asins.length > 40) {
-    throw new BusinessError('单次查询ASIN数量不能超过40个', 400);
-  }
-
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) return cached;
 

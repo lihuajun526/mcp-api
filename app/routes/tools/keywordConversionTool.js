@@ -1,6 +1,26 @@
 const { queryKeywordConversion } = require('../../services/queries/keywordConversionQuery');
 const { buildSuccess } = require('../../toolResponse');
 
+// Open API 时间类型 → 第三方 timeType
+// Open API: WEEK | 90D  ；第三方: W | 90D
+const TIME_TYPE_MAP = { WEEK: 'W', W: 'W', '90D': '90D' };
+
+const RANGE_FIELDS = [
+  'minSearches', 'maxSearches',
+  'minClicks', 'maxClicks',
+  'minPurchases', 'maxPurchases',
+  'minSearchConvRate', 'maxSearchConvRate',
+  'minClickConvRate', 'maxClickConvRate',
+  'minPpc', 'maxPpc',
+  'minCpa', 'maxCpa',
+  'minProductPrice', 'maxProductPrice',
+  'minAcos', 'maxAcos',
+  'minClickingRate', 'maxClickingRate',
+  'minConversionRate', 'maxConversionRate',
+  'minPhraseCount', 'maxPhraseCount',
+  'minBudget', 'maxBudget'
+];
+
 module.exports = {
   name: 'keyword_conversion',
 
@@ -11,46 +31,40 @@ module.exports = {
       throw err;
     }
 
-    const data = await queryKeywordConversion(user, {
-      marketplace: String(args.marketplace),
-      keyword: String(args.keyword),
-      timeType: args.timeType ? String(args.timeType) : 'WEEK',
-      page: args.page,
-      size: args.size,
-      bidMatchType: args.bidMatchType,
-      matchType: args.matchType,
-      orderDesc: args.orderDesc,
-      includeKeywords: Array.isArray(args.includeKeywords) ? args.includeKeywords : undefined,
-      excludeKeywords: Array.isArray(args.excludeKeywords) ? args.excludeKeywords : undefined,
-      customAvgProductPrice: args.customAvgProductPrice,
-      minSearches: args.minSearches,
-      maxSearches: args.maxSearches,
-      minClicks: args.minClicks,
-      maxClicks: args.maxClicks,
-      minPurchases: args.minPurchases,
-      maxPurchases: args.maxPurchases,
-      minSearchConvRate: args.minSearchConvRate,
-      maxSearchConvRate: args.maxSearchConvRate,
-      minClickConvRate: args.minClickConvRate,
-      maxClickConvRate: args.maxClickConvRate,
-      minPpc: args.minPpc,
-      maxPpc: args.maxPpc,
-      minCpa: args.minCpa,
-      maxCpa: args.maxCpa,
-      minProductPrice: args.minProductPrice,
-      maxProductPrice: args.maxProductPrice,
-      minAcos: args.minAcos,
-      maxAcos: args.maxAcos,
-      minClickingRate: args.minClickingRate,
-      maxClickingRate: args.maxClickingRate,
-      minConversionRate: args.minConversionRate,
-      maxConversionRate: args.maxConversionRate,
-      minPhraseCount: args.minPhraseCount,
-      maxPhraseCount: args.maxPhraseCount,
-      minBudget: args.minBudget,
-      maxBudget: args.maxBudget
-    });
+    const timeType = TIME_TYPE_MAP[args.timeType] || 'W';
+    const page = Math.max(Number(args.page) || 1, 1);
+    const size = Math.min(Number(args.size) || 100, 100);
 
+    const params = {
+      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
+      pageNum: page,
+      pageSize: size,
+      market: String(args.marketplace),
+      timeType,
+      bidMatchType: args.bidMatchType || 'exact',
+      desc: args.orderDesc !== false,
+      keywordMatchType: 'all',
+      matchType: args.matchType != null ? Number(args.matchType) : 1,
+      keyword: String(args.keyword)
+    };
+
+    for (const field of RANGE_FIELDS) {
+      if (args[field] != null && args[field] !== '') {
+        params[field] = Number(args[field]);
+      }
+    }
+
+    if (Array.isArray(args.includeKeywords) && args.includeKeywords.length > 0) {
+      params.includeKeywords = args.includeKeywords;
+    }
+    if (Array.isArray(args.excludeKeywords) && args.excludeKeywords.length > 0) {
+      params.excludeKeywords = args.excludeKeywords;
+    }
+    if (args.customAvgProductPrice != null) {
+      params.customAvgProductPrice = Number(args.customAvgProductPrice);
+    }
+
+    const data = await queryKeywordConversion(user, params);
     return buildSuccess(args, data);
   }
 };

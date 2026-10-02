@@ -9,12 +9,15 @@ const { transformAsinPredictionResponse } = require('../../transformers/asinPred
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'ASIN_PREDICTION';
 
-async function fetchAsinPrediction(request, session) {
+async function fetchAsinPrediction(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...fields } = params;
+
   const body = new URLSearchParams();
-  body.append('station', request.marketplace);
-  body.append('asin', request.asin);
-  if (request.gtk || session.gtk) {
-    body.append('gtk', request.gtk || session.gtk);
+  body.append('station', fields.station);
+  body.append('asin', fields.asin);
+  if (session.gtk) {
+    body.append('gtk', session.gtk);
   }
 
   const headers = {
@@ -33,20 +36,20 @@ async function fetchAsinPrediction(request, session) {
   );
 }
 
-async function queryAsinPrediction(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryAsinPrediction(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) {
     return cached;
   }
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinPrediction(request, session);
-  const transformed = sanitizeInternalFields(transformAsinPredictionResponse(raw, request));
+  const raw = await fetchAsinPrediction(params, session);
+  const transformed = sanitizeInternalFields(transformAsinPredictionResponse(raw, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

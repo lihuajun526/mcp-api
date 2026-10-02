@@ -24,18 +24,10 @@ const MARKETPLACE_DOMAIN = {
   AU: 'www.amazon.com.au'
 };
 
-async function fetchAsinDetail(request, session) {
-  const payload = {
-    market: request.marketplace,
-    monthName: 'bsr_sales_nearly',
-    asins: [request.asin],
-    page: 1,
-    size: 20,
-    symbolFlag: true,
-    nodeIdPaths: [],
-    order: { field: 'total_units', desc: true },
-    lowPrice: 'N'
-  };
+async function fetchAsinDetail(params, session) {
+  // marketplace 仅供后处理使用，不发往上游
+  const { marketplace, ...payload } = params;
+
   const headers = {
     accept: 'application/json, text/plain, */*',
     'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
@@ -50,17 +42,17 @@ async function fetchAsinDetail(request, session) {
   );
 }
 
-async function queryAsinDetail(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryAsinDetail(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) {
     return cached;
   }
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinDetail(request, session);
+  const raw = await fetchAsinDetail(params, session);
   const transformed = sanitizeInternalFields(transformAsinDetailResponse(raw));
   if (transformed && !transformed.marketplace) {
-    transformed.marketplace = request.marketplace;
+    transformed.marketplace = params.marketplace;
   }
   if (transformed && !transformed.asinUrl && transformed.asin) {
     const domain = MARKETPLACE_DOMAIN[transformed.marketplace] || 'www.amazon.com';
@@ -70,7 +62,7 @@ async function queryAsinDetail(user, request) {
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

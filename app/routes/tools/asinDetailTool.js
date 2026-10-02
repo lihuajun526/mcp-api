@@ -11,11 +11,22 @@ module.exports = {
       throw err;
     }
 
-    const detail = await queryAsinDetail(user, {
-      marketplace: String(args.marketplace),
-      asin: String(args.asin)
-    });
+    const marketplace = String(args.marketplace);
 
+    const params = {
+      marketplace, // 供后处理使用，不发往上游
+      market: marketplace,
+      monthName: 'bsr_sales_nearly',
+      asins: [String(args.asin)],
+      page: 1,
+      size: 20,
+      symbolFlag: true,
+      nodeIdPaths: [],
+      order: { field: 'total_units', desc: true },
+      lowPrice: 'N'
+    };
+
+    const detail = await queryAsinDetail(user, params);
     return buildSuccess(args, detail);
   }
 };

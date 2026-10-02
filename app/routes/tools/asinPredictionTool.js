@@ -11,11 +11,13 @@ module.exports = {
       throw err;
     }
 
-    const detail = await queryAsinPrediction(user, {
-      marketplace: String(args.marketplace),
+    const params = {
+      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
+      station: String(args.marketplace),
       asin: String(args.asin)
-    });
+    };
 
+    const detail = await queryAsinPrediction(user, params);
     return buildSuccess(args, detail);
   }
 };

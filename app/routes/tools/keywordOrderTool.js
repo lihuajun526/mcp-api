@@ -1,5 +1,12 @@
 const { queryKeywordOrder } = require('../../services/queries/keywordOrderQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { BusinessError } = require('../../errors');
+
+// marketplace 公开代码 → station 代码 (出单词反查页面使用公开站点代码)
+const MARKET_STATION_MAP = {
+  US: 'US', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
+  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
+};
 
 module.exports = {
   name: 'keyword_order',
@@ -17,6 +24,10 @@ module.exports = {
       ? args.asins.map(String)
       : [String(args.asins)];
 
+    if (asins.length > 20) {
+      throw new BusinessError('asins 最多支持 20 个', 400);
+    }
+
     // 官方 variation 为 List；兼容字符串写法
     const variation = Array.isArray(args.variation) ? args.variation[0] : args.variation;
 
@@ -24,21 +35,40 @@ module.exports = {
     const orderField = (args.order && args.order.field) || args.orderField;
     const orderDesc = args.order && args.order.desc != null ? args.order.desc : args.orderDesc;
 
-    const data = await queryKeywordOrder(user, {
-      marketplace: String(args.marketplace),
-      asins,
-      reverseType: String(args.reverseType),
-      date: args.date ? String(args.date) : '',
-      conversionType: Array.isArray(args.conversionType)
-        ? args.conversionType
-        : (args.conversionType ? [String(args.conversionType)] : []),
-      variation: variation ? String(variation) : 'Y',
-      page: args.page,
-      size: args.size,
-      orderField,
-      orderDesc
-    });
+    const station = MARKET_STATION_MAP[String(args.marketplace)] || String(args.marketplace);
+    const reverseType = String(args.reverseType);
+    const date = args.date ? String(args.date) : '';
 
+    // 根据 reverseType 和 date 构造表名
+    let table = '';
+    let monthlyTable = '';
+    if (reverseType === 'W' && date) {
+      table = `ara_${date}`;
+    } else if (reverseType === 'M' && date) {
+      monthlyTable = `ara_${date}`;
+    }
+
+    const variationStr = variation ? String(variation) : 'Y';
+    const conversionType = Array.isArray(args.conversionType)
+      ? args.conversionType.join(',')
+      : (args.conversionType ? String(args.conversionType) : '');
+
+    const params = {
+      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
+      station,
+      table,
+      monthlyTable,
+      asin: '',
+      'order.field': orderField || 'searchRank',
+      'order.desc': orderDesc != null ? String(orderDesc) : 'false',
+      conversionType,
+      loadVariations: variationStr === 'N' ? 'true' : 'false',
+      reverseType,
+      textareaValue: asins.join(','),
+      page: Math.max(Number(args.page) || 1, 1)
+    };
+
+    const data = await queryKeywordOrder(user, params);
     return buildSuccess(args, data);
   }
 };

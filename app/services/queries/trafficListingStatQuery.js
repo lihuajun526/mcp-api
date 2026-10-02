@@ -9,21 +9,9 @@ const { transformTrafficListingStatResponse } = require('../../transformers/traf
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'TRAFFIC_LISTING_STAT';
 
-// marketplace 公开代码 → station 代码 (US→COM)
-const MARKET_STATION_MAP = {
-  US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
-};
-
-async function fetchTrafficListingStat(request, session) {
-  const station = MARKET_STATION_MAP[request.marketplace] || request.marketplace;
-  const asinList = Array.isArray(request.asinList) ? request.asinList : [request.asinList];
-
-  const payload = {
-    asinList,
-    station,
-    queryVariations: request.queryVariations !== false
-  };
+async function fetchTrafficListingStat(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...payload } = params;
 
   const headers = {
     accept: 'application/json, text/plain, */*',
@@ -44,20 +32,20 @@ async function fetchTrafficListingStat(request, session) {
   );
 }
 
-async function queryTrafficListingStat(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryTrafficListingStat(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchTrafficListingStat(request, session);
+  const raw = await fetchTrafficListingStat(params, session);
 
   const rawData = raw && raw.data ? raw.data : raw;
-  const transformed = sanitizeInternalFields(transformTrafficListingStatResponse(rawData, request));
+  const transformed = sanitizeInternalFields(transformTrafficListingStatResponse(rawData, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

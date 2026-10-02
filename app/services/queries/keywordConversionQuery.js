@@ -9,64 +9,9 @@ const { transformKeywordConversionResponse } = require('../../transformers/keywo
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'KEYWORD_CONVERSION';
 
-// Open API 时间类型 → 第三方 timeType
-// Open API: WEEK | 90D  ；第三方: W | 90D
-const TIME_TYPE_MAP = {
-  WEEK: 'W',
-  W: 'W',
-  '90D': '90D'
-};
-
-async function fetchKeywordConversion(request, session) {
-  const market = request.marketplace || 'US';
-  const page = Math.max(Number(request.page) || 1, 1);
-  const size = Math.min(Number(request.size) || 100, 100);
-  const timeType = TIME_TYPE_MAP[request.timeType] || 'W';
-
-  const payload = {
-    pageNum: page,
-    pageSize: size,
-    market,
-    timeType,
-    bidMatchType: request.bidMatchType || 'exact',
-    desc: request.orderDesc !== false,
-    keywordMatchType: 'all',
-    matchType: request.matchType != null ? Number(request.matchType) : 1,
-    keyword: request.keyword || ''
-  };
-
-  // 范围筛选参数 (与 Open API 文档一致)
-  const rangeFields = [
-    'minSearches', 'maxSearches',
-    'minClicks', 'maxClicks',
-    'minPurchases', 'maxPurchases',
-    'minSearchConvRate', 'maxSearchConvRate',
-    'minClickConvRate', 'maxClickConvRate',
-    'minPpc', 'maxPpc',
-    'minCpa', 'maxCpa',
-    'minProductPrice', 'maxProductPrice',
-    'minAcos', 'maxAcos',
-    'minClickingRate', 'maxClickingRate',
-    'minConversionRate', 'maxConversionRate',
-    'minPhraseCount', 'maxPhraseCount',
-    'minBudget', 'maxBudget'
-  ];
-  for (const field of rangeFields) {
-    if (request[field] != null && request[field] !== '') {
-      payload[field] = Number(request[field]);
-    }
-  }
-
-  // 关键词过滤
-  if (Array.isArray(request.includeKeywords) && request.includeKeywords.length > 0) {
-    payload.includeKeywords = request.includeKeywords;
-  }
-  if (Array.isArray(request.excludeKeywords) && request.excludeKeywords.length > 0) {
-    payload.excludeKeywords = request.excludeKeywords;
-  }
-  if (request.customAvgProductPrice != null) {
-    payload.customAvgProductPrice = Number(request.customAvgProductPrice);
-  }
+async function fetchKeywordConversion(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...payload } = params;
 
   const headers = {
     accept: 'application/json, text/plain, */*',
@@ -87,21 +32,21 @@ async function fetchKeywordConversion(request, session) {
   );
 }
 
-async function queryKeywordConversion(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryKeywordConversion(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchKeywordConversion(request, session);
+  const raw = await fetchKeywordConversion(params, session);
 
   // 第三方返回格式: { code, message, data: { pager: { items, ... } } }
   const pager = raw && raw.data && raw.data.pager ? raw.data.pager : (raw && raw.data ? raw.data : raw);
-  const transformed = sanitizeInternalFields(transformKeywordConversionResponse(pager, request));
+  const transformed = sanitizeInternalFields(transformKeywordConversionResponse(pager, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

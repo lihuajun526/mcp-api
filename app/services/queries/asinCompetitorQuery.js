@@ -9,18 +9,9 @@ const { transformCompetitionResponse } = require('../../transformers/competition
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'ASIN_COMPETITOR';
 
-async function fetchAsinCompetitor(request, session) {
-  const payload = {
-    market: request.marketplace,  // 上游字段名为 market（与 competitor_lookup 一致）
-    monthName: request.month ? 'bsr_sales_monthly_' + request.month : 'bsr_sales_nearly',
-    asins: [request.asin],
-    page: 1,
-    size: request.size || 20,
-    symbolFlag: false,
-    nodeIdPaths: [],
-    order: { field: 'total_units', desc: true },
-    lowPrice: 'N'
-  };
+async function fetchAsinCompetitor(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...payload } = params;
 
   const headers = {
     accept: 'application/json, text/plain, */*',
@@ -37,20 +28,20 @@ async function fetchAsinCompetitor(request, session) {
   );
 }
 
-async function queryAsinCompetitor(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryAsinCompetitor(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinCompetitor(request, session);
+  const raw = await fetchAsinCompetitor(params, session);
   // 官方 /api/62 返回结构为数组（非分页信封），仅取 items 字段
-  const paged = transformCompetitionResponse(raw, request);
+  const paged = transformCompetitionResponse(raw, params);
   const transformed = sanitizeInternalFields(paged.items || []);
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

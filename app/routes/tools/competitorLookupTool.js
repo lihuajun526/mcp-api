@@ -1,5 +1,6 @@
 const { queryCompetingLookup } = require('../../services/queries/competitorLookupQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { BusinessError } = require('../../errors');
 const {
   assertMarketplace,
   assertMonth,
@@ -24,11 +25,16 @@ module.exports = {
     const month = args.month != null && args.month !== '' ? assertMonth(args.month) : null;
     const size = resolvePageSize(args.size);
     const matchType = assertMatchType(args.matchType);
+    const asins = toStringArray(args.asins);
+
+    if (asins.length > 40) {
+      throw new BusinessError('单次查询ASIN数量不能超过40个', 400);
+    }
 
     const data = await queryCompetingLookup(user, {
       market: marketplace,
       monthName: month ? 'bsr_sales_monthly_' + month : 'bsr_sales_nearly',
-      asins: toStringArray(args.asins),
+      asins,
       ...(args.brand ? { includeBrands: String(args.brand) } : {}),
       ...(args.sellerName ? { includeSellers: String(args.sellerName) } : {}),
       nodeIdPaths: args.nodeIdPath ? [args.nodeIdPath] : [],

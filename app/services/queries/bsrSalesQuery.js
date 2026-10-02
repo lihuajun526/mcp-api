@@ -9,13 +9,16 @@ const { transformBsrSalesResponse } = require('../../transformers/bsrSalesTransf
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'BSR_SALES';
 
-async function fetchBsrSales(request, session) {
+async function fetchBsrSales(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...fields } = params;
+
   const body = new URLSearchParams();
-  body.append('station', request.marketplace);
-  body.append('cid', request.categoryId);
-  body.append('bsr', request.bsr);
-  if (request.gtk || session.gtk) {
-    body.append('gtk', request.gtk || session.gtk);
+  body.append('station', fields.station);
+  body.append('cid', fields.cid);
+  body.append('bsr', fields.bsr);
+  if (session.gtk) {
+    body.append('gtk', session.gtk);
   }
 
   const headers = {
@@ -34,20 +37,20 @@ async function fetchBsrSales(request, session) {
   );
 }
 
-async function queryBsrSales(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryBsrSales(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) {
     return cached;
   }
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchBsrSales(request, session);
-  const transformed = sanitizeInternalFields(transformBsrSalesResponse(raw, request));
+  const raw = await fetchBsrSales(params, session);
+  const transformed = sanitizeInternalFields(transformBsrSalesResponse(raw, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

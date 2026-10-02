@@ -11,12 +11,14 @@ module.exports = {
       throw err;
     }
 
-    const detail = await queryBsrSales(user, {
-      marketplace: String(args.marketplace),
-      categoryId: String(args.categoryId),
+    const params = {
+      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
+      station: String(args.marketplace),
+      cid: String(args.categoryId),
       bsr: Number(args.bsr)
-    });
+    };
 
+    const detail = await queryBsrSales(user, params);
     return buildSuccess(args, detail);
   }
 };

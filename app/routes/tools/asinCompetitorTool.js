@@ -13,12 +13,20 @@ module.exports = {
       throw err;
     }
 
-    const data = await queryAsinCompetitor(user, {
-      marketplace: String(args.marketplace),
-      asin: String(args.asin),
-      size: (args.size && !isNaN(Number(args.size))) ? Number(args.size) : 20
-    });
+    const params = {
+      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
+      market: String(args.marketplace),      // 上游字段名为 market
+      monthName: 'bsr_sales_nearly',
+      asins: [String(args.asin)],
+      page: 1,
+      size: (args.size && !isNaN(Number(args.size))) ? Number(args.size) : 20,
+      symbolFlag: false,
+      nodeIdPaths: [],
+      order: { field: 'total_units', desc: true },
+      lowPrice: 'N'
+    };
 
+    const data = await queryAsinCompetitor(user, params);
     return buildSuccess(args, data);
   }
 };

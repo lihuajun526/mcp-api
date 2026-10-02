@@ -9,23 +9,9 @@ const { transformTrafficKeywordStatResponse } = require('../../transformers/traf
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'TRAFFIC_KEYWORD_STAT';
 
-// marketplace 公开代码 → marketId (整数)
-const MARKET_ID_MAP = {
-  US: 1, UK: 2, DE: 3, FR: 4, ES: 5, IT: 6,
-  JP: 7, CA: 8, MX: 9, AU: 13, IN: 14
-};
-
-async function fetchTrafficKeywordStat(request, session) {
-  const marketId = MARKET_ID_MAP[request.marketplace] || 1;
-
-  const payload = {
-    asin: request.asin,
-    marketId,
-    month: request.month || '',
-    forceReStat: request.forceReStat === true,
-    badges: Array.isArray(request.badges) ? request.badges : [],
-    limit: Number(request.limit) || 50
-  };
+async function fetchTrafficKeywordStat(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...payload } = params;
 
   const headers = {
     accept: 'application/json, text/plain, */*',
@@ -46,20 +32,20 @@ async function fetchTrafficKeywordStat(request, session) {
   );
 }
 
-async function queryTrafficKeywordStat(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryTrafficKeywordStat(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchTrafficKeywordStat(request, session);
+  const raw = await fetchTrafficKeywordStat(params, session);
 
   const rawData = raw && raw.data ? raw.data : raw;
-  const transformed = sanitizeInternalFields(transformTrafficKeywordStatResponse(rawData, request));
+  const transformed = sanitizeInternalFields(transformTrafficKeywordStatResponse(rawData, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 

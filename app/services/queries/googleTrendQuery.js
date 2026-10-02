@@ -9,35 +9,9 @@ const { transformGoogleTrendResponse } = require('../../transformers/googleTrend
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'GOOGLE_TREND';
 
-// marketplace 公开代码 → 第三方 station 代码 (US→COM)
-const MARKET_CODE_MAP = {
-  US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
-};
-
-async function fetchGoogleTrend(request, session) {
-  const station = MARKET_CODE_MAP[request.marketplace] || request.marketplace;
-
-  // gprop: '' = 网页搜索, 'froogle' = 购物搜索
-  const gprop = request.googleProp === 'shoppingCart' ? 'froogle' : '';
-
-  // intervalYear 默认 5 年
-  const intervalYear = Number(request.intervalYear) || 5;
-
-  // monthly 默认 false
-  const monthly = request.monthly === true || request.monthly === 'true';
-
-  // 按照 curl 顺序拼接参数，与服务端期望一致
-  const params = {
-    gprop,
-    intervalYear,
-    gv: false,
-    monthly,
-    parentModule: ' ',
-    dynamic: ' ',
-    station,
-    keyword: request.keyword || ''
-  };
+async function fetchGoogleTrend(params, session) {
+  // marketplace 仅供 transformer 使用，不发往上游
+  const { marketplace, ...upstreamParams } = params;
 
   const headers = {
     accept: 'application/json, text/javascript, */*; q=0.01',
@@ -57,24 +31,24 @@ async function fetchGoogleTrend(request, session) {
 
   return upstreamClient.get(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.googleTrendPath}`,
-    { params, headers, timeout: config.sellerSprite.timeoutMs }
+    { params: upstreamParams, headers, timeout: config.sellerSprite.timeoutMs }
   );
 }
 
-async function queryGoogleTrend(user, request) {
-  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
+async function queryGoogleTrend(user, params) {
+  const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchGoogleTrend(request, session);
+  const raw = await fetchGoogleTrend(params, session);
 
   const rawData = raw && raw.data ? raw.data : raw;
-  const transformed = sanitizeInternalFields(transformGoogleTrendResponse(rawData, request));
+  const transformed = sanitizeInternalFields(transformGoogleTrendResponse(rawData, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
 
-  await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
+  await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
 }
 
