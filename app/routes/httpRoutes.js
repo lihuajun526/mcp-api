@@ -21,6 +21,7 @@ const { queryTrafficListing } = require('../services/queries/trafficListingQuery
 const { queryMarketResearch } = require('../services/queries/marketResearchQuery');
 const { queryProductNode } = require('../services/queries/productNodeQuery');
 const { queryAsinSalesTrend } = require('../services/queries/asinSalesTrendQuery');
+const { queryCategoryFirst } = require('../services/queries/categoryFirstQuery');
 
 const router = express.Router();
 
@@ -255,6 +256,18 @@ router.post('/api/v1/mcp/product/research', async (req, res, next) => {
     const user = await authService.authenticate(apiKey);
     await authService.consumeRateLimit(user.userId, user.qpsLimit);
     const data = await queryProductResearch(user, req.body || {});
+    res.json({ success: true, message: 'OK', data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/api/v1/mcp/category/first', async (req, res, next) => {
+  try {
+    const apiKey = req.header(config.mcp.apiKeyHeader);
+    const user = await authService.authenticate(apiKey);
+    await authService.consumeRateLimit(user.userId, user.qpsLimit);
+    const data = await queryCategoryFirst(user, req.query || {});
     res.json({ success: true, message: 'OK', data });
   } catch (e) {
     next(e);

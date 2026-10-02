@@ -17,6 +17,7 @@ const client = require('../../services/sellerSpriteMcpClient');
 const { buildSuccess } = require('../../toolResponse');
 const billingService = require('../../services/billingService');
 const localTools = require('./index');
+const { adaptProxyArgs, adaptProxyToolSchema } = require('./proxyParamAdapter');
 
 /**
  * 默认转发的上游工具：官方 49 个工具 - 本地 20 个 - secret_* 元工具 = 25 个差集。
@@ -93,7 +94,8 @@ async function listProxiedTools() {
     .map((t) => ({
       name: prefix + t.name,
       description: (t.description || '').slice(0, 1024),
-      inputSchema: t.inputSchema || { type: 'object', properties: {} }
+      // 入参适配层：按工具覆盖对外 schema（如 keyword_order 暴露 year/month/week，隐藏 date 必填）
+      inputSchema: adaptProxyToolSchema(t.name, t.inputSchema || { type: 'object', properties: {} })
     }));
 }
 
@@ -106,7 +108,9 @@ async function listProxiedTools() {
  */
 async function handleProxyCall(toolName, args, user) {
   const originName = toolName.slice(config.sellerSpriteMcp.prefix.length);
-  const { data } = await client.callTool(originName, args || {});
+  // 入参适配层：按工具把模型友好入参换算为上游参数（未注册的工具原样透传）
+  const upstreamArgs = adaptProxyArgs(originName, args || {});
+  const { data } = await client.callTool(originName, upstreamArgs);
 
   // 积分扣除：调用成功后扣除（与本地工具行为一致）
   if (user) {

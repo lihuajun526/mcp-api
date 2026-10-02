@@ -1511,15 +1511,24 @@
             "IN"
           ]
         },
-        "date": {
-          "type": "string",
-          "description": "查询日期（周六日期），格式 yyyyMMdd，例如 20230610，留空表示最近一周"
+        "year": {
+          "type": "integer",
+          "description": "查询年份，例如 2026；需与 month、week 同时提供，缺省则查询最近一周"
+        },
+        "month": {
+          "type": "integer",
+          "description": "查询月份（1-12），例如 9；需与 year、week 同时提供"
+        },
+        "week": {
+          "type": "integer",
+          "description": "该月第几周（1-5），例如 4；系统会换算为该月第 week 个周六的日期（2026年9月第4周 → 20260926），无需自行计算"
         },
         "departments": {
           "type": "array",
-          "description": "部门/类目过滤，例如 [\"automotive\",\"baby-products\"]",
+          "description": "类目过滤，可选、可多选。取值须先调用 first_category 获取该站点全部一级类目，再按用户语义从 category_name / category_name_cn 匹配出对应 category_value 后传入，例如 [\"automotive\",\"baby-products\"]",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "一级类目值（category_value），来自 first_category 的返回"
           }
         },
         "includeKeywords": {
@@ -1541,9 +1550,13 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，最大 40，默认 40",
-          "minimum": 1,
-          "maximum": 40
+          "description": "每页条数，可选 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
         },
         "order": {
           "type": "object",
@@ -1697,13 +1710,14 @@
         },
         "date": {
           "type": "string",
-          "description": "查询月份，格式 yyyyMM，例如 202506，留空表示最近30天"
+          "description": "查询月份，格式 yyyyMM，例如 202608；留空表示最近30天，系统会换算为上游 table（ara_yyyyMM）"
         },
         "departments": {
           "type": "array",
-          "description": "部门/类目过滤，例如 [\"automotive\",\"baby-products\"]",
+          "description": "类目过滤，可选、可多选。取值须先调用 first_category 获取该站点全部一级类目，再按用户语义从 category_name / category_name_cn 匹配出对应 category_value 后传入，例如 [\"automotive\",\"baby-products\"]",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "一级类目值（category_value），来自 first_category 的返回"
           }
         },
         "includeKeywords": {
@@ -1725,9 +1739,13 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，最大 15，默认 15",
-          "minimum": 1,
-          "maximum": 15
+          "description": "每页条数，可选 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
         },
         "order": {
           "type": "object",
@@ -2718,6 +2736,46 @@
       "required": [
         "marketplace",
         "keywordList"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "first_category",
+    "description": "获取站点一级类目：返回指定亚马逊站点下的全部一级类目（first-level category，即顶层类目）。每条包含原生类目名（category_name）、中文类目名（category_name_cn）和类目值（category_value），均为该站点的一级类目。当用户按类目做选品、选市场、竞品分析等操作且未给出明确类目值时，先调用本工具获取该站点全部一级类目，再由模型根据用户语义从 category_name / category_name_cn 中匹配出对应的 category_value，作为其它工具的类目入参。鉴权由服务端处理，模型不要传递 API Key。返回字段：marketplace（站点）、total（一级类目数量）、items（一级类目列表，含 category_name/category_name_cn/category_value）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，例如 US、UK、DE、JP、AE、SA",
+          "enum": [
+            "US",
+            "CA",
+            "MX",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "JP",
+            "IN",
+            "AU",
+            "AE",
+            "BR",
+            "SA"
+          ]
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"category_name\",\"category_value\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。"
+        }
+      },
+      "required": [
+        "marketplace"
       ],
       "additionalProperties": false
     }

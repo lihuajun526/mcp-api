@@ -1,0 +1,117 @@
+<div data-v-e5e35ee2="" role="group" aria-label="checkbox-group" class="el-checkbox-group"><label data-v-e5e35ee2=""
+        class="el-checkbox is-checked"><span class="el-checkbox__input is-checked"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="pets"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Productos para mascotas</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 宠物用品 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="electronics"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Electrónica</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 电子 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="beauty"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Belleza</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 美容化妆 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="apparel"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Ropa y accesorios</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 服饰箱包 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="lawngarden"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Jardín</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 庭院、草坪和花园用品 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="luggage"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Equipaje</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 行李箱包 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="diy"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Bricolaje y herramientas</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> DIY工具 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="hpc"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Salud y cuidado personal</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 个护健康 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="handmade"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Handmade</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 手工艺品 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="mi"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Instrumentos musicales</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 乐器 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="kitchen"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Hogar</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 厨具 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="computers"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Informática</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 电脑/IT </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="jewelry"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Joyería</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 珠宝首饰 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="watches"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Relojes</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 钟表 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="toys"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Juguetes y juegos</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 玩具 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="office-products"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Oficina y papelería</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 办公用品 </div><!---->
+        </span></label><!----><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="sporting"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Deportes y aire libre</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 运动户外休闲 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="lighting"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Iluminación</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 照明 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="shoes"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Zapatos y complementos</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 鞋靴 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="industrial"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Industria y ciencia</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 工业科学用品 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="baby"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Bebé</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 母婴用品 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="automotive"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Coche y moto</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 汽车用品 </div><!---->
+        </span></label><label data-v-e5e35ee2="" class="el-checkbox"><span class="el-checkbox__input"><span
+                class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false"
+                class="el-checkbox__original" value="fashion"></span><span class="el-checkbox__label">
+            <div data-v-e5e35ee2="">Moda</div>
+            <div data-v-e5e35ee2="" style="font-size: 12px;"> 流行/时尚 </div><!---->
+        </span></label></div>

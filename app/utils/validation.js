@@ -7,7 +7,7 @@
  */
 
 // 支持的亚马逊站点编码
-const MARKETPLACES = ['US', 'JP', 'UK', 'DE', 'FR', 'IT', 'ES', 'CA', 'IN', 'MX'];
+const MARKETPLACES = ['US', 'JP', 'UK', 'DE', 'FR', 'IT', 'ES', 'CA', 'IN', 'MX', 'AU', 'AE', 'BR', 'SA'];
 
 // 分页每页条数：仅支持 20 / 60 / 100，默认 60
 const PAGE_SIZES = [20, 60, 100];
