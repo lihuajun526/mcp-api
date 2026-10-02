@@ -9,7 +9,6 @@ const tools = [
   require('./keywordResearchTool'),
   require('./keywordMinerTool'),
   require('./trafficExtendTool'),
-  require('./keywordOrderTool'),
   require('./googleTrendTool'),
   require('./keywordConversionTool'),
   require('./abaResearchWeeklyTool'),

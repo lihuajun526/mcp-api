@@ -86,7 +86,6 @@ npm run crawl:category
 | `keyword_miner` | /api/6 | 关键词挖掘 |
 | `keyword_research` | /api/10 | 关键词选品 |
 | `keyword_conversion` | /api/63 | 关键词转化率 |
-| `keyword_order` | /api/24 | 出单词反查 |
 | `traffic_keyword` | /api/14 | ASIN 流量词反查 |
 | `traffic_keyword_stat` | /api/13 | 流量词统计 |
 | `traffic_extend` | /api/46 | 拓展流量词 |
@@ -103,10 +102,11 @@ npm run crawl:category
 调用时透传转发并把上游响应统一包裹为 `{code, message, data}` 信封（复用内部字段剔除与
 `returnFields` 裁剪）。
 
-默认转发 24 个本地缺失工具：`ss_keepa_info`、`ss_review`、`ss_traffic_source`、
-`ss_asin_coupon_trend`、`ss_asin_detail_with_coupon_trend`、`ss_keyword_research_trends`、
-`ss_aba_research_trend`、`ss_market_research_statistics`、市场分布/集中度系列（11 个）、
-商标系列（4 个）。`secret_*` 元工具不对外暴露。
+默认转发 25 个本地缺失工具：`ss_keepa_info`、`ss_review`、`ss_traffic_source`、
+`ss_keyword_order`、`ss_asin_coupon_trend`、`ss_asin_detail_with_coupon_trend`、
+`ss_keyword_research_trends`、`ss_aba_research_trend`、`ss_market_research_statistics`、
+市场分布/集中度系列（11 个）、商标系列（4 个）。`secret_*` 元工具不对外暴露。
+`keyword_order`（出单词反查 /api/24）本地实现已注销，改由代理以 `ss_keyword_order` 提供。
 
 | 环境变量 | 说明 | 默认值 |
 |---|---|---|
