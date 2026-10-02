@@ -4,12 +4,12 @@ const config = require('../../config');
 const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
-const { transformAsinReversingResponse } = require('../../transformers/asinReversingTransformer');
+const { transformTrafficKeywordResponse } = require('../../transformers/trafficKeywordTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'ASIN_REVERSING';
 
-async function fetchAsinReversing(params, session) {
+async function fetchTrafficKeyword(params, session) {
   // marketplace 及 market 仅供内部使用，不作为 payload 字段（market 用于 URL 参数）
   const { marketplace, market, ...payload } = params;
 
@@ -22,21 +22,21 @@ async function fetchAsinReversing(params, session) {
   };
 
   return upstreamClient.post(
-    `${config.sellerSprite.baseUrl}${config.sellerSprite.asinReversingPath}?market=${market}`,
+    `${config.sellerSprite.baseUrl}${config.sellerSprite.trafficKeywordPath}?market=${market}`,
     payload,
     { headers, timeout: config.sellerSprite.timeoutMs }
   );
 }
 
-async function queryAsinReversing(user, params) {
+async function queryTrafficKeyword(user, params) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) {
     return cached;
   }
 
   const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinReversing(params, session);
-  const transformed = sanitizeInternalFields(transformAsinReversingResponse(raw, params));
+  const raw = await fetchTrafficKeyword(params, session);
+  const transformed = sanitizeInternalFields(transformTrafficKeywordResponse(raw, params));
 
   const cost = await billingService.getCostPoints(ENDPOINT_CODE);
   await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
@@ -45,4 +45,4 @@ async function queryAsinReversing(user, params) {
   return transformed;
 }
 
-module.exports = { queryAsinReversing };
+module.exports = { queryTrafficKeyword };

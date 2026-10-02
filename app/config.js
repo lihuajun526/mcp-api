@@ -27,7 +27,7 @@ module.exports = {
     baseUrl: process.env.SELLERSPRITE_BASE_URL || 'https://www.sellersprite.com',
     competingLookupPath: '/v3/api/competing-lookup',
     asinSalesPath: '/v2/tools/sales-estimator/asin.json',
-    asinReversingPath: '/v3/api/relation/reversing',
+    trafficKeywordPath: '/v3/api/relation/reversing',
     bsrSalesPath: '/v2/tools/sales-estimator/bsr.json',
     keywordResearchPath: '/v2/keyword-research',
     keywordMinerPath: '/v3/api/keyword-miner',

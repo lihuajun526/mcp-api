@@ -1,4 +1,4 @@
-const { queryAsinReversing } = require('../../services/queries/asinReversingQuery');
+const { queryTrafficKeyword } = require('../../services/queries/trafficKeywordQuery');
 const { buildSuccess } = require('../../toolResponse');
 
 // 将 marketplace 公开代码（US/UK/DE 等）映射到 sellersprite 站点代码（COM/UK/DE 等）
@@ -77,7 +77,7 @@ module.exports = {
       params.keyword = String(args.keyword).trim();
     }
 
-    const data = await queryAsinReversing(user, params);
+    const data = await queryTrafficKeyword(user, params);
     return buildSuccess(args, data);
   }
 };

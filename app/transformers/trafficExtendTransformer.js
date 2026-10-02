@@ -17,7 +17,7 @@ function get(obj, ...keys) {
   return null;
 }
 
-// 将 UPPER_SNAKE_CASE badge 转为 camelCase（与 asinReversingTransformer 一致）
+// 将 UPPER_SNAKE_CASE badge 转为 camelCase（与 trafficKeywordTransformer 一致）
 function convertBadge(badge) {
   if (!badge || typeof badge !== 'string') return badge;
   return badge.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase());

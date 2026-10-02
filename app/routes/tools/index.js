@@ -5,7 +5,7 @@ const tools = [
   require('./productResearchTool'),
   require('./bsrSalesTool'),
   require('./asinPredictionTool'),
-  require('./asinReversingTool'),
+  require('./trafficKeywordTool'),
   require('./keywordResearchTool'),
   require('./keywordMinerTool'),
   require('./trafficExtendTool'),
