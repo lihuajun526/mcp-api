@@ -558,9 +558,12 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 50，最大 100",
-          "minimum": 1,
-          "maximum": 100
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ]
         },
         "month": {
           "type": "string",
@@ -585,16 +588,27 @@
         },
         "trafficKeywordTypes": {
           "type": "array",
-          "description": "流量占比类型过滤（见表2.0），例如 [\"PRECISE\"]；留空表示全部",
+          "description": "流量占比类型过滤（表2.0），可选值：PRIMARY（主要流量词）、PRECISE（精准流量词）、PRECISE_LONG_TAIL（长尾流量词）；留空表示全部",
           "items": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "PRIMARY",
+              "PRECISE",
+              "PRECISE_LONG_TAIL"
+            ]
           }
         },
         "conversionKeywordTypes": {
           "type": "array",
-          "description": "流量转化类型过滤（见表2.1），例如 [\"STABLE\"]；留空表示全部",
+          "description": "流量转化类型过滤（表2.1），可选值：EXCELLENT（转化优质词）、STABLE（转化平稳词）、LOST（转化流失词）、INVALID（无效曝光词）；留空表示全部",
           "items": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "EXCELLENT",
+              "STABLE",
+              "LOST",
+              "INVALID"
+            ]
           }
         },
         "order": {
@@ -603,7 +617,21 @@
           "properties": {
             "field": {
               "type": "string",
-              "description": "排序字段，默认 rankPosition；可选：searches、purchases、purchaseRate、products、supplyDemandRatio、monopolyClickRate、trafficPercentage、bid、avgPrice、updatedTime、searchesRank、titleDensity、top3ClickingRate、top3ConversionRate、rankPosition"
+              "description": "排序字段，默认 rankPosition；可选：rankPosition、adPosition、createdTime、searchesRank、searches、purchases、purchaseRate、products、supplyDemandRatio、latest1daysAds、bid、trafficPercentage",
+              "enum": [
+                "rankPosition",
+                "adPosition",
+                "createdTime",
+                "searchesRank",
+                "searches",
+                "purchases",
+                "purchaseRate",
+                "products",
+                "supplyDemandRatio",
+                "latest1daysAds",
+                "bid",
+                "trafficPercentage"
+              ]
             },
             "desc": {
               "type": "boolean",
@@ -1890,27 +1918,6 @@
           "type": "string",
           "description": "查询月份，严格 yyyyMM 格式（6位数字），例如 202605；不填默认最新数据"
         },
-        "badges": {
-          "type": "array",
-          "description": "（非官方扩展）按流量词类型过滤，可选值：NATURAL_SEARCHING、AMAZON_CHOICE、EDITORIAL_RECOMMENDATIONS、FOUR_STAR、SPONSOR_BRAND、SPONSOR_VIDEO、HIGHLY_RATED、ADS",
-          "items": {
-            "type": "string",
-            "enum": [
-              "NATURAL_SEARCHING",
-              "AMAZON_CHOICE",
-              "EDITORIAL_RECOMMENDATIONS",
-              "FOUR_STAR",
-              "SPONSOR_BRAND",
-              "SPONSOR_VIDEO",
-              "HIGHLY_RATED",
-              "ADS"
-            ]
-          }
-        },
-        "forceReStat": {
-          "type": "boolean",
-          "description": "（非官方扩展）是否强制重新统计，默认 false"
-        },
         "returnFields": {
           "type": "array",
           "items": {
@@ -1958,10 +1965,6 @@
           },
           "minItems": 1,
           "maxItems": 20
-        },
-        "queryVariations": {
-          "type": "boolean",
-          "description": "是否包含变体，默认 true"
         },
         "returnFields": {
           "type": "array",
@@ -2013,9 +2016,23 @@
         },
         "relations": {
           "type": "array",
-          "description": "关联类型列表，见附录表2.2，例如 [\"vav\",\"fbt\"]，传空数组表示查询全部类型",
+          "description": "关联类型列表：VAV（看了又看）、CSI（相似产品）、AVP（看了还看）、BAV（看了却买）、MIB（捆绑销售）、FBT（组合购买）、MIE（更多相关）、BAB（买了又买）、COB（品牌推荐）、SP（商品广告）、FSA（四星产品）、BCA（品牌广告）；传空数组表示查询全部类型",
           "items": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "VAV",
+              "CSI",
+              "AVP",
+              "BAV",
+              "MIB",
+              "FBT",
+              "MIE",
+              "BAB",
+              "COB",
+              "SP",
+              "FSA",
+              "BCA"
+            ]
           }
         },
         "variations": {
@@ -2029,9 +2046,12 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 50，最大 100",
-          "minimum": 1,
-          "maximum": 100
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ]
         },
         "order": {
           "type": "object",
@@ -2039,7 +2059,11 @@
           "properties": {
             "field": {
               "type": "string",
-              "description": "排序字段（官方见表2.2），默认 createdTime（创建时间）"
+              "description": "排序字段：relationCount（关联Asin数，默认）、createdTime（引流时间）",
+              "enum": [
+                "relationCount",
+                "createdTime"
+              ]
             },
             "desc": {
               "type": "boolean",
@@ -2057,8 +2081,7 @@
       },
       "required": [
         "marketplace",
-        "asinList",
-        "relations"
+        "asinList"
       ],
       "additionalProperties": false
     }

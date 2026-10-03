@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformTrafficKeywordResponse } = require('../../transformers/trafficKeywordTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'ASIN_REVERSING';
+const ENDPOINT_CODE = 'TRAFFIC_KEYWORD';
 
 async function fetchTrafficKeyword(params, session) {
   // marketplace 及 market 仅供内部使用，不作为 payload 字段（market 用于 URL 参数）

@@ -82,7 +82,7 @@ router.post('/api/v1/mcp/asin/sales', async (req, res, next) => {
   }
 });
 
-router.post('/api/v1/mcp/asin/reversing', async (req, res, next) => {
+router.post('/api/v1/mcp/traffic/keyword', async (req, res, next) => {
   try {
     const apiKey = req.header(config.mcp.apiKeyHeader);
     const user = await authService.authenticate(apiKey);

@@ -78,7 +78,7 @@ function transformTrafficListingResponse(rawData, request) {
     pages: 0,
     items: [],
     order: {
-      field: request.orderField || 'createdTime',
+      field: request.orderField || 'relationCount',
       desc: request.orderDesc !== false
     }
   };
@@ -103,7 +103,7 @@ function transformTrafficListingResponse(rawData, request) {
     pages,
     items: rawItems.map(normalizeItem).filter(Boolean),
     order: {
-      field: request.orderField || 'createdTime',
+      field: request.orderField || 'relationCount',
       desc: request.orderDesc !== false
     }
   };

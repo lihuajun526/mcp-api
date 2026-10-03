@@ -1,12 +1,6 @@
 const { queryMarketResearch } = require('../../services/queries/marketResearchQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertMonth } = require('../../utils/validation');
-
-// marketplace 公开代码 → marketId (整数)
-const MARKET_ID_MAP = {
-  US: 1, UK: 2, DE: 3, FR: 4, ES: 5, IT: 6,
-  JP: 7, CA: 8, MX: 9, AU: 13, IN: 14
-};
+const { assertMonth, MARKET_ID_MAP } = require('../../utils/validation');
 
 // 官方参数名 → 上游表单参数名（名称不同的才需映射，其余同名直接透传）
 const FIELD_ALIAS = {

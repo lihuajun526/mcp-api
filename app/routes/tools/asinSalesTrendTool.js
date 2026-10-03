@@ -1,11 +1,6 @@
 const { queryAsinSalesTrend } = require('../../services/queries/asinSalesTrendQuery');
 const { buildSuccess } = require('../../toolResponse');
-
-// marketplace 公开代码 → marketId (整数)
-const MARKET_ID_MAP = {
-  US: 1, DE: 4, UK: 3, JP: 6, FR: 5, IT: 35691, ES: 44551,
-  CA: 7, IN: 44571, MX: 771770
-};
+const { MARKET_ID_MAP } = require('../../utils/validation');
 
 module.exports = {
   name: 'asin_sales_trend',

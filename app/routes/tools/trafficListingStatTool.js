@@ -24,12 +24,17 @@ module.exports = {
 
     const marketplace = String(args.marketplace);
     const asinList = Array.isArray(args.asinList) ? args.asinList : [String(args.asinList)];
+    if (asinList.length > 20) {
+      const err = new Error('asinList supports at most 20 ASINs');
+      err.code = -32602;
+      throw err;
+    }
 
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       asinList,
       station: MARKET_STATION_MAP[marketplace] || marketplace,
-      queryVariations: args.queryVariations !== false
+      queryVariations: true
     };
 
     const data = await queryTrafficListingStat(user, params);

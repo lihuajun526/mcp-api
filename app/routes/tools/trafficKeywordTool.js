@@ -1,5 +1,6 @@
 const { queryTrafficKeyword } = require('../../services/queries/trafficKeywordQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { assertMonth } = require('../../utils/validation');
 
 // 将 marketplace 公开代码（US/UK/DE 等）映射到 sellersprite 站点代码（COM/UK/DE 等）
 const MARKET_CODE_MAP = {
@@ -7,29 +8,90 @@ const MARKET_CODE_MAP = {
   FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
 };
 
-// Open API 排序字段名 → 第三方 order 整数（与 traffic_extend 的 orderColumn 枚举保持一致）
+// 官方 MCP 排序字段枚举（表2.3 流量词列表排序字段）→ 上游 order 整数
 const ORDER_FIELD_MAP = {
-  searches: 5, purchases: 6, purchaseRate: 7, products: 8,
-  supplyDemandRatio: 10, monopolyClickRate: 11, trafficPercentage: 12,
-  bid: 13, avgPrice: 14, updatedTime: 15, searchesRank: 2,
-  titleDensity: 4, top3ClickingRate: 16, top3ConversionRate: 17
+  rankPosition: 1,
+  adPosition: 2,
+  createdTime: 3,
+  searchesRank: 4,
+  searches: 5,
+  purchases: 6,
+  purchaseRate: 7,
+  products: 8,
+  supplyDemandRatio: 9,
+  latest1daysAds: 10,
+  bid: 11,
+  trafficPercentage: 12
 };
+const ORDER_FIELDS = Object.keys(ORDER_FIELD_MAP);
+const DEFAULT_ORDER = ORDER_FIELD_MAP.rankPosition; // 默认按自然排名排序
 
-// 官方 order.field 为字符串，第三方 order 为整数编码；无映射时回退默认 12
-function resolveOrder(order) {
-  if (order === null || order === undefined) return 12;
-  const rawField = typeof order === 'object' ? order.field : order;
-  if (rawField === null || rawField === undefined || rawField === '') return 12;
-  const n = Number(rawField);
-  if (Number.isFinite(n) && n > 0) return Math.trunc(n);
-  return ORDER_FIELD_MAP[rawField] || 12;
+// 输入参数枚举（注意事项 1、2）
+const TRAFFIC_KEYWORD_TYPES = ['PRIMARY', 'PRECISE', 'PRECISE_LONG_TAIL'];
+const CONVERSION_KEYWORD_TYPES = ['EXCELLENT', 'STABLE', 'LOST', 'INVALID'];
+const BADGES = [
+  'NATURAL_SEARCHING', 'AMAZON_CHOICE', 'EDITORIAL_RECOMMENDATIONS', 'FOUR_STAR',
+  'SPONSOR_BRAND', 'SPONSOR_VIDEO', 'HIGHLY_RATED', 'ADS'
+];
+
+// 分页大小仅支持 20/50/100，默认 50（注意事项 4）
+const PAGE_SIZES = [20, 50, 100];
+const DEFAULT_PAGE_SIZE = 50;
+
+function paramError(message) {
+  const err = new Error(message);
+  err.code = -32602;
+  return err;
 }
 
+// 官方 order.field 为字符串枚举，转换为上游整数编码
+function resolveOrderField(field) {
+  if (Object.prototype.hasOwnProperty.call(ORDER_FIELD_MAP, field)) {
+    return ORDER_FIELD_MAP[field];
+  }
+  throw paramError(`order.field must be one of: ${ORDER_FIELDS.join(', ')}`);
+}
+
+function resolveOrder(order) {
+  if (order === null || order === undefined) return DEFAULT_ORDER;
+  const rawField = typeof order === 'object' ? order.field : order;
+  if (rawField === null || rawField === undefined || rawField === '') return DEFAULT_ORDER;
+  return resolveOrderField(String(rawField));
+}
+
+// 官方 desc 默认 false（升序）
 function resolveOrderDesc(order) {
   if (order && typeof order === 'object' && order.desc !== undefined) {
-    return order.desc !== false;
+    return order.desc === true || order.desc === 'true';
   }
-  return true;
+  return false;
+}
+
+function resolvePageSize(value) {
+  if (value === null || value === undefined || value === '') return DEFAULT_PAGE_SIZE;
+  const size = Number(value);
+  if (!PAGE_SIZES.includes(size)) {
+    throw paramError(`size must be one of: ${PAGE_SIZES.join(', ')}`);
+  }
+  return size;
+}
+
+// 校验数组型枚举参数；未传或空数组返回 []
+function resolveEnumList(values, allowed, fieldName) {
+  if (values === null || values === undefined) return [];
+  if (!Array.isArray(values)) throw paramError(`${fieldName} must be an array`);
+  if (values.length === 0) return [];
+  const invalid = values.filter((v) => !allowed.includes(v));
+  if (invalid.length > 0) {
+    throw paramError(`${fieldName} only supports: ${allowed.join(', ')}`);
+  }
+  return values.map(String);
+}
+
+// badges 未传或空数组时默认全部曝光位置类型
+function resolveBadges(values) {
+  if (!Array.isArray(values) || values.length === 0) return BADGES.slice();
+  return resolveEnumList(values, BADGES, 'badges');
 }
 
 module.exports = {
@@ -44,7 +106,7 @@ module.exports = {
 
     const marketplace = String(args.marketplace);
     const market = MARKET_CODE_MAP[marketplace] || marketplace;
-    const size = Math.min(Math.max(Number(args.size) || 50, 1), 100);
+    const size = resolvePageSize(args.size);
     const page = Math.max(Number(args.page) || 1, 1);
     const skip = (page - 1) * size;
 
@@ -54,16 +116,10 @@ module.exports = {
       asin: String(args.asin),
       limit: size,
       skip,
-      month: args.month || '',
-      badges: Array.isArray(args.badges) && args.badges.length > 0
-        ? args.badges
-        : ['NATURAL_SEARCHING', 'AMAZON_CHOICE', 'EDITORIAL_RECOMMENDATIONS', 'FOUR_STAR', 'SPONSOR_BRAND', 'SPONSOR_VIDEO', 'HIGHLY_RATED', 'ADS'],
-      conversionKeywordTypes: Array.isArray(args.conversionKeywordTypes) && args.conversionKeywordTypes.length > 0
-        ? args.conversionKeywordTypes
-        : [],
-      trafficKeywordTypes: Array.isArray(args.trafficKeywordTypes) && args.trafficKeywordTypes.length > 0
-        ? args.trafficKeywordTypes
-        : [],
+      month: args.month != null && args.month !== '' ? assertMonth(args.month) : '',
+      badges: resolveBadges(args.badges),
+      conversionKeywordTypes: resolveEnumList(args.conversionKeywordTypes, CONVERSION_KEYWORD_TYPES, 'conversionKeywordTypes'),
+      trafficKeywordTypes: resolveEnumList(args.trafficKeywordTypes, TRAFFIC_KEYWORD_TYPES, 'trafficKeywordTypes'),
       order: resolveOrder(args.order),
       desc: resolveOrderDesc(args.order),
       exactly: false,

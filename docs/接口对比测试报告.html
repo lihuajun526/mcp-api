@@ -1,317 +1,787 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-page-node-id="8Unj5hhmLut0DY6AMiReV8">
+
 <head data-page-node-id="QXHPpwetB3Alh1wLFGNpER">
-<meta charset="UTF-8" data-page-node-id="P3Vgxhk6HcEgyzCAVMXkg9">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="Eq7Ix8Tmj4pmBLhDgcj5Gs">
-<title>MCP 接口 vs 卖家精灵开放平台 对比测试报告</title>
-<style>
-  :root {
-    --bg: #f6f7f9; --card: #ffffff; --border: #e5e7eb;
-    --text: #1f2937; --muted: #6b7280;
-    --red: #dc2626; --red-bg: #fef2f2; --red-border: #fecaca;
-    --amber: #d97706; --amber-bg: #fffbeb; --amber-border: #fde68a;
-    --green: #059669; --green-bg: #ecfdf5; --green-border: #a7f3d0;
-    --blue: #2563eb; --blue-bg: #eff6ff;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 32px 16px; }
-  .wrap { max-width: 1080px; margin: 0 auto; }
-  h1 { font-size: 26px; margin-bottom: 6px; }
-  .sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
-  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
-  .stat .num { font-size: 26px; font-weight: 700; }
-  .stat .lbl { font-size: 12px; color: var(--muted); }
-  .n-red { color: var(--red); } .n-green { color: var(--green); } .n-amber { color: var(--amber); }
-  h2 { font-size: 20px; margin: 32px 0 12px; padding-left: 10px; border-left: 4px solid var(--blue); }
-  h3 { font-size: 16px; margin: 18px 0 8px; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
-  th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
-  th { background: #f9fafb; white-space: nowrap; }
-  code { background: #f3f4f6; border-radius: 4px; padding: 1px 5px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
-  .tag { display: inline-block; border-radius: 20px; padding: 1px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .t-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
-  .t-bug { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
-  .t-warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
-  .t-diff { background: var(--blue-bg); color: var(--blue); border: 1px solid #bfdbfe; }
-  ul { padding-left: 20px; } li { margin: 4px 0; }
-  .muted { color: var(--muted); font-size: 12px; }
-  .kbd { font-weight: 700; }
-  .footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 30px; }
-</style>
+  <meta charset="UTF-8" data-page-node-id="P3Vgxhk6HcEgyzCAVMXkg9">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="Eq7Ix8Tmj4pmBLhDgcj5Gs">
+  <title>MCP 接口 vs 卖家精灵开放平台 对比测试报告</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --green: #059669;
+      --green-bg: #ecfdf5;
+      --green-border: #a7f3d0;
+      --blue: #2563eb;
+      --blue-bg: #eff6ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 32px 16px;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 6px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .stat .num {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .stat .lbl {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .n-red {
+      color: var(--red);
+    }
+
+    .n-green {
+      color: var(--green);
+    }
+
+    .n-amber {
+      color: var(--amber);
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 32px 0 12px;
+      padding-left: 10px;
+      border-left: 4px solid var(--blue);
+    }
+
+    h3 {
+      font-size: 16px;
+      margin: 18px 0 8px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f9fafb;
+      white-space: nowrap;
+    }
+
+    code {
+      background: #f3f4f6;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: "SF Mono", Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 1px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .t-ok {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    .t-bug {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+    }
+
+    .t-warn {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
+    .t-diff {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 4px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kbd {
+      font-weight: 700;
+    }
+
+    .footer {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
 </head>
+
 <body data-page-node-id="xFfitfHKhs4ZAhv5XejKsV">
-<div class="wrap" data-page-node-id="Qxl9JYE3TX2T5ZnIwUxv9r">
+  <div class="wrap" data-page-node-id="Qxl9JYE3TX2T5ZnIwUxv9r">
 
-<h1 data-page-node-id="CKBfwGffqHLrJndg2I814o">MCP 接口对比测试报告</h1>
-<div class="sub" data-page-node-id="OWIw0vA1k5BuIZ8BU5szVH">对比基准：https://open.sellersprite.com/api 官方文档 ｜ 测试目标：http://127.0.0.1:18080/mcp（21 个工具）｜ 测试时间：2026-08-31</div>
+    <h1 data-page-node-id="CKBfwGffqHLrJndg2I814o">MCP 接口对比测试报告</h1>
+    <div class="sub" data-page-node-id="OWIw0vA1k5BuIZ8BU5szVH">对比基准：https://open.sellersprite.com/api 官方文档 ｜
+      测试目标：http://127.0.0.1:18080/mcp（21 个工具）｜ 测试时间：2026-08-31</div>
 
-<div class="stats" data-page-node-id="60nN6ZZirBwtcOA5DBeo0V">
-  <div class="stat" data-page-node-id="enF0sGbOagSTwJDolRYNZe"><div class="num" data-page-node-id="cZtsk47jCitzObqW5jjql6">21</div><div class="lbl" data-page-node-id="31a2q6m7gg2OA05eF2eNCF">已开发 MCP 工具</div></div>
-  <div class="stat" data-page-node-id="pg6zhC0qV27tLGjH1DvHSp"><div class="num n-green" data-page-node-id="lGnXJfb78sH4MizJ6m5vWc">9</div><div class="lbl" data-page-node-id="HGbI1jYwghUx7GQNEFuEhM">与官方基本一致</div></div>
-  <div class="stat" data-page-node-id="Hg1swRCjeqETP36JMbgt8R"><div class="num n-red" data-page-node-id="tQpfXBXBNOqpEgTVcaDjXb">5</div><div class="lbl" data-page-node-id="frQBMz3xEwWGOy2Z7gGtlG">输出结构差异大</div></div>
-  <div class="stat" data-page-node-id="9EQCh4e5ELhsmHh8saFx84"><div class="num n-red" data-page-node-id="eWwuJEMpc04c4JUBkNCfb4">2</div><div class="lbl" data-page-node-id="GfBKohE8jLRBFIUzQSbvNx">不可用（数据通道错误）</div></div>
-  <div class="stat" data-page-node-id="Gt7r098fLhmMNffMUNrZIQ"><div class="num n-amber" data-page-node-id="LsVli5Kzx6s0UXpBvLu20l">5</div><div class="lbl" data-page-node-id="pivgutGmfBU1rdMIegf9n5">有 bug / 部分缺失</div></div>
-</div>
+    <div class="stats" data-page-node-id="60nN6ZZirBwtcOA5DBeo0V">
+      <div class="stat" data-page-node-id="enF0sGbOagSTwJDolRYNZe">
+        <div class="num" data-page-node-id="cZtsk47jCitzObqW5jjql6">21</div>
+        <div class="lbl" data-page-node-id="31a2q6m7gg2OA05eF2eNCF">已开发 MCP 工具</div>
+      </div>
+      <div class="stat" data-page-node-id="pg6zhC0qV27tLGjH1DvHSp">
+        <div class="num n-green" data-page-node-id="lGnXJfb78sH4MizJ6m5vWc">9</div>
+        <div class="lbl" data-page-node-id="HGbI1jYwghUx7GQNEFuEhM">与官方基本一致</div>
+      </div>
+      <div class="stat" data-page-node-id="Hg1swRCjeqETP36JMbgt8R">
+        <div class="num n-red" data-page-node-id="tQpfXBXBNOqpEgTVcaDjXb">5</div>
+        <div class="lbl" data-page-node-id="frQBMz3xEwWGOy2Z7gGtlG">输出结构差异大</div>
+      </div>
+      <div class="stat" data-page-node-id="9EQCh4e5ELhsmHh8saFx84">
+        <div class="num n-red" data-page-node-id="eWwuJEMpc04c4JUBkNCfb4">2</div>
+        <div class="lbl" data-page-node-id="GfBKohE8jLRBFIUzQSbvNx">不可用（数据通道错误）</div>
+      </div>
+      <div class="stat" data-page-node-id="Gt7r098fLhmMNffMUNrZIQ">
+        <div class="num n-amber" data-page-node-id="LsVli5Kzx6s0UXpBvLu20l">5</div>
+        <div class="lbl" data-page-node-id="pivgutGmfBU1rdMIegf9n5">有 bug / 部分缺失</div>
+      </div>
+    </div>
 
-<h2 data-page-node-id="GLwc45iAfJTCiOjgNZWSkd">一、全局性问题（影响多个接口）</h2>
+    <h2 data-page-node-id="GLwc45iAfJTCiOjgNZWSkd">一、全局性问题（影响多个接口）</h2>
 
-<div class="card" data-page-node-id="aB6SQijhz9UzgynAdeDEI5">
-<h3 data-page-node-id="h1CTvWlK9yHvQPu9QN02Mt">1. 返回包裹结构不统一 <span class="tag t-bug" data-page-node-id="89VuRH6Ohxq8d9sPTANuhQ">不一致</span></h3>
-<p data-page-node-id="g2icM7rvbFh7rEI5KtqxiI">同为 <code data-page-node-id="CvBh6dg3TXdQ9CjsdSRdOk">tools/call</code> 的 <code data-page-node-id="gZS6qfBXRhe4rBzcHwNBlC">result</code>，两种格式混用：</p>
-<table data-page-node-id="ui932fU1BQt6Rzt9N5xtXv">
-<tr data-page-node-id="Vw1Oem7Plwl1uhFJwnq9CU"><th data-page-node-id="nGMeouQZorlnVyFBRnSsOM">格式</th><th data-page-node-id="GqbRSm79r2T93z7Mfl5Rc6">工具</th></tr>
-<tr data-page-node-id="IgfD7fFN2NHXzyWWdw7NuL"><td data-page-node-id="AgsNzYiy2itQkUOFDLgC7K"><code data-page-node-id="m3MimbtsLPAgphMAjLiesf">{code, message, data}</code>（17 个）</td><td data-page-node-id="cTLnUl8TfuNCbhGy1PlWgH">asin_detail_lookup、keyword_miner、product_node、keyword_research、google_trend、traffic_keyword_stat、asin_reversing、traffic_listing_stat、aba_research_weekly、aba_research_monthly、keyword_order、bsr_sales、asin_sales、market_research、keyword_conversion、traffic_extend、traffic_listing</td></tr>
-<tr data-page-node-id="n3ngkTgXFsmWFoysscMmjS"><td data-page-node-id="tp36lBg3oqvIYYUAnTuKwl"><code data-page-node-id="qnzOfkg5YpyHzHRj5vZTIQ">{isError, structuredContent, content}</code>（4 个）</td><td data-page-node-id="T8nMOkpMpD8x5IMGwsFKZA"><b data-page-node-id="HnLpSfaeoTPDZn1TnAsO8F">competitor_lookup、product_research、asin_competitor、asin_sales_trend</b></td></tr>
-</table>
-<p class="muted" data-page-node-id="9q9VydjGC9gVMA4cLW4e4F">对同一个 MCP 客户端来说，调用不同工具需要两套解析逻辑，建议统一为其中一种（官方 API 是 code/message/data 风格）。</p>
-</div>
+    <div class="card" data-page-node-id="aB6SQijhz9UzgynAdeDEI5">
+      <h3 data-page-node-id="h1CTvWlK9yHvQPu9QN02Mt">1. 返回包裹结构不统一 <span class="tag t-bug"
+          data-page-node-id="89VuRH6Ohxq8d9sPTANuhQ">不一致</span></h3>
+      <p data-page-node-id="g2icM7rvbFh7rEI5KtqxiI">同为 <code
+          data-page-node-id="CvBh6dg3TXdQ9CjsdSRdOk">tools/call</code> 的 <code
+          data-page-node-id="gZS6qfBXRhe4rBzcHwNBlC">result</code>，两种格式混用：</p>
+      <table data-page-node-id="ui932fU1BQt6Rzt9N5xtXv">
+        <tr data-page-node-id="Vw1Oem7Plwl1uhFJwnq9CU">
+          <th data-page-node-id="nGMeouQZorlnVyFBRnSsOM">格式</th>
+          <th data-page-node-id="GqbRSm79r2T93z7Mfl5Rc6">工具</th>
+        </tr>
+        <tr data-page-node-id="IgfD7fFN2NHXzyWWdw7NuL">
+          <td data-page-node-id="AgsNzYiy2itQkUOFDLgC7K"><code
+              data-page-node-id="m3MimbtsLPAgphMAjLiesf">{code, message, data}</code>（17 个）</td>
+          <td data-page-node-id="cTLnUl8TfuNCbhGy1PlWgH">
+            asin_detail_lookup、keyword_miner、product_node、keyword_research、google_trend、traffic_keyword_stat、traffic_keyword、traffic_listing_stat、aba_research_weekly、aba_research_monthly、keyword_order、bsr_sales、asin_sales、market_research、keyword_conversion、traffic_extend、traffic_listing
+          </td>
+        </tr>
+        <tr data-page-node-id="n3ngkTgXFsmWFoysscMmjS">
+          <td data-page-node-id="tp36lBg3oqvIYYUAnTuKwl"><code
+              data-page-node-id="qnzOfkg5YpyHzHRj5vZTIQ">{isError, structuredContent, content}</code>（4 个）</td>
+          <td data-page-node-id="T8nMOkpMpD8x5IMGwsFKZA"><b
+              data-page-node-id="HnLpSfaeoTPDZn1TnAsO8F">competitor_lookup、product_research、asin_competitor、asin_sales_trend</b>
+          </td>
+        </tr>
+      </table>
+      <p class="muted" data-page-node-id="9q9VydjGC9gVMA4cLW4e4F">对同一个 MCP 客户端来说，调用不同工具需要两套解析逻辑，建议统一为其中一种（官方 API 是
+        code/message/data 风格）。</p>
+    </div>
 
-<div class="card" data-page-node-id="2zyuwOnZvFUwGMkeqArq9t">
-<h3 data-page-node-id="D6m9MQOdBEPgW8mGrwNYGa">2. 官方 returnFields 参数未实现 <span class="tag t-warn" data-page-node-id="ZW7nnkdnLFHahvfK1wG1ka">功能缺失</span></h3>
-<p data-page-node-id="SNXFcMEpxWtv21j63eCLrK">官方文档明确说明 "MCP 可以通过 returnFields 参数选择性的返回某些字段，可以大幅降低上下文的 Token 量"。目前 21 个工具均未提供 <code data-page-node-id="eUwLo16nHTNd9V7smEYEYb">returnFields</code> 参数，且多数工具透传了大量上游额外字段（见问题 3），实际 Token 开销远大于官方 MCP。</p>
-</div>
+    <div class="card" data-page-node-id="2zyuwOnZvFUwGMkeqArq9t">
+      <h3 data-page-node-id="D6m9MQOdBEPgW8mGrwNYGa">2. 官方 returnFields 参数未实现 <span class="tag t-warn"
+          data-page-node-id="ZW7nnkdnLFHahvfK1wG1ka">功能缺失</span></h3>
+      <p data-page-node-id="SNXFcMEpxWtv21j63eCLrK">官方文档明确说明 "MCP 可以通过 returnFields 参数选择性的返回某些字段，可以大幅降低上下文的 Token 量"。目前
+        21 个工具均未提供 <code data-page-node-id="eUwLo16nHTNd9V7smEYEYb">returnFields</code> 参数，且多数工具透传了大量上游额外字段（见问题 3），实际
+        Token 开销远大于官方 MCP。</p>
+    </div>
 
-<div class="card" data-page-node-id="otI5DOG5bPD75rvUWbFCXg">
-<h3 data-page-node-id="yXhDsejckekfxPoY6VuV8B">3. 上游内部字段泄漏到输出 <span class="tag t-diff" data-page-node-id="zRXxQHBWC4wpQczwbxZrHV">输出冗余</span></h3>
-<p data-page-node-id="Hoa8TouyXIvpOZvkDO8GhL">keyword_miner、keyword_research、keyword_order、keyword_conversion、aba_research_weekly/monthly 的 <code data-page-node-id="ZnLcxDZjJAySqsl2iKxUJZ">data</code> 中透传了官方接口没有的分页/内部字段：<code data-page-node-id="PHaHYNXaiXHDoWglUT7aH3">guestId</code>、<code data-page-node-id="7p2cl5nv9L95kyG7avaO6h">guestVisited</code>、<code data-page-node-id="DgOWKofXlxYeSXgZed0TBq">terminal</code>、<code data-page-node-id="aNrltAQ7XrI2ScF6UUjjni">took</code>、<code data-page-node-id="YxoDaRDGACr53PjDKeJgpq">url</code>、<code data-page-node-id="GXbF0TmSLhHuZ9SZ9mSwnI">hasNextPage</code>。这些字段对调用方无意义，白白消耗 Token。</p>
-</div>
+    <div class="card" data-page-node-id="otI5DOG5bPD75rvUWbFCXg">
+      <h3 data-page-node-id="yXhDsejckekfxPoY6VuV8B">3. 上游内部字段泄漏到输出 <span class="tag t-diff"
+          data-page-node-id="zRXxQHBWC4wpQczwbxZrHV">输出冗余</span></h3>
+      <p data-page-node-id="Hoa8TouyXIvpOZvkDO8GhL">
+        keyword_miner、keyword_research、keyword_order、keyword_conversion、aba_research_weekly/monthly 的 <code
+          data-page-node-id="ZnLcxDZjJAySqsl2iKxUJZ">data</code> 中透传了官方接口没有的分页/内部字段：<code
+          data-page-node-id="PHaHYNXaiXHDoWglUT7aH3">guestId</code>、<code
+          data-page-node-id="7p2cl5nv9L95kyG7avaO6h">guestVisited</code>、<code
+          data-page-node-id="DgOWKofXlxYeSXgZed0TBq">terminal</code>、<code
+          data-page-node-id="aNrltAQ7XrI2ScF6UUjjni">took</code>、<code
+          data-page-node-id="YxoDaRDGACr53PjDKeJgpq">url</code>、<code
+          data-page-node-id="GXbF0TmSLhHuZ9SZ9mSwnI">hasNextPage</code>。这些字段对调用方无意义，白白消耗 Token。</p>
+    </div>
 
-<div class="card" data-page-node-id="Fzk07Ik4uE6ORTGqF1ZBJB">
-<h3 data-page-node-id="dDotHFfX83zUDFuBOzCPSJ">4. 数据库计费配置缺 8 个接口 <span class="tag t-bug" data-page-node-id="FBtuSqhrdljGU7LkvSkDIl">配置缺失（已在测试环境补齐）</span></h3>
-<p data-page-node-id="1G16EeJn36PRxeEifSPoD2"><code data-page-node-id="Vyu2lKAVFBFZPC8nD2xSWi">api_endpoint_pricing</code> 表中缺少 8 条记录（schema.node.sql 里有 INSERT 但库中未执行）：TRAFFIC_KEYWORD_STAT、TRAFFIC_LISTING_STAT、TRAFFIC_LISTING、MARKET_RESEARCH、PRODUCT_NODE、ASIN_COMPETITOR、PRODUCT_RESEARCH、ASIN_SALES_TREND。缺配置时接口直接报错 <code data-page-node-id="ixEmMdkGhRB2xjgFRaopqm">接口未配置价格</code>，完全不可用。测试时已在本地库补齐（成本值取自 schema.node.sql）。</p>
-</div>
+    <div class="card" data-page-node-id="Fzk07Ik4uE6ORTGqF1ZBJB">
+      <h3 data-page-node-id="dDotHFfX83zUDFuBOzCPSJ">4. 数据库计费配置缺 8 个接口 <span class="tag t-bug"
+          data-page-node-id="FBtuSqhrdljGU7LkvSkDIl">配置缺失（已在测试环境补齐）</span></h3>
+      <p data-page-node-id="1G16EeJn36PRxeEifSPoD2"><code
+          data-page-node-id="Vyu2lKAVFBFZPC8nD2xSWi">api_endpoint_pricing</code> 表中缺少 8 条记录（schema.node.sql 里有 INSERT
+        但库中未执行）：TRAFFIC_KEYWORD_STAT、TRAFFIC_LISTING_STAT、TRAFFIC_LISTING、MARKET_RESEARCH、PRODUCT_NODE、ASIN_COMPETITOR、PRODUCT_RESEARCH、ASIN_SALES_TREND。缺配置时接口直接报错
+        <code data-page-node-id="ixEmMdkGhRB2xjgFRaopqm">接口未配置价格</code>，完全不可用。测试时已在本地库补齐（成本值取自 schema.node.sql）。
+      </p>
+    </div>
 
-<div class="card" data-page-node-id="ADIMv4shGCNA3kUGqnOrm5">
-<h3 data-page-node-id="JIYR4EIXlLznHaTadYiK6s">5. 第三方会话配额耗尽时静默返回空结果 <span class="tag t-warn" data-page-node-id="ogoXfjS9xdR7XdJT3a4llM">错误处理</span></h3>
-<p data-page-node-id="6g2CC90fjmuh0TMgHvciDZ">测试过程中卖家精灵会话（Redis 中仅配置 1 个账号 <code data-page-node-id="Wi1H7KHbtomXl6aVsMOC9R">13994443294</code>）的 competing-lookup 查询配额耗尽后，上游返回 <code data-page-node-id="gaAHuzJsm21OWypmwqDNov">data: null</code>，各工具不报错，返回 <code data-page-node-id="wzouEtpc0Rt1WCZ4tG77GV">total=0 / items=[]</code> 的"成功"结果，调用方无法区分"真的没数据"还是"会话不可用"。建议对 <code data-page-node-id="fGE4Yo3ABGWZWHgpcdhNAI">data === null</code> 抛出明确错误。另外仅 1 个会话也无法体现"多账号轮询"的设计。</p>
-</div>
+    <div class="card" data-page-node-id="ADIMv4shGCNA3kUGqnOrm5">
+      <h3 data-page-node-id="JIYR4EIXlLznHaTadYiK6s">5. 第三方会话配额耗尽时静默返回空结果 <span class="tag t-warn"
+          data-page-node-id="ogoXfjS9xdR7XdJT3a4llM">错误处理</span></h3>
+      <p data-page-node-id="6g2CC90fjmuh0TMgHvciDZ">测试过程中卖家精灵会话（Redis 中仅配置 1 个账号 <code
+          data-page-node-id="Wi1H7KHbtomXl6aVsMOC9R">13994443294</code>）的 competing-lookup 查询配额耗尽后，上游返回 <code
+          data-page-node-id="gaAHuzJsm21OWypmwqDNov">data: null</code>，各工具不报错，返回 <code
+          data-page-node-id="wzouEtpc0Rt1WCZ4tG77GV">total=0 / items=[]</code> 的"成功"结果，调用方无法区分"真的没数据"还是"会话不可用"。建议对 <code
+          data-page-node-id="fGE4Yo3ABGWZWHgpcdhNAI">data === null</code> 抛出明确错误。另外仅 1 个会话也无法体现"多账号轮询"的设计。</p>
+    </div>
 
-<div class="card" data-page-node-id="r5UC2qC9ZUgsOsFFXivA14">
-<h3 data-page-node-id="16t1LaFQHyc5nGc4szbZXV">6. 4 个工具命名与官方 MCP Code 不一致 <span class="tag t-diff" data-page-node-id="YF7bFtfvNoj7pRvFRltOdw">命名差异</span></h3>
-<table data-page-node-id="spN1tDTUTGu4xRkxgNjDib">
-<tr data-page-node-id="4mantWPBHYgrqOe7DkL93d"><th data-page-node-id="e5OEiQjKph4Pc0oIjQy8Wb">接口</th><th data-page-node-id="KFDvTgR2Y8iKB8wjPDjvOn">官方 MCP Code</th><th data-page-node-id="owDZZ18jpTCRYAWzoZ2Hf8">我方工具名</th></tr>
-<tr data-page-node-id="oBIdjjA9oWV4iCftQCmyk0"><td data-page-node-id="GpRIqm5I2wfN5cJQ7deDxB">ASIN 详情</td><td data-page-node-id="8BrawzCvkXnWVCMXvdGOPn"><code data-page-node-id="7TfJnDcaqEiC8Y3DkaYybt">asin_detail</code></td><td data-page-node-id="C4pNhF3yHhBxtyjS9xdgwh"><code data-page-node-id="5XvchxwazygI2uHgnz7F5d">asin_detail_lookup</code></td></tr>
-<tr data-page-node-id="HjeYfgnw7ChuzjXcRyxEzd"><td data-page-node-id="T7CxCGNvxwTFjBrkJqBB8M">关键词反查(流量词列表)</td><td data-page-node-id="wWGZDDGCoiOEULQFBF97c6"><code data-page-node-id="K8YeWI2ykbzbJkvWdwKjG2">traffic_keyword</code></td><td data-page-node-id="en0STBO5lnRjJFvqGuMI78"><code data-page-node-id="AAulx92GogkYY2cIdglxxt">asin_reversing</code></td></tr>
-<tr data-page-node-id="3V44LDCmkh6gtl1dX9dk4t"><td data-page-node-id="xZPBJPoCy4IzBPQdJvFZdq">BSR销量预测</td><td data-page-node-id="69BryRQqytzx4FdEkpYxfe"><code data-page-node-id="DRyO3CbiQr7OeqVJaQXpQj">bsr_prediction</code></td><td data-page-node-id="KQyxVi9Q48AF7hxqQw1sAn"><code data-page-node-id="VEZ9jx6BbIJfJPGMAUWdCY">bsr_sales</code></td></tr>
-<tr data-page-node-id="zOv3szUGCUV6iSdFNJ5TVQ"><td data-page-node-id="mBL2YgxmpJv3tAW8Vxzvbg">ASIN 销量预测</td><td data-page-node-id="hC9KUM0N4yyoTjsZyJSxXF"><code data-page-node-id="lT963n9FODx0Sr5GwxnPGN">asin_prediction</code></td><td data-page-node-id="2BcGfk1irPSsckiMKvNNBX"><code data-page-node-id="oknKE0zm5l21emN5E2pa2f">asin_sales</code></td></tr>
-</table>
-<p class="muted" data-page-node-id="xINZdmSoDQcnY5iwNpLqxC">其余 17 个工具名与官方一致。若目标是"模仿官方开放平台"，建议对齐命名。</p>
-</div>
+    <div class="card" data-page-node-id="r5UC2qC9ZUgsOsFFXivA14">
+      <h3 data-page-node-id="16t1LaFQHyc5nGc4szbZXV">6. 4 个工具命名与官方 MCP Code 不一致 <span class="tag t-diff"
+          data-page-node-id="YF7bFtfvNoj7pRvFRltOdw">命名差异</span></h3>
+      <table data-page-node-id="spN1tDTUTGu4xRkxgNjDib">
+        <tr data-page-node-id="4mantWPBHYgrqOe7DkL93d">
+          <th data-page-node-id="e5OEiQjKph4Pc0oIjQy8Wb">接口</th>
+          <th data-page-node-id="KFDvTgR2Y8iKB8wjPDjvOn">官方 MCP Code</th>
+          <th data-page-node-id="owDZZ18jpTCRYAWzoZ2Hf8">我方工具名</th>
+        </tr>
+        <tr data-page-node-id="oBIdjjA9oWV4iCftQCmyk0">
+          <td data-page-node-id="GpRIqm5I2wfN5cJQ7deDxB">ASIN 详情</td>
+          <td data-page-node-id="8BrawzCvkXnWVCMXvdGOPn"><code
+              data-page-node-id="7TfJnDcaqEiC8Y3DkaYybt">asin_detail</code></td>
+          <td data-page-node-id="C4pNhF3yHhBxtyjS9xdgwh"><code
+              data-page-node-id="5XvchxwazygI2uHgnz7F5d">asin_detail_lookup</code></td>
+        </tr>
+        <tr data-page-node-id="HjeYfgnw7ChuzjXcRyxEzd">
+          <td data-page-node-id="T7CxCGNvxwTFjBrkJqBB8M">关键词反查(流量词列表)</td>
+          <td data-page-node-id="wWGZDDGCoiOEULQFBF97c6"><code
+              data-page-node-id="K8YeWI2ykbzbJkvWdwKjG2">traffic_keyword</code></td>
+          <td data-page-node-id="en0STBO5lnRjJFvqGuMI78"><code
+              data-page-node-id="AAulx92GogkYY2cIdglxxt">traffic_keyword</code></td>
+        </tr>
+        <tr data-page-node-id="3V44LDCmkh6gtl1dX9dk4t">
+          <td data-page-node-id="xZPBJPoCy4IzBPQdJvFZdq">BSR销量预测</td>
+          <td data-page-node-id="69BryRQqytzx4FdEkpYxfe"><code
+              data-page-node-id="DRyO3CbiQr7OeqVJaQXpQj">bsr_prediction</code></td>
+          <td data-page-node-id="KQyxVi9Q48AF7hxqQw1sAn"><code
+              data-page-node-id="VEZ9jx6BbIJfJPGMAUWdCY">bsr_sales</code></td>
+        </tr>
+        <tr data-page-node-id="zOv3szUGCUV6iSdFNJ5TVQ">
+          <td data-page-node-id="mBL2YgxmpJv3tAW8Vxzvbg">ASIN 销量预测</td>
+          <td data-page-node-id="hC9KUM0N4yyoTjsZyJSxXF"><code
+              data-page-node-id="lT963n9FODx0Sr5GwxnPGN">asin_prediction</code></td>
+          <td data-page-node-id="2BcGfk1irPSsckiMKvNNBX"><code
+              data-page-node-id="oknKE0zm5l21emN5E2pa2f">asin_sales</code></td>
+        </tr>
+      </table>
+      <p class="muted" data-page-node-id="xINZdmSoDQcnY5iwNpLqxC">其余 17 个工具名与官方一致。若目标是"模仿官方开放平台"，建议对齐命名。</p>
+    </div>
 
-<h2 data-page-node-id="o1vfcFBWpl2idTPfAzXCrv">二、逐接口对比明细</h2>
-<p class="muted" data-page-node-id="WAD0NT9gPXkSjpEn8rNzdy">判定说明：✅ 一致 = 官方返回字段全部覆盖（允许少量额外字段）；🔴 结构差异大 = 字段命名/结构与官方明显不同；❌ 不可用 = 无法返回有效数据。</p>
+    <h2 data-page-node-id="o1vfcFBWpl2idTPfAzXCrv">二、逐接口对比明细</h2>
+    <p class="muted" data-page-node-id="WAD0NT9gPXkSjpEn8rNzdy">判定说明：✅ 一致 = 官方返回字段全部覆盖（允许少量额外字段）；🔴 结构差异大 =
+      字段命名/结构与官方明显不同；❌ 不可用 = 无法返回有效数据。</p>
 
-<div class="card" data-page-node-id="lxLT4YWZDH1xEHHrMiI4gQ">
-<h3 data-page-node-id="nFrzMX6DNeLolZ51z6oH8I">1. competitor_lookup（查竞品）<span class="tag t-bug" data-page-node-id="XKBiC93lEKUuhKmQVILp5d">monthName 映射 bug + 字段命名偏离</span></h3>
-<ul data-page-node-id="hVAiZxyieapEeybapxuZcX">
-<li data-page-node-id="ww266oUXyiQOQUYgRrKQUz"><b data-page-node-id="zmeELMia6zDZTkRlL9v38e">输入 bug</b>：官方参数 <code data-page-node-id="fPSDzDX0InCVFnBDEdwoy6">month</code>（如 202607）被直接当作上游 <code data-page-node-id="qaAaYV0oiCBPV1lU8y2FkK">monthName</code> 传给卖家精灵 v3 接口，而上游 monthName 需要是 <code data-page-node-id="VY6GriutAQ9akFP30KzGXA">bsr_sales_nearly</code> 或 <code data-page-node-id="NWcqlUrvBFYJ3luKc6Qpr3">bsr_sales_YYYYMM</code> 形式。导致<b data-page-node-id="rYMZPDkD4CzCoyBxozcE3c">带 month 查询必然返回空</b>。<code data-page-node-id="poEee2fruWeALVrTSSKlTP">toMonthName()</code> 里 <code data-page-node-id="uI8Wgut81SQjzd2RGvePNo">String(month).replace('-','')</code> 缺少前缀拼接（product_research 同）。</li>
-<li data-page-node-id="2XUDq3LWEjMCf9NLyQDrTd"><b data-page-node-id="1edG4LWJVQyUdiqqQnC7jA">输出字段命名</b>（共用 competitionTransformer，与官方文档对比）：官方 <code data-page-node-id="FZXC9GEMJIAVAwyfUDeFul">units/unitsGr/bsrCr/bsrCv/revenue/ratingsRate/ratingsCv/ratingDelta/primePrice/dimension/dimensionsType/pkgDimensions/pkgWeight/sku</code> 等，我方对应为 <code data-page-node-id="yfaLMcNVVZ7OahGHgjY3Yi">monthlySalesUnits/monthlySalesUnitsGrowthRate/bsrGrowthRate/bsrGrowthCount/totalAmount/reviewsRate/reviewsDelta/primeExclusivePrice/dimensions</code>，且 <b data-page-node-id="uuoxi0cZsA58omEFrjIvBY">缺失</b> <code data-page-node-id="0mXJusTTPfF8uCusvoYiqK">brandUrl、nodeId、symbol、bsrId、sellerId、amzSales、amzUnitDate、dimension、dimensionsType、pkgDimensions、pkgDimensionType、pkgWeight、sku</code>；<b data-page-node-id="hmNJBKHtoL7RQk9s7NfKvf">多出</b> <code data-page-node-id="m9Iv8I9rysAc7an9bCE8Ld">asinUrl、bigImageUrl、salesTrend、monthlySalesUnitsTrend、badgeBestSeller</code> 等。</li>
-<li class="muted" data-page-node-id="Tc23EURdW3UoW2sd7hDrU9">注：因上游会话配额耗尽，未能取得该工具的实测数据，字段结论来自转换器静态分析（asin_competitor 实测输出证实了同一字段集）。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="lxLT4YWZDH1xEHHrMiI4gQ">
+      <h3 data-page-node-id="nFrzMX6DNeLolZ51z6oH8I">1. competitor_lookup（查竞品）<span class="tag t-bug"
+          data-page-node-id="XKBiC93lEKUuhKmQVILp5d">monthName 映射 bug + 字段命名偏离</span></h3>
+      <ul data-page-node-id="hVAiZxyieapEeybapxuZcX">
+        <li data-page-node-id="ww266oUXyiQOQUYgRrKQUz"><b data-page-node-id="zmeELMia6zDZTkRlL9v38e">输入 bug</b>：官方参数
+          <code data-page-node-id="fPSDzDX0InCVFnBDEdwoy6">month</code>（如 202607）被直接当作上游 <code
+            data-page-node-id="qaAaYV0oiCBPV1lU8y2FkK">monthName</code> 传给卖家精灵 v3 接口，而上游 monthName 需要是 <code
+            data-page-node-id="VY6GriutAQ9akFP30KzGXA">bsr_sales_nearly</code> 或 <code
+            data-page-node-id="NWcqlUrvBFYJ3luKc6Qpr3">bsr_sales_YYYYMM</code> 形式。导致<b
+            data-page-node-id="rYMZPDkD4CzCoyBxozcE3c">带 month 查询必然返回空</b>。<code
+            data-page-node-id="poEee2fruWeALVrTSSKlTP">toMonthName()</code> 里 <code
+            data-page-node-id="uI8Wgut81SQjzd2RGvePNo">String(month).replace('-','')</code> 缺少前缀拼接（product_research 同）。
+        </li>
+        <li data-page-node-id="2XUDq3LWEjMCf9NLyQDrTd"><b data-page-node-id="1edG4LWJVQyUdiqqQnC7jA">输出字段命名</b>（共用
+          competitionTransformer，与官方文档对比）：官方 <code
+            data-page-node-id="FZXC9GEMJIAVAwyfUDeFul">units/unitsGr/bsrCr/bsrCv/revenue/ratingsRate/ratingsCv/ratingDelta/primePrice/dimension/dimensionsType/pkgDimensions/pkgWeight/sku</code>
+          等，我方对应为 <code
+            data-page-node-id="yfaLMcNVVZ7OahGHgjY3Yi">monthlySalesUnits/monthlySalesUnitsGrowthRate/bsrGrowthRate/bsrGrowthCount/totalAmount/reviewsRate/reviewsDelta/primeExclusivePrice/dimensions</code>，且
+          <b data-page-node-id="uuoxi0cZsA58omEFrjIvBY">缺失</b> <code
+            data-page-node-id="0mXJusTTPfF8uCusvoYiqK">brandUrl、nodeId、symbol、bsrId、sellerId、amzSales、amzUnitDate、dimension、dimensionsType、pkgDimensions、pkgDimensionType、pkgWeight、sku</code>；<b
+            data-page-node-id="hmNJBKHtoL7RQk9s7NfKvf">多出</b> <code
+            data-page-node-id="m9Iv8I9rysAc7an9bCE8Ld">asinUrl、bigImageUrl、salesTrend、monthlySalesUnitsTrend、badgeBestSeller</code>
+          等。
+        </li>
+        <li class="muted" data-page-node-id="Tc23EURdW3UoW2sd7hDrU9">
+          注：因上游会话配额耗尽，未能取得该工具的实测数据，字段结论来自转换器静态分析（asin_competitor 实测输出证实了同一字段集）。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="UQOnaDfNFLaQdtK3L0pDyT">
-<h3 data-page-node-id="XjYLDLSzEHHDxMkadbjPD1">2. product_research（选产品）<span class="tag t-bug" data-page-node-id="57MyKnNAP3zYih6KlpNu1G">同 competitor_lookup 两项问题</span></h3>
-<ul data-page-node-id="vzcCZlGamjWhzytbBnNWLp">
-<li data-page-node-id="WlQHXbM7OMNGcH46QdRyYt">同样存在 <code data-page-node-id="hj3dXhININfXdivRZx6SuS">month → monthName</code> 映射 bug（带月份查询返回空）。</li>
-<li data-page-node-id="tv4vebJh3Mtni2BCbX9C0q">输出共用 competitionTransformer，字段命名/缺失问题同上。</li>
-<li data-page-node-id="wAS9NDeZI4NxClRkBHOWFh">输入参数覆盖较好：官方约 62 个参数基本都有（matchType、minPrice、badgeBS/AC/NR、fulfillment、sellerNation 等）。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="UQOnaDfNFLaQdtK3L0pDyT">
+      <h3 data-page-node-id="XjYLDLSzEHHDxMkadbjPD1">2. product_research（选产品）<span class="tag t-bug"
+          data-page-node-id="57MyKnNAP3zYih6KlpNu1G">同 competitor_lookup 两项问题</span></h3>
+      <ul data-page-node-id="vzcCZlGamjWhzytbBnNWLp">
+        <li data-page-node-id="WlQHXbM7OMNGcH46QdRyYt">同样存在 <code
+            data-page-node-id="hj3dXhININfXdivRZx6SuS">month → monthName</code> 映射 bug（带月份查询返回空）。</li>
+        <li data-page-node-id="tv4vebJh3Mtni2BCbX9C0q">输出共用 competitionTransformer，字段命名/缺失问题同上。</li>
+        <li data-page-node-id="wAS9NDeZI4NxClRkBHOWFh">输入参数覆盖较好：官方约 62
+          个参数基本都有（matchType、minPrice、badgeBS/AC/NR、fulfillment、sellerNation 等）。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="iA9jazEUMa09hyjVfyeOQR">
-<h3 data-page-node-id="CY6a2gFLCGqjGb2d8h9Fnd">3. asin_detail_lookup（ASIN 详情）<span class="tag t-warn" data-page-node-id="MpkLnyQNooGybYL7xreImr">字段齐但有 5 处映射 bug</span></h3>
-<ul data-page-node-id="W1Ihw7slA6KkCjDZtHCDwR">
-<li data-page-node-id="bErtUpgU7llbOnATIjBufU"><b data-page-node-id="gAN1LAP5xElamvzc2VmElJ">subcategories 永远为空对象</b>：上游返回数组 <code data-page-node-id="ABGxEohuiKjGDFhzyFPv24">subcategories:[{rank,code,label}]</code>（官方 API 也返回数组），转换器把它当单个对象处理（<code data-page-node-id="eTnkSAiDnsRSo5WKaAuSiH">get(sub,'rank')</code>），输出恒为 <code data-page-node-id="Cuq8sIygH56qZ8bIhKqSWm">{"rank":null,"code":null,"label":null}</code>，多子类目数据丢失。</li>
-<li data-page-node-id="T839UwQfMVicp7y6xq3sKy"><b data-page-node-id="GBPtXyMztS3wWqKzN9U9YQ">zoomImageUrl 恒为 null</b>：上游字段是 <code data-page-node-id="9ZY06NgJ0rwVgGZ506s1Hn">bigImageUrl</code>，未映射。</li>
-<li data-page-node-id="sLRx81HKqjX1bw1ZvyWdQX"><b data-page-node-id="wYYHvBBZWfFT5Bm3hBkSc3">primePrice 恒为 null</b>：上游字段是 <code data-page-node-id="CsvO36QSfHYDecE1xt6sNP">primeExclusivePrice</code>，未映射（官方约定 -1 表示无 prime 价）。</li>
-<li data-page-node-id="tNIKacFReEh3XBqRyxlBPC"><b data-page-node-id="cueMOOCaVekhUS8EO9aWJT">firstRatingDate 恒为 null</b>：上游字段是 <code data-page-node-id="8OqIFAjZbkiFcRGClM9vDl">firstReviewDate</code>，未映射。</li>
-<li data-page-node-id="3l6KeQFpAnRAHJtOCQVFDg"><b data-page-node-id="2qBejUqwRp8DbDeM4KgCRI">fulfillment 恒为 null</b>：上游无同名字段（fba 是运费数字），未做转换。</li>
-<li data-page-node-id="uECFAHQeprWHdZY8YFiAGg"><b data-page-node-id="NtZHG3TT3a06VEHKZcpd7i">结构差异</b>：官方 data 直接是 ASIN 对象；我方 data 是 <code data-page-node-id="otwolPI5TUBmRrR1pbD8Ln">{page,size,total,items:[...]}</code> 分页包装。</li>
-<li data-page-node-id="j7j3USy5f44JNg0Gg5MlLU"><b data-page-node-id="STWDsyLSs2BM1frV0tQuiG">ratings（评分数）</b>：上游 competing-lookup 无此字段 → 恒 null；官方示例有值。features 五点描述同理（上游不返回 → 空数组），属于数据源能力差异。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="iA9jazEUMa09hyjVfyeOQR">
+      <h3 data-page-node-id="CY6a2gFLCGqjGb2d8h9Fnd">3. asin_detail_lookup（ASIN 详情）<span class="tag t-warn"
+          data-page-node-id="MpkLnyQNooGybYL7xreImr">字段齐但有 5 处映射 bug</span></h3>
+      <ul data-page-node-id="W1Ihw7slA6KkCjDZtHCDwR">
+        <li data-page-node-id="bErtUpgU7llbOnATIjBufU"><b data-page-node-id="gAN1LAP5xElamvzc2VmElJ">subcategories
+            永远为空对象</b>：上游返回数组 <code
+            data-page-node-id="ABGxEohuiKjGDFhzyFPv24">subcategories:[{rank,code,label}]</code>（官方 API
+          也返回数组），转换器把它当单个对象处理（<code data-page-node-id="eTnkSAiDnsRSo5WKaAuSiH">get(sub,'rank')</code>），输出恒为 <code
+            data-page-node-id="Cuq8sIygH56qZ8bIhKqSWm">{"rank":null,"code":null,"label":null}</code>，多子类目数据丢失。</li>
+        <li data-page-node-id="T839UwQfMVicp7y6xq3sKy"><b data-page-node-id="GBPtXyMztS3wWqKzN9U9YQ">zoomImageUrl 恒为
+            null</b>：上游字段是 <code data-page-node-id="9ZY06NgJ0rwVgGZ506s1Hn">bigImageUrl</code>，未映射。</li>
+        <li data-page-node-id="sLRx81HKqjX1bw1ZvyWdQX"><b data-page-node-id="wYYHvBBZWfFT5Bm3hBkSc3">primePrice 恒为
+            null</b>：上游字段是 <code data-page-node-id="CsvO36QSfHYDecE1xt6sNP">primeExclusivePrice</code>，未映射（官方约定 -1 表示无
+          prime 价）。</li>
+        <li data-page-node-id="tNIKacFReEh3XBqRyxlBPC"><b data-page-node-id="cueMOOCaVekhUS8EO9aWJT">firstRatingDate 恒为
+            null</b>：上游字段是 <code data-page-node-id="8OqIFAjZbkiFcRGClM9vDl">firstReviewDate</code>，未映射。</li>
+        <li data-page-node-id="3l6KeQFpAnRAHJtOCQVFDg"><b data-page-node-id="2qBejUqwRp8DbDeM4KgCRI">fulfillment 恒为
+            null</b>：上游无同名字段（fba 是运费数字），未做转换。</li>
+        <li data-page-node-id="uECFAHQeprWHdZY8YFiAGg"><b data-page-node-id="NtZHG3TT3a06VEHKZcpd7i">结构差异</b>：官方 data
+          直接是 ASIN 对象；我方 data 是 <code data-page-node-id="otwolPI5TUBmRrR1pbD8Ln">{page,size,total,items:[...]}</code>
+          分页包装。</li>
+        <li data-page-node-id="j7j3USy5f44JNg0Gg5MlLU"><b data-page-node-id="STWDsyLSs2BM1frV0tQuiG">ratings（评分数）</b>：上游
+          competing-lookup 无此字段 → 恒 null；官方示例有值。features 五点描述同理（上游不返回 → 空数组），属于数据源能力差异。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="0S6ozLYhrXGceWUTu7xfMa">
-<h3 data-page-node-id="UkBFvtRlPqjWXA7gfNDeK1">4. keyword_miner（关键词挖掘）<span class="tag t-ok" data-page-node-id="FidznlKeHNWOe8LxxtlT0b">✅ 基本一致</span></h3>
-<ul data-page-node-id="aLBZidD1J54CFGefNDwPPE">
-<li data-page-node-id="FS2Tin1eu390G3lAi48DVK">官方 30 个返回字段全部覆盖（marketplace、keyword、keywordCn/Jp、departments、month、supplement、searches、purchases、purchaseRate、monopolyClickRate、products、adProducts、supplyDemandRatio、avgPrice、avgRatings、avgRating、bidMin/bidMax/bid、cvsShareRate、wordCount、titleDensity、spr、relevancy、amazonChoice、searchRank、clicks、impressions）。</li>
-<li data-page-node-id="uPTE4BymnsbGo0FSL2MZ6R">多出字段：trends、monopolyAsinDtos、gkDatas、exactPpcItem/phrasePpcItem/broadPpcItem、absoluteRelevancy、searchWeeklyRank + 上游分页泄漏字段（建议清理或用 returnFields 控制）。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="0S6ozLYhrXGceWUTu7xfMa">
+      <h3 data-page-node-id="UkBFvtRlPqjWXA7gfNDeK1">4. keyword_miner（关键词挖掘）<span class="tag t-ok"
+          data-page-node-id="FidznlKeHNWOe8LxxtlT0b">✅ 基本一致</span></h3>
+      <ul data-page-node-id="aLBZidD1J54CFGefNDwPPE">
+        <li data-page-node-id="FS2Tin1eu390G3lAi48DVK">官方 30
+          个返回字段全部覆盖（marketplace、keyword、keywordCn/Jp、departments、month、supplement、searches、purchases、purchaseRate、monopolyClickRate、products、adProducts、supplyDemandRatio、avgPrice、avgRatings、avgRating、bidMin/bidMax/bid、cvsShareRate、wordCount、titleDensity、spr、relevancy、amazonChoice、searchRank、clicks、impressions）。
+        </li>
+        <li data-page-node-id="uPTE4BymnsbGo0FSL2MZ6R">
+          多出字段：trends、monopolyAsinDtos、gkDatas、exactPpcItem/phrasePpcItem/broadPpcItem、absoluteRelevancy、searchWeeklyRank
+          + 上游分页泄漏字段（建议清理或用 returnFields 控制）。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="JCtHG2tNQWSRUuat3VhB9l">
-<h3 data-page-node-id="b2sj6Z5CbznA6oingz6my7">5. product_node（查产品类目）<span class="tag t-bug" data-page-node-id="DsOwahc5RXxUiMTcVkkORv">❌ 数据通道错误，恒返回 []</span></h3>
-<ul data-page-node-id="LGq4fH3M2UGvuJpBs2ZsG2">
-<li data-page-node-id="LN3Rn4AGzUzbjUf2xViiI5">该查询直接调用<b data-page-node-id="GFJVom6YgEHDFWe9cVhqr6">官方 OpenAPI</b> <code data-page-node-id="zgGi8zS6tCVXAJx7XnNZBQ">api.sellersprite.com/v1/product/node</code>，需要 <code data-page-node-id="h2psc9fCPdI6jYbMSAh4Es">secret-key</code>，但会话数据里根本没有配置 secretKey（只有 cookie）→ 上游返回错误，代码静默吞掉，永远返回 <code data-page-node-id="4g7N1i3mn8TP272FRXRv9E">[]</code>。</li>
-<li data-page-node-id="re1PTHPItkIYoDRVA8H5KZ">与其他 19 个接口走 cookie 模拟登录通道不一致。<b data-page-node-id="uDBDYEKyzGHAKb7OmwiRQv">asin_sales_trend 存在同样问题</b>。</li>
-<li data-page-node-id="nOODegnDxEhXF9ZSBfr9P5">建议：改为走卖家精灵 Web 端类目接口或本地 <code data-page-node-id="179mQfqHAlQtNFTPvmYoGL">amz_category</code> 表（项目里有采集脚本和表结构）。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="JCtHG2tNQWSRUuat3VhB9l">
+      <h3 data-page-node-id="b2sj6Z5CbznA6oingz6my7">5. product_node（查产品类目）<span class="tag t-bug"
+          data-page-node-id="DsOwahc5RXxUiMTcVkkORv">❌ 数据通道错误，恒返回 []</span></h3>
+      <ul data-page-node-id="LGq4fH3M2UGvuJpBs2ZsG2">
+        <li data-page-node-id="LN3Rn4AGzUzbjUf2xViiI5">该查询直接调用<b data-page-node-id="GFJVom6YgEHDFWe9cVhqr6">官方
+            OpenAPI</b> <code data-page-node-id="zgGi8zS6tCVXAJx7XnNZBQ">api.sellersprite.com/v1/product/node</code>，需要
+          <code data-page-node-id="h2psc9fCPdI6jYbMSAh4Es">secret-key</code>，但会话数据里根本没有配置 secretKey（只有 cookie）→
+          上游返回错误，代码静默吞掉，永远返回 <code data-page-node-id="4g7N1i3mn8TP272FRXRv9E">[]</code>。
+        </li>
+        <li data-page-node-id="re1PTHPItkIYoDRVA8H5KZ">与其他 19 个接口走 cookie 模拟登录通道不一致。<b
+            data-page-node-id="uDBDYEKyzGHAKb7OmwiRQv">asin_sales_trend 存在同样问题</b>。</li>
+        <li data-page-node-id="nOODegnDxEhXF9ZSBfr9P5">建议：改为走卖家精灵 Web 端类目接口或本地 <code
+            data-page-node-id="179mQfqHAlQtNFTPvmYoGL">amz_category</code> 表（项目里有采集脚本和表结构）。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="ygwbuZaNKgnX1xXhfYw15x">
-<h3 data-page-node-id="yvvMyv1CXzrYscJncTn6Qy">6. keyword_research（关键词选品）<span class="tag t-warn" data-page-node-id="njDus8cAVp3QukH7uhdFgv">入参命名差异 + 输出缺 2 字段</span></h3>
-<ul data-page-node-id="IY6Jpyy7FdzwFEpd0CJrRL">
-<li data-page-node-id="uaQUIDKQZ0pqGHP6FWzMKD"><b data-page-node-id="X53HX5o3F16AJq7ICZrOyc">输入参数名不一致</b>：官方为 <code data-page-node-id="Rwm8HenX6uYxZ9g4KurF6C">keywords</code>（可选），我方改为 <code data-page-node-id="lWYEj7qaYnCxnvh94ENj6s">includeKeywords</code> 且设为<b data-page-node-id="ssENlAqkDC56wQyIpqsjmR">必填</b>——按官方示例 <code data-page-node-id="EWMsSfnTCuDlc9sfVAr9uM">{"keywords":"child"}</code> 调用我方接口会直接报参数错误。</li>
-<li data-page-node-id="KNATwy2AmXFOpH2yO7hQcJ"><b data-page-node-id="U0Qe4kB1JazaXx03w4JAx0">缺少官方输入参数</b>：departments、withYearlyGrowth、minSearchesCr/maxSearchesCr、minSearchMonthCv/Cr、minSearchNearlyCv/Cr、minAraClickRate/maxAraClickRate、minGoodsValue/maxGoodsValue、minRatings/maxRatings、minRating/maxRating。</li>
-<li data-page-node-id="QFLD6nU0BrgZxUYWic6Q3C"><b data-page-node-id="J7mV1vEIVv4kHZZn1bPFQr">多出非官方参数</b>：supplement、orderField/orderDesc（官方是 order 对象）、minYearlyGrowth、minGrowth/maxGrowth、keywordBidMatchType。</li>
-<li data-page-node-id="WIpWqPXWMaznJuDK6RL66j"><b data-page-node-id="1bHK1vOA0von84EDS6vbZs">输出缺少</b>：<code data-page-node-id="TTEyliecSQ6viAH745LAJR">clicks</code>、<code data-page-node-id="aDjLKlgsno24ndFGepvkH8">impressions</code>。其余官方字段（含 araAsinList、relationAsinList、searchDepartments、brands、categories、titleDensityExact、marketPeriod、hasBrandWord 等）均已覆盖。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="ygwbuZaNKgnX1xXhfYw15x">
+      <h3 data-page-node-id="yvvMyv1CXzrYscJncTn6Qy">6. keyword_research（关键词选品）<span class="tag t-warn"
+          data-page-node-id="njDus8cAVp3QukH7uhdFgv">入参命名差异 + 输出缺 2 字段</span></h3>
+      <ul data-page-node-id="IY6Jpyy7FdzwFEpd0CJrRL">
+        <li data-page-node-id="uaQUIDKQZ0pqGHP6FWzMKD"><b data-page-node-id="X53HX5o3F16AJq7ICZrOyc">输入参数名不一致</b>：官方为
+          <code data-page-node-id="Rwm8HenX6uYxZ9g4KurF6C">keywords</code>（可选），我方改为 <code
+            data-page-node-id="lWYEj7qaYnCxnvh94ENj6s">includeKeywords</code> 且设为<b
+            data-page-node-id="ssENlAqkDC56wQyIpqsjmR">必填</b>——按官方示例 <code
+            data-page-node-id="EWMsSfnTCuDlc9sfVAr9uM">{"keywords":"child"}</code> 调用我方接口会直接报参数错误。
+        </li>
+        <li data-page-node-id="KNATwy2AmXFOpH2yO7hQcJ"><b
+            data-page-node-id="U0Qe4kB1JazaXx03w4JAx0">缺少官方输入参数</b>：departments、withYearlyGrowth、minSearchesCr/maxSearchesCr、minSearchMonthCv/Cr、minSearchNearlyCv/Cr、minAraClickRate/maxAraClickRate、minGoodsValue/maxGoodsValue、minRatings/maxRatings、minRating/maxRating。
+        </li>
+        <li data-page-node-id="QFLD6nU0BrgZxUYWic6Q3C"><b
+            data-page-node-id="J7mV1vEIVv4kHZZn1bPFQr">多出非官方参数</b>：supplement、orderField/orderDesc（官方是 order
+          对象）、minYearlyGrowth、minGrowth/maxGrowth、keywordBidMatchType。</li>
+        <li data-page-node-id="WIpWqPXWMaznJuDK6RL66j"><b data-page-node-id="1bHK1vOA0von84EDS6vbZs">输出缺少</b>：<code
+            data-page-node-id="TTEyliecSQ6viAH745LAJR">clicks</code>、<code
+            data-page-node-id="aDjLKlgsno24ndFGepvkH8">impressions</code>。其余官方字段（含
+          araAsinList、relationAsinList、searchDepartments、brands、categories、titleDensityExact、marketPeriod、hasBrandWord
+          等）均已覆盖。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="qnRB9OmL5zpmYD9jD53NTW">
-<h3 data-page-node-id="hDskxSNWS08xsZmFLVPFKo">7. google_trend（谷歌趋势）<span class="tag t-ok" data-page-node-id="0n3NZ0CQvgwcH9zpI6JgH2">✅ 一致</span></h3>
-<ul data-page-node-id="V2aFLcDh7j1QklQ5vXJD0c">
-<li data-page-node-id="FUNvEyUzFOthFzdyR778CZ">输入（marketplace、keyword、googleProp、monthly）与输出（marketplace、keyword、link、items[{time,value}]）均与官方一致。</li>
-<li data-page-node-id="BpMVTmXUkjPHR1t1PKJ90W">多出 <code data-page-node-id="FgYPJDoU1Uoxt1yv45wHss">range{week,month,quarter,half,year,threeYear,all}</code> 对象（额外有用信息，无害）。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="qnRB9OmL5zpmYD9jD53NTW">
+      <h3 data-page-node-id="hDskxSNWS08xsZmFLVPFKo">7. google_trend（谷歌趋势）<span class="tag t-ok"
+          data-page-node-id="0n3NZ0CQvgwcH9zpI6JgH2">✅ 一致</span></h3>
+      <ul data-page-node-id="V2aFLcDh7j1QklQ5vXJD0c">
+        <li data-page-node-id="FUNvEyUzFOthFzdyR778CZ">
+          输入（marketplace、keyword、googleProp、monthly）与输出（marketplace、keyword、link、items[{time,value}]）均与官方一致。</li>
+        <li data-page-node-id="BpMVTmXUkjPHR1t1PKJ90W">多出 <code
+            data-page-node-id="FgYPJDoU1Uoxt1yv45wHss">range{week,month,quarter,half,year,threeYear,all}</code>
+          对象（额外有用信息，无害）。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="PqClP7HLHfLyuylnctrbRq">
-<h3 data-page-node-id="5cIZNurp8Hcxza6wnXMrXd">8. traffic_keyword_stat（流量词统计）<span class="tag t-ok" data-page-node-id="C1RhZsdLrO0JyM2OeWbWzL">✅ 一致</span></h3>
-<ul data-page-node-id="Ytk6MDBJIOwPw8J7bG91uF">
-<li data-page-node-id="j82NRludQQblf86cuM4QZS">输出 marketplace、asin、keywords、ranks、ads、calcTime、badgeCount{ns,ac,er,fs,hr,sb,sv,ad} 与官方完全一致，多出 status 字段。</li>
-<li data-page-node-id="PtyEUlp064NLvxAjuZD1cC">注意：用无数据的 ASIN 查询时返回全 null 的"成功"结果（如官方示例 ASIN B0DXTMS9NF 已无数据），未做提示。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="PqClP7HLHfLyuylnctrbRq">
+      <h3 data-page-node-id="5cIZNurp8Hcxza6wnXMrXd">8. traffic_keyword_stat（流量词统计）<span class="tag t-ok"
+          data-page-node-id="C1RhZsdLrO0JyM2OeWbWzL">✅ 一致</span></h3>
+      <ul data-page-node-id="Ytk6MDBJIOwPw8J7bG91uF">
+        <li data-page-node-id="j82NRludQQblf86cuM4QZS">输出
+          marketplace、asin、keywords、ranks、ads、calcTime、badgeCount{ns,ac,er,fs,hr,sb,sv,ad} 与官方完全一致，多出 status 字段。</li>
+        <li data-page-node-id="PtyEUlp064NLvxAjuZD1cC">注意：用无数据的 ASIN 查询时返回全 null 的"成功"结果（如官方示例 ASIN B0DXTMS9NF
+          已无数据），未做提示。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="CFuSnJ1fqtBmtDV2fxTOXO">
-<h3 data-page-node-id="0AaM7ow7ZguLWpmtOuK4VM">9. asin_reversing（关键词反查/流量词列表，官方名 traffic_keyword）<span class="tag t-ok" data-page-node-id="AHcigJ3sLPzN2H1EO8s4CS">✅ 一致</span></h3>
-<ul data-page-node-id="r0XVDoLgsumIX5USSSKFkd">
-<li data-page-node-id="aI3sqCc3TRxtm62CMUHkNs">输出结构 {marketplace, asin, total, items, stats} 与官方一致，官方 item 字段全覆盖（keyword、searches、purchases、purchaseRate、bid、badges、rankPosition、adPosition、searchesRank、searchesRankTimeFrom/To、latest1/7/30daysAds、supplyDemandRatio、trafficPercentage、trafficKeywordType、conversionKeywordType、calculatedWeeklySearches、impressions、clicks、naturalRatio、adRatio 等）。</li>
-<li data-page-node-id="hAhQmo77mlzvAFYjZdnyYt">多出：spr、titleDensity、top3ClickingRate、top3ConversionRate、monopolyClickRate、topAsins、searchesTrend 等额外字段。</li>
-<li data-page-node-id="97nMOWjjuzWk9iwx1SVwxq">输入多了 spr 等筛选，官方 month 参数已支持。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="CFuSnJ1fqtBmtDV2fxTOXO">
+      <h3 data-page-node-id="0AaM7ow7ZguLWpmtOuK4VM">9. traffic_keyword（关键词反查/流量词列表）<span class="tag t-ok"
+          data-page-node-id="AHcigJ3sLPzN2H1EO8s4CS">✅ 一致</span></h3>
+      <ul data-page-node-id="r0XVDoLgsumIX5USSSKFkd">
+        <li data-page-node-id="aI3sqCc3TRxtm62CMUHkNs">输出结构 {marketplace, asin, total, items, stats} 与官方一致，官方 item
+          字段全覆盖（keyword、searches、purchases、purchaseRate、bid、badges、rankPosition、adPosition、searchesRank、searchesRankTimeFrom/To、latest1/7/30daysAds、supplyDemandRatio、trafficPercentage、trafficKeywordType、conversionKeywordType、calculatedWeeklySearches、impressions、clicks、naturalRatio、adRatio
+          等）。</li>
+        <li data-page-node-id="hAhQmo77mlzvAFYjZdnyYt">
+          多出：spr、titleDensity、top3ClickingRate、top3ConversionRate、monopolyClickRate、topAsins、searchesTrend 等额外字段。</li>
+        <li data-page-node-id="97nMOWjjuzWk9iwx1SVwxq">输入多了 spr 等筛选，官方 month 参数已支持。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="H1oeQIc7Pfm9LmDXcdie1x">
-<h3 data-page-node-id="L4oMUi7FJ8bJfyXIHenAFJ">10. traffic_listing_stat（关联流量统计）<span class="tag t-warn" data-page-node-id="fdJr35eo3I2DabmDv5fV0r">asin 恒为 null</span></h3>
-<ul data-page-node-id="TJKiIl5wa9lWWa8xTMvSTU">
-<li data-page-node-id="ywpem4aKKyAfdV95bw2Cwt">结构 {marketplace, asin, relations, freeRelations, paidRelations, calcTime, items[{relation,count}]} 与官方一致。</li>
-<li data-page-node-id="KHYvoBORv8DLusBZ7EIDsc"><b data-page-node-id="tDAKmlNbAs7qfIXjkZivLI">asin 字段恒为 null</b>：上游 multi-stat 接口不返回 asin，转换器未回填请求中的 <code data-page-node-id="EgTDiZPfpe2CYaBBI1BBNp">asinList[0]</code>，而官方 API 返回查询的 asin。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="H1oeQIc7Pfm9LmDXcdie1x">
+      <h3 data-page-node-id="L4oMUi7FJ8bJfyXIHenAFJ">10. traffic_listing_stat（关联流量统计）<span class="tag t-warn"
+          data-page-node-id="fdJr35eo3I2DabmDv5fV0r">asin 恒为 null</span></h3>
+      <ul data-page-node-id="TJKiIl5wa9lWWa8xTMvSTU">
+        <li data-page-node-id="ywpem4aKKyAfdV95bw2Cwt">结构 {marketplace, asin, relations, freeRelations, paidRelations,
+          calcTime, items[{relation,count}]} 与官方一致。</li>
+        <li data-page-node-id="KHYvoBORv8DLusBZ7EIDsc"><b data-page-node-id="tDAKmlNbAs7qfIXjkZivLI">asin 字段恒为
+            null</b>：上游 multi-stat 接口不返回 asin，转换器未回填请求中的 <code
+            data-page-node-id="EgTDiZPfpe2CYaBBI1BBNp">asinList[0]</code>，而官方 API 返回查询的 asin。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="JD39533PHICSySWNifBJfb">
-<h3 data-page-node-id="YCXVnpnULgPFR0oAMvrl3O">11. traffic_listing（关联流量列表）<span class="tag t-warn" data-page-node-id="DC9BnFmqhHt5Ao6Bgche1k">未能实测，输出共用转换器有命名差异</span></h3>
-<ul data-page-node-id="ClB1PrD5VtuvIgFYcLszpr">
-<li data-page-node-id="f2xRuLBciujVrhcpMxEDD2">输入参数（marketplace+asinList+relations 必填、variations、page、size、order）与官方参数表一致。（官方文档的 curl 示例写的是 includeKeywords/date，与其自身参数表矛盾，我方按参数表实现是对的。）</li>
-<li data-page-node-id="H0aFEpBm6GUHKqhy3RINnQ">输出共用 competitionTransformer → 字段命名/缺失问题同 competitor_lookup。</li>
-<li data-page-node-id="cYBTNkntUvooWOLLmuQymD">上游配额耗尽，未能取得实测数据。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="JD39533PHICSySWNifBJfb">
+      <h3 data-page-node-id="YCXVnpnULgPFR0oAMvrl3O">11. traffic_listing（关联流量列表）<span class="tag t-warn"
+          data-page-node-id="DC9BnFmqhHt5Ao6Bgche1k">未能实测，输出共用转换器有命名差异</span></h3>
+      <ul data-page-node-id="ClB1PrD5VtuvIgFYcLszpr">
+        <li data-page-node-id="f2xRuLBciujVrhcpMxEDD2">输入参数（marketplace+asinList+relations
+          必填、variations、page、size、order）与官方参数表一致。（官方文档的 curl 示例写的是 includeKeywords/date，与其自身参数表矛盾，我方按参数表实现是对的。）</li>
+        <li data-page-node-id="H0aFEpBm6GUHKqhy3RINnQ">输出共用 competitionTransformer → 字段命名/缺失问题同 competitor_lookup。</li>
+        <li data-page-node-id="cYBTNkntUvooWOLLmuQymD">上游配额耗尽，未能取得实测数据。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="4DVrxrxx05fVP0C4wHyk5u">
-<h3 data-page-node-id="5ESmTrTCGQLGOwCp26dYrK">12/13. aba_research_weekly / aba_research_monthly（ABA 选品按周/按月）<span class="tag t-ok" data-page-node-id="EdrHyL0jEviA3cIFFfA147">✅ 基本一致</span></h3>
-<ul data-page-node-id="axPLobXC5IrGrMMODaYlxn">
-<li data-page-node-id="ZIYPBooolJMnntOCYEMxcm">官方字段全覆盖（marketplace、date、keyword、keywordCn/Jp、departments、searchRank/Cv/Cr、searches、purchases、purchaseRate、clicks、impressions、titleDensityExact、cprExact、w1/w4/w12SearchRank 及增长率、top3Brands、bid/bidMin/bidMax）。</li>
-<li data-page-node-id="Ee6memrfJKlEZIVhE9FJw6"><b data-page-node-id="12hLD2cSmQxDXosPtM1SIb">小差异</b>：官方 <code data-page-node-id="8SYZEJdBgt0OMUyseeL1Dg">top3AsinDtoList</code> 内每项含 {asin, imageUrl, clickRate, conversionRate, clickShareRate, cvsShareRate}，我方每项只有前 4 个，把 clickShareRate/cvsShareRate 提到了 item 层级。</li>
-<li data-page-node-id="88f5rJB08Ur1mzFL71P2fd">多出 searchRankGrowthValue/searchRankGrowthRate 及上游分页泄漏字段。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="4DVrxrxx05fVP0C4wHyk5u">
+      <h3 data-page-node-id="5ESmTrTCGQLGOwCp26dYrK">12/13. aba_research_weekly / aba_research_monthly（ABA 选品按周/按月）<span
+          class="tag t-ok" data-page-node-id="EdrHyL0jEviA3cIFFfA147">✅ 基本一致</span></h3>
+      <ul data-page-node-id="axPLobXC5IrGrMMODaYlxn">
+        <li data-page-node-id="ZIYPBooolJMnntOCYEMxcm">
+          官方字段全覆盖（marketplace、date、keyword、keywordCn/Jp、departments、searchRank/Cv/Cr、searches、purchases、purchaseRate、clicks、impressions、titleDensityExact、cprExact、w1/w4/w12SearchRank
+          及增长率、top3Brands、bid/bidMin/bidMax）。</li>
+        <li data-page-node-id="Ee6memrfJKlEZIVhE9FJw6"><b data-page-node-id="12hLD2cSmQxDXosPtM1SIb">小差异</b>：官方 <code
+            data-page-node-id="8SYZEJdBgt0OMUyseeL1Dg">top3AsinDtoList</code> 内每项含 {asin, imageUrl, clickRate,
+          conversionRate, clickShareRate, cvsShareRate}，我方每项只有前 4 个，把 clickShareRate/cvsShareRate 提到了 item 层级。</li>
+        <li data-page-node-id="88f5rJB08Ur1mzFL71P2fd">多出 searchRankGrowthValue/searchRankGrowthRate 及上游分页泄漏字段。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="R5RYAgWSvLsyz3gCoplNBU">
-<h3 data-page-node-id="AHsaCJEzpOK0YZirdLb63J">14. keyword_order（出单词反查）<span class="tag t-ok" data-page-node-id="DVKwkzXRVRYQPotxo93IOX">✅ 一致</span></h3>
-<ul data-page-node-id="lYpM1kLB84hadngvI652tT">
-<li data-page-node-id="1zukJlvXbs8jNm4keZYfdZ">官方字段全覆盖（keyword、keywordCn/Jp、asin、searches、monopolyClickRate、cvsShareRate、searchRank、searchRankGv/Gr、top3ClickingRate、top3ConversionRate、conversionType）。</li>
-<li data-page-node-id="0OmYDr0je2xqeOhrjSBm9j">多出 monopolyAsinDtos 及上游分页泄漏字段。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="R5RYAgWSvLsyz3gCoplNBU">
+      <h3 data-page-node-id="AHsaCJEzpOK0YZirdLb63J">14. keyword_order（出单词反查）<span class="tag t-ok"
+          data-page-node-id="DVKwkzXRVRYQPotxo93IOX">✅ 一致</span></h3>
+      <ul data-page-node-id="lYpM1kLB84hadngvI652tT">
+        <li data-page-node-id="1zukJlvXbs8jNm4keZYfdZ">
+          官方字段全覆盖（keyword、keywordCn/Jp、asin、searches、monopolyClickRate、cvsShareRate、searchRank、searchRankGv/Gr、top3ClickingRate、top3ConversionRate、conversionType）。
+        </li>
+        <li data-page-node-id="0OmYDr0je2xqeOhrjSBm9j">多出 monopolyAsinDtos 及上游分页泄漏字段。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="fG0vkW9jlVms6tmbrclVya">
-<h3 data-page-node-id="XH1EC2DGlG3GSTRoqLalLc">15. bsr_sales（BSR销量预测，官方名 bsr_prediction）<span class="tag t-bug" data-page-node-id="J3UPpsasllaobokcvTCzzd">🔴 输出结构与官方差异大</span></h3>
-<table data-page-node-id="7oJRZfnEjCpdxrbCfDyryt">
-<tr data-page-node-id="yUUnKfGTHEfLLHJJ1uqTQQ"><th data-page-node-id="5R4EhXr5WehXcYJ6HeRqR4"></th><th data-page-node-id="x0cVeGYxU0ZX8Wyx30ZH1f">官方</th><th data-page-node-id="NJcVayPjnczSOpuMLYMFCJ">我方</th></tr>
-<tr data-page-node-id="OCMXRa2UIEV7ebL38J8iok"><td data-page-node-id="nm5AOJx02UTZgJcVGcH9qp">类目</td><td data-page-node-id="YgcYXV5wYbmCbVrGhQXohX"><code data-page-node-id="qwD3M9bSREjO06UbEROpQY">categoryLabel</code></td><td data-page-node-id="5t3nqDYHmJXmm5INnBrA6m"><code data-page-node-id="HyQQFY5WBFAjAfQGoLQdNw">category</code>（另多出 categoryId）</td></tr>
-<tr data-page-node-id="re1Djn3cqTx3yl83txQN0G"><td data-page-node-id="byxLKrfWfOC03KyO6IeXw6">预测日销</td><td data-page-node-id="78T4GIUxGfepztEmGKMgmd"><code data-page-node-id="cyu2wTpHQKFf9XuSjpPtnG">estDailySales</code></td><td data-page-node-id="K9nsVlnVF4JaBjyIejoKUw"><code data-page-node-id="bQHuC66wjnaDEbZkx0ajSR">dailySales</code></td></tr>
-<tr data-page-node-id="AjQEhQuU27HfIbek5udVkB"><td data-page-node-id="udhZ16bzM2z0F1iFhqmX0H">预测30天销量</td><td data-page-node-id="Xypyb2x2Ui0Dcy6D8b8tZm"><code data-page-node-id="NlBFgT54krXWLX0MZ6Wzcx">estMonthSales</code></td><td data-page-node-id="RqlR4qjFLEyzLF7rFCttbF"><code data-page-node-id="UfjljfpfR3WlOvaBh43Kko">monthlySales</code></td></tr>
-<tr data-page-node-id="MxmG7CGQLU8BublT3tI8JB"><td data-page-node-id="TBmuYRSWnXtts2VD7oqm2c">明细列表</td><td data-page-node-id="b8BF5rYQcZWn6fUbhGhPRE"><code data-page-node-id="ux9csv7ymV8nxRNGlWW6Bc">itemList[{bsr, estDailySales, estMonthSales}]</code></td><td data-page-node-id="6Y3gzxgb1DxplED28FcQFQ"><code data-page-node-id="CooLJk498CPtwL3tKafRuC">rankSales[{rank, dailySales}]</code>（缺 estMonthSales，bsr→rank）</td></tr>
-</table>
-</div>
+    <div class="card" data-page-node-id="fG0vkW9jlVms6tmbrclVya">
+      <h3 data-page-node-id="XH1EC2DGlG3GSTRoqLalLc">15. bsr_sales（BSR销量预测，官方名 bsr_prediction）<span class="tag t-bug"
+          data-page-node-id="J3UPpsasllaobokcvTCzzd">🔴 输出结构与官方差异大</span></h3>
+      <table data-page-node-id="7oJRZfnEjCpdxrbCfDyryt">
+        <tr data-page-node-id="yUUnKfGTHEfLLHJJ1uqTQQ">
+          <th data-page-node-id="5R4EhXr5WehXcYJ6HeRqR4"></th>
+          <th data-page-node-id="x0cVeGYxU0ZX8Wyx30ZH1f">官方</th>
+          <th data-page-node-id="NJcVayPjnczSOpuMLYMFCJ">我方</th>
+        </tr>
+        <tr data-page-node-id="OCMXRa2UIEV7ebL38J8iok">
+          <td data-page-node-id="nm5AOJx02UTZgJcVGcH9qp">类目</td>
+          <td data-page-node-id="YgcYXV5wYbmCbVrGhQXohX"><code
+              data-page-node-id="qwD3M9bSREjO06UbEROpQY">categoryLabel</code></td>
+          <td data-page-node-id="5t3nqDYHmJXmm5INnBrA6m"><code
+              data-page-node-id="HyQQFY5WBFAjAfQGoLQdNw">category</code>（另多出 categoryId）</td>
+        </tr>
+        <tr data-page-node-id="re1Djn3cqTx3yl83txQN0G">
+          <td data-page-node-id="byxLKrfWfOC03KyO6IeXw6">预测日销</td>
+          <td data-page-node-id="78T4GIUxGfepztEmGKMgmd"><code
+              data-page-node-id="cyu2wTpHQKFf9XuSjpPtnG">estDailySales</code></td>
+          <td data-page-node-id="K9nsVlnVF4JaBjyIejoKUw"><code
+              data-page-node-id="bQHuC66wjnaDEbZkx0ajSR">dailySales</code></td>
+        </tr>
+        <tr data-page-node-id="AjQEhQuU27HfIbek5udVkB">
+          <td data-page-node-id="udhZ16bzM2z0F1iFhqmX0H">预测30天销量</td>
+          <td data-page-node-id="Xypyb2x2Ui0Dcy6D8b8tZm"><code
+              data-page-node-id="NlBFgT54krXWLX0MZ6Wzcx">estMonthSales</code></td>
+          <td data-page-node-id="RqlR4qjFLEyzLF7rFCttbF"><code
+              data-page-node-id="UfjljfpfR3WlOvaBh43Kko">monthlySales</code></td>
+        </tr>
+        <tr data-page-node-id="MxmG7CGQLU8BublT3tI8JB">
+          <td data-page-node-id="TBmuYRSWnXtts2VD7oqm2c">明细列表</td>
+          <td data-page-node-id="b8BF5rYQcZWn6fUbhGhPRE"><code
+              data-page-node-id="ux9csv7ymV8nxRNGlWW6Bc">itemList[{bsr, estDailySales, estMonthSales}]</code></td>
+          <td data-page-node-id="6Y3gzxgb1DxplED28FcQFQ"><code
+              data-page-node-id="CooLJk498CPtwL3tKafRuC">rankSales[{rank, dailySales}]</code>（缺 estMonthSales，bsr→rank）
+          </td>
+        </tr>
+      </table>
+    </div>
 
-<div class="card" data-page-node-id="Ia3HRRLIVd9XwhxuwPETQy">
-<h3 data-page-node-id="Cdxn1kU7kL9K8m3WIQDuqM">16. asin_sales（ASIN销量预测，官方名 asin_prediction）<span class="tag t-bug" data-page-node-id="YptmHmYp0chcDPFBAf3neY">🔴 输出结构与官方差异大</span></h3>
-<table data-page-node-id="IgIXSoHAoG4sd5LbwMzjrq">
-<tr data-page-node-id="KPm50R80DdPXoVE9erVzHI"><th data-page-node-id="2oLZpa2wcPDGu6LeqTWC7F"></th><th data-page-node-id="AW8sEjUjpEio579tLV4FmG">官方</th><th data-page-node-id="A7lP3GgTLTheU5lVvY3Hv7">我方</th></tr>
-<tr data-page-node-id="PzsyDKGQuIK1SlocIaXEUI"><td data-page-node-id="djGPxAAY8gCNLWfuRnn1xN">整体</td><td data-page-node-id="GSFODTco2du1HI1HyZdKmP"><code data-page-node-id="Z2nGaUquhBzOIC48NixDUT">asinDetail{asin,title,brand,availableDate,category,categoryId,imageUrl,ratings,rating}</code> + <code data-page-node-id="rA6cLniqHuXZ8AZr1GGD61">dailyItemList[{date,bsr,sales}]</code></td><td data-page-node-id="Nfumix1tBx8o5f00cUoZ9a"><code data-page-node-id="pjP8koK82epQ45VXJMb0D9">{marketplace, asin, categoryId, category, monthlySales, dailyAmounts[], dailyPrices[], bsrs[]}</code></td></tr>
-<tr data-page-node-id="jGwTgDMNDeihwF6Ge1EuPJ"><td data-page-node-id="MXUPrb3yIKaiC9KThkr05f">商品明细</td><td data-page-node-id="AsgIQG25bbuZs5HTvdttZd">有（标题/品牌/图片/评分）</td><td data-page-node-id="ft1mEBsRyntGFrAFjDJVxQ"><b data-page-node-id="3jOdQ1WubFJSTeYkXqpdVL">无</b></td></tr>
-<tr data-page-node-id="JhvL5HjDXfgC7TEPybm4Qk"><td data-page-node-id="Q9SDH7voiWTJdPD8oWeFCs">日销明细</td><td data-page-node-id="6fFQDNtxKQVbUO8xN0Eivt">带 date 的结构化列表</td><td data-page-node-id="UmDRMWUfbirPC1EAHW1gRf">三个平行裸数组（dailyAmounts/dailyPrices/bsrs），无日期对齐，数组下标语义需调用方自行推算</td></tr>
-</table>
-</div>
+    <div class="card" data-page-node-id="Ia3HRRLIVd9XwhxuwPETQy">
+      <h3 data-page-node-id="Cdxn1kU7kL9K8m3WIQDuqM">16. asin_sales（ASIN销量预测，官方名 asin_prediction）<span class="tag t-bug"
+          data-page-node-id="YptmHmYp0chcDPFBAf3neY">🔴 输出结构与官方差异大</span></h3>
+      <table data-page-node-id="IgIXSoHAoG4sd5LbwMzjrq">
+        <tr data-page-node-id="KPm50R80DdPXoVE9erVzHI">
+          <th data-page-node-id="2oLZpa2wcPDGu6LeqTWC7F"></th>
+          <th data-page-node-id="AW8sEjUjpEio579tLV4FmG">官方</th>
+          <th data-page-node-id="A7lP3GgTLTheU5lVvY3Hv7">我方</th>
+        </tr>
+        <tr data-page-node-id="PzsyDKGQuIK1SlocIaXEUI">
+          <td data-page-node-id="djGPxAAY8gCNLWfuRnn1xN">整体</td>
+          <td data-page-node-id="GSFODTco2du1HI1HyZdKmP"><code
+              data-page-node-id="Z2nGaUquhBzOIC48NixDUT">asinDetail{asin,title,brand,availableDate,category,categoryId,imageUrl,ratings,rating}</code>
+            + <code data-page-node-id="rA6cLniqHuXZ8AZr1GGD61">dailyItemList[{date,bsr,sales}]</code></td>
+          <td data-page-node-id="Nfumix1tBx8o5f00cUoZ9a"><code
+              data-page-node-id="pjP8koK82epQ45VXJMb0D9">{marketplace, asin, categoryId, category, monthlySales, dailyAmounts[], dailyPrices[], bsrs[]}</code>
+          </td>
+        </tr>
+        <tr data-page-node-id="jGwTgDMNDeihwF6Ge1EuPJ">
+          <td data-page-node-id="MXUPrb3yIKaiC9KThkr05f">商品明细</td>
+          <td data-page-node-id="AsgIQG25bbuZs5HTvdttZd">有（标题/品牌/图片/评分）</td>
+          <td data-page-node-id="ft1mEBsRyntGFrAFjDJVxQ"><b data-page-node-id="3jOdQ1WubFJSTeYkXqpdVL">无</b></td>
+        </tr>
+        <tr data-page-node-id="JhvL5HjDXfgC7TEPybm4Qk">
+          <td data-page-node-id="Q9SDH7voiWTJdPD8oWeFCs">日销明细</td>
+          <td data-page-node-id="6fFQDNtxKQVbUO8xN0Eivt">带 date 的结构化列表</td>
+          <td data-page-node-id="UmDRMWUfbirPC1EAHW1gRf">三个平行裸数组（dailyAmounts/dailyPrices/bsrs），无日期对齐，数组下标语义需调用方自行推算
+          </td>
+        </tr>
+      </table>
+    </div>
 
-<div class="card" data-page-node-id="BSBQg9dS1pA8CXqLEnbgMd">
-<h3 data-page-node-id="kTcKMHDmZ7bvLtHcJTl58h">17. market_research（选市场列表）<span class="tag t-warn" data-page-node-id="ZH3DmsR37xznKUJAvfHs7Y">输入一致，输出缺约 20+ 官方字段</span></h3>
-<ul data-page-node-id="PkDEtx7HDm84Jki7ACspkU">
-<li data-page-node-id="GIsSVoKAMzopWGp4NA3qk2"><b data-page-node-id="HA8qore6mAsZE0FYCNXiJk">输入</b>：与官方一致（nodeIdPath、departmentKeyword、topNum、newProduct、minAvgUnits 等系列筛选）。注意官方有 <code data-page-node-id="sCJ7udPfPB4IR99fIo2tvq">month</code>（筛选日期）参数，我方 schema 未暴露（官方 curl 示例用的 date 参数名亦与参数表不一致，属官方文档自身问题）。</li>
-<li data-page-node-id="87hAGF0hVl2CzuSsKWFg0O"><b data-page-node-id="o37gVUpiROOdGsB7YSV627">输出缺失的官方字段</b>：currency、nodeId、nodeLabelPath、nodeLabelPathLocale、totalRevenue、avgVolume/baseAvgVolume、avgWeight/baseAvgWeight、avgProfit、ebcProportion、sellerNation、sellerNationLabel、sellerProportion、top10Images、top3/top5/top10/top20 Product/Brand/Seller 的 Sales/Revenue/Crn 系列、l1/l3/l6/l12New* 系列、searchToPurchaseRatio。</li>
-<li data-page-node-id="7wfjuRsz6yaba3ac4b3r2r"><b data-page-node-id="i8nOFrkTum6gsPqnOKI7tt">多出非官方字段</b>：monopolyRatio、topAvgUnits、topAvgRevenue、topAvgBsr、goodsCrn、brandCrn、sellerCrn、newCount、newProportion、returnRatio、avgReturnRatio。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="BSBQg9dS1pA8CXqLEnbgMd">
+      <h3 data-page-node-id="kTcKMHDmZ7bvLtHcJTl58h">17. market_research（选市场列表）<span class="tag t-warn"
+          data-page-node-id="ZH3DmsR37xznKUJAvfHs7Y">输入一致，输出缺约 20+ 官方字段</span></h3>
+      <ul data-page-node-id="PkDEtx7HDm84Jki7ACspkU">
+        <li data-page-node-id="GIsSVoKAMzopWGp4NA3qk2"><b
+            data-page-node-id="HA8qore6mAsZE0FYCNXiJk">输入</b>：与官方一致（nodeIdPath、departmentKeyword、topNum、newProduct、minAvgUnits
+          等系列筛选）。注意官方有 <code data-page-node-id="sCJ7udPfPB4IR99fIo2tvq">month</code>（筛选日期）参数，我方 schema 未暴露（官方 curl 示例用的
+          date 参数名亦与参数表不一致，属官方文档自身问题）。</li>
+        <li data-page-node-id="87hAGF0hVl2CzuSsKWFg0O"><b
+            data-page-node-id="o37gVUpiROOdGsB7YSV627">输出缺失的官方字段</b>：currency、nodeId、nodeLabelPath、nodeLabelPathLocale、totalRevenue、avgVolume/baseAvgVolume、avgWeight/baseAvgWeight、avgProfit、ebcProportion、sellerNation、sellerNationLabel、sellerProportion、top10Images、top3/top5/top10/top20
+          Product/Brand/Seller 的 Sales/Revenue/Crn 系列、l1/l3/l6/l12New* 系列、searchToPurchaseRatio。</li>
+        <li data-page-node-id="7wfjuRsz6yaba3ac4b3r2r"><b
+            data-page-node-id="i8nOFrkTum6gsPqnOKI7tt">多出非官方字段</b>：monopolyRatio、topAvgUnits、topAvgRevenue、topAvgBsr、goodsCrn、brandCrn、sellerCrn、newCount、newProportion、returnRatio、avgReturnRatio。
+        </li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="zdvxPiFFA12ZX2NKMugaIR">
-<h3 data-page-node-id="ZiyqSsb1XqrYol2z8iyNIl">18. asin_sales_trend（ASIN 销量趋势）<span class="tag t-bug" data-page-node-id="9H4gwbIH5ysbevjcg7fHCk">❌ 数据通道错误，恒返回空</span></h3>
-<ul data-page-node-id="y5pNNtyo0HXg1JUgglBTOL">
-<li data-page-node-id="Pj1KOLVru05hdbU0NGYbdG">与 product_node 同样直接调官方 OpenAPI <code data-page-node-id="0opnGw31XNYSI9VJE14SNU">/v1/asin/{market}/{asin}/sales-trend</code>，需要 secret-key 但未配置 → 上游报错被吞，<code data-page-node-id="LklxDK9iqcmqC8OvUp4BNy">asin</code> 全 null、<code data-page-node-id="qibqalCyj2b2hBnKqAYmt0">salesTrendPoints</code> 恒为空数组。</li>
-<li data-page-node-id="fUPAxra1GEJfmHhhWKm8Ev">输出结构本身（asin 对象 + salesTrendPoints[{month,price,averagePrice,parentUnitSales,childUnitSales,parentSalesRevenue,childSalesRevenue}]）与官方一致，问题纯粹在数据通道。</li>
-<li data-page-node-id="LG3reBDFjjxKSiMCnXWDeF">返回格式也是 4 个 MCP-style 包裹之一（与其他 17 个不一致）。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="zdvxPiFFA12ZX2NKMugaIR">
+      <h3 data-page-node-id="ZiyqSsb1XqrYol2z8iyNIl">18. asin_sales_trend（ASIN 销量趋势）<span class="tag t-bug"
+          data-page-node-id="9H4gwbIH5ysbevjcg7fHCk">❌ 数据通道错误，恒返回空</span></h3>
+      <ul data-page-node-id="y5pNNtyo0HXg1JUgglBTOL">
+        <li data-page-node-id="Pj1KOLVru05hdbU0NGYbdG">与 product_node 同样直接调官方 OpenAPI <code
+            data-page-node-id="0opnGw31XNYSI9VJE14SNU">/v1/asin/{market}/{asin}/sales-trend</code>，需要 secret-key 但未配置 →
+          上游报错被吞，<code data-page-node-id="LklxDK9iqcmqC8OvUp4BNy">asin</code> 全 null、<code
+            data-page-node-id="qibqalCyj2b2hBnKqAYmt0">salesTrendPoints</code> 恒为空数组。</li>
+        <li data-page-node-id="fUPAxra1GEJfmHhhWKm8Ev">输出结构本身（asin 对象 +
+          salesTrendPoints[{month,price,averagePrice,parentUnitSales,childUnitSales,parentSalesRevenue,childSalesRevenue}]）与官方一致，问题纯粹在数据通道。
+        </li>
+        <li data-page-node-id="LG3reBDFjjxKSiMCnXWDeF">返回格式也是 4 个 MCP-style 包裹之一（与其他 17 个不一致）。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="Esn0NiIaIRTbCViuC8KVvH">
-<h3 data-page-node-id="DpYXKMfsqFWDEj5gEZxhhY">19. asin_competitor（查询 ASIN 竞品数据）<span class="tag t-bug" data-page-node-id="jNCRHG5lMOHuAiP2HiBugs">🔴 字段命名与官方差异大</span></h3>
-<ul data-page-node-id="eJyAGAQfVdvWYdGIb8ignp">
-<li data-page-node-id="iloYktAR5A2eZL9UZLZOdA">实测可用（返回 8 个竞品），但输出字段集是 competitionTransformer 的自定义命名，与官方文档差异同 competitor_lookup：</li>
-<li data-page-node-id="eIuKugQYJhZ9FUsN1Cxmxa"><b data-page-node-id="O8IS38oZb18SWh7FPatwgg">缺失官方字段</b>：symbol、bsrId、brandUrl、nodeId、sellerId、amzSales、amzUnitDate、revenue、ratingsRate、ratingsCv、ratingDelta、dimension、dimensionsType、pkgDimensions、pkgDimensionType、pkgWeight、sku。</li>
-<li data-page-node-id="u7JAb5Scb3YGOJtZqfWExc"><b data-page-node-id="xA4Nd3tjxy94wkgXs4nJzQ">命名不同</b>：units→monthlySalesUnits、unitsGr→monthlySalesUnitsGrowthRate、amzUnit→monthlySalesUnits、revenue→monthlySalesRevenue、bsrCr→bsrGrowthRate、bsrCv→bsrGrowthCount、primePrice→primeExclusivePrice、ratingsRate→reviewsRate、ratingDelta→reviewsDelta。</li>
-<li data-page-node-id="winTslLCKo38pLZ8A61DXO"><b data-page-node-id="PuJEiWW28ZeIxfLiy8ZK25">多出</b>：asinUrl、bigImageUrl、monthlySalesUnitsTrend、badgeBestSeller、sellerType、availableDays、firstReviewDate、listingQualityScore、variationNum 等。输入多了官方没有的 <code data-page-node-id="S6hnZMjPIXMVbgcZJGKOBL">size</code> 参数（无害）。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="Esn0NiIaIRTbCViuC8KVvH">
+      <h3 data-page-node-id="DpYXKMfsqFWDEj5gEZxhhY">19. asin_competitor（查询 ASIN 竞品数据）<span class="tag t-bug"
+          data-page-node-id="jNCRHG5lMOHuAiP2HiBugs">🔴 字段命名与官方差异大</span></h3>
+      <ul data-page-node-id="eJyAGAQfVdvWYdGIb8ignp">
+        <li data-page-node-id="iloYktAR5A2eZL9UZLZOdA">实测可用（返回 8 个竞品），但输出字段集是 competitionTransformer 的自定义命名，与官方文档差异同
+          competitor_lookup：</li>
+        <li data-page-node-id="eIuKugQYJhZ9FUsN1Cxmxa"><b
+            data-page-node-id="O8IS38oZb18SWh7FPatwgg">缺失官方字段</b>：symbol、bsrId、brandUrl、nodeId、sellerId、amzSales、amzUnitDate、revenue、ratingsRate、ratingsCv、ratingDelta、dimension、dimensionsType、pkgDimensions、pkgDimensionType、pkgWeight、sku。
+        </li>
+        <li data-page-node-id="u7JAb5Scb3YGOJtZqfWExc"><b
+            data-page-node-id="xA4Nd3tjxy94wkgXs4nJzQ">命名不同</b>：units→monthlySalesUnits、unitsGr→monthlySalesUnitsGrowthRate、amzUnit→monthlySalesUnits、revenue→monthlySalesRevenue、bsrCr→bsrGrowthRate、bsrCv→bsrGrowthCount、primePrice→primeExclusivePrice、ratingsRate→reviewsRate、ratingDelta→reviewsDelta。
+        </li>
+        <li data-page-node-id="winTslLCKo38pLZ8A61DXO"><b
+            data-page-node-id="PuJEiWW28ZeIxfLiy8ZK25">多出</b>：asinUrl、bigImageUrl、monthlySalesUnitsTrend、badgeBestSeller、sellerType、availableDays、firstReviewDate、listingQualityScore、variationNum
+          等。输入多了官方没有的 <code data-page-node-id="S6hnZMjPIXMVbgcZJGKOBL">size</code> 参数（无害）。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="3jKWEjrg5cqLT3j2NF6Xw4">
-<h3 data-page-node-id="qmcFbHzlYNg2pFo8vCB9wP">20. keyword_conversion（关键字转化率）<span class="tag t-ok" data-page-node-id="cNtYQJjZAdCe9HLFCqC46O">✅ 一致</span></h3>
-<ul data-page-node-id="MjEEaREYNZ687Yq0fUDok2">
-<li data-page-node-id="MaVkX3nQyCPzBIqj6nAByw">官方 68 个返回字段全部覆盖：keyword/keywordCn/Jp、searches、clicks、purchases、searchConvRate、clickConvRate、searchesTrend/clickTrend/purchaseTrend、clickingRate、conversionRate、phraseCount，以及 phrase/exact/broad 的 Ppc/Cpa/Budget/Acos 和 avgProductPrice 的 {min,max,value} 结构、top3Asins、top10Asins。</li>
-<li data-page-node-id="pBsky6xRDQVABhyJV0rsnP">top3Asins 内部字段比官方文档更详细（asin、imageUrl、position、price、products、rankIndex、rankPage、rating、reviews、title）。多出上游分页泄漏字段。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="3jKWEjrg5cqLT3j2NF6Xw4">
+      <h3 data-page-node-id="qmcFbHzlYNg2pFo8vCB9wP">20. keyword_conversion（关键字转化率）<span class="tag t-ok"
+          data-page-node-id="cNtYQJjZAdCe9HLFCqC46O">✅ 一致</span></h3>
+      <ul data-page-node-id="MjEEaREYNZ687Yq0fUDok2">
+        <li data-page-node-id="MaVkX3nQyCPzBIqj6nAByw">官方 68
+          个返回字段全部覆盖：keyword/keywordCn/Jp、searches、clicks、purchases、searchConvRate、clickConvRate、searchesTrend/clickTrend/purchaseTrend、clickingRate、conversionRate、phraseCount，以及
+          phrase/exact/broad 的 Ppc/Cpa/Budget/Acos 和 avgProductPrice 的 {min,max,value} 结构、top3Asins、top10Asins。</li>
+        <li data-page-node-id="pBsky6xRDQVABhyJV0rsnP">top3Asins
+          内部字段比官方文档更详细（asin、imageUrl、position、price、products、rankIndex、rankPage、rating、reviews、title）。多出上游分页泄漏字段。</li>
+      </ul>
+    </div>
 
-<div class="card" data-page-node-id="lAWBID7fR6KciVcyUfY8Vf">
-<h3 data-page-node-id="pne94hYYxF7eGX3Qq0N81f">21. traffic_extend（拓展流量词）<span class="tag t-ok" data-page-node-id="HWdkpM99LcgQIF8A1Q84vI">✅ 一致</span></h3>
-<ul data-page-node-id="pkuasZOEoYt9Or3yzsF527">
-<li data-page-node-id="HBM2giLGLhYtRKPaES40El">官方字段全覆盖（keyword、keywordCn、searches、purchases、purchaseRate、products、bidMin/bidMax/bid、badges、updatedTime、searchesRank 及时间范围、latest1/7/30daysAds、supplyDemandRatio、trafficPercentage、calculatedWeeklySearches、avgPrice、avgRatings、avgRating、titleDensity、spr、monopolyClickRate、top3ClickingRate、top3ConversionRate、relationVariationsItems）。</li>
-<li data-page-node-id="vCPVkQulrnjSz8MO4pqsNi">多出 adPosition、rankPosition 等额外字段。</li>
-</ul>
-</div>
+    <div class="card" data-page-node-id="lAWBID7fR6KciVcyUfY8Vf">
+      <h3 data-page-node-id="pne94hYYxF7eGX3Qq0N81f">21. traffic_extend（拓展流量词）<span class="tag t-ok"
+          data-page-node-id="HWdkpM99LcgQIF8A1Q84vI">✅ 一致</span></h3>
+      <ul data-page-node-id="pkuasZOEoYt9Or3yzsF527">
+        <li data-page-node-id="HBM2giLGLhYtRKPaES40El">
+          官方字段全覆盖（keyword、keywordCn、searches、purchases、purchaseRate、products、bidMin/bidMax/bid、badges、updatedTime、searchesRank
+          及时间范围、latest1/7/30daysAds、supplyDemandRatio、trafficPercentage、calculatedWeeklySearches、avgPrice、avgRatings、avgRating、titleDensity、spr、monopolyClickRate、top3ClickingRate、top3ConversionRate、relationVariationsItems）。
+        </li>
+        <li data-page-node-id="vCPVkQulrnjSz8MO4pqsNi">多出 adPosition、rankPosition 等额外字段。</li>
+      </ul>
+    </div>
 
-<h2 data-page-node-id="w8yGzmowRUT2R4zxizlqd2">三、修复优先级建议</h2>
-<div class="card" data-page-node-id="0Dg5KqUZfHkfBpHcq8ifNz">
-<table data-page-node-id="oGg1Y9uI2fhVusNQJa83GW">
-<tr data-page-node-id="gyvHGa00nIUFT8QDz6Qa7w"><th data-page-node-id="4vBnD5yn4BVlMo8Zy0VXw2">优先级</th><th data-page-node-id="A6GfiIkQPO8MrB1vDLXakZ">问题</th><th data-page-node-id="tRMgO8OoqLTS1IflNCpcBu">涉及</th></tr>
-<tr data-page-node-id="tJLpyCw1xMVD7jNctmzUAd"><td class="kbd n-red" data-page-node-id="aFAMEKFcYTVW6zQcExh4dZ">P0</td><td data-page-node-id="eVT2kfiAAb5nze6JsMjy4Y">product_node、asin_sales_trend 走官方 OpenAPI 且无 secret-key，恒返回空且吞错</td><td data-page-node-id="Byh4QLjBc1ywXwhvU7FyBz">2 个接口不可用</td></tr>
-<tr data-page-node-id="l1chqkwm5Kat8f4CkljpZM"><td class="kbd n-red" data-page-node-id="CcwyldHchHiDXsAS00xJ70">P0</td><td data-page-node-id="IgnTfGHsZZ4grJn0alN6wU">month→monthName 映射缺 <code data-page-node-id="9Imw445fUmXTHA2xsYScZn">bsr_sales_</code> 前缀，带月份查询必为空</td><td data-page-node-id="scxquCUF3aTdErThybCnQ7">competitor_lookup、product_research</td></tr>
-<tr data-page-node-id="NGwwsnIxpuk7sR9LLuMa31"><td class="kbd n-red" data-page-node-id="0pBqWTCcPKfBsDCwipU6f6">P0</td><td data-page-node-id="1vlBsG7VZ1QkPMQkrmgnsv">数据库补齐 8 个接口计费配置（生产库同样要检查）</td><td data-page-node-id="ryU7hIqkzgRUkxH4qNxw3p">8 个接口报错</td></tr>
-<tr data-page-node-id="NEqLbbvOyQxeC7Nbn0xqTi"><td class="kbd n-red" data-page-node-id="cg4OxTJpJl4xlgprF47ce4">P1</td><td data-page-node-id="P1nroOfnBckJG91RAQPaii">competitionTransformer 字段命名/缺失对齐官方（units、bsrCr、revenue、primePrice、sku、pkgDimensions 等）</td><td data-page-node-id="odLD5h5XI430CmWDZoJ54Y">competitor_lookup、product_research、traffic_listing、asin_competitor</td></tr>
-<tr data-page-node-id="QFfKkPuKew2osvdlbzBC4Z"><td class="kbd n-red" data-page-node-id="yx74FTuu4uIuQMEwctIsnT">P1</td><td data-page-node-id="lpQs4rhpycsOIQmnk3dueu">bsr_sales、asin_sales 输出结构对齐官方（estDailySales/estMonthSales/itemList、asinDetail/dailyItemList）</td><td data-page-node-id="0fQmvSj9XJyMmZwrcJyS06">2 个接口</td></tr>
-<tr data-page-node-id="L4jMIoR0u9H1M4xjbL1a2l"><td class="kbd n-amber" data-page-node-id="Gy6wSg7euZdIhhZu7nDOcy">P2</td><td data-page-node-id="5X4u1Egloy4sNWJFkWwCun">asin_detail 的 subcategories(数组)、zoomImageUrl(bigImageUrl)、primePrice(primeExclusivePrice)、firstRatingDate(firstReviewDate) 映射</td><td data-page-node-id="5wUYsG06RZt275qfBCr8E4">asin_detail_lookup</td></tr>
-<tr data-page-node-id="AHlcDGLJsr6txkha2Qye3f"><td class="kbd n-amber" data-page-node-id="pr4RPIQol7EIz6VG56aWM6">P2</td><td data-page-node-id="0NrwhBLvEv0hFHpGu8W6x8">统一 tools/call 返回包裹格式；清理上游泄漏字段（guestId/took/url 等）</td><td data-page-node-id="0Gt7dIvRx2mgXaLSPoC4eq">全局</td></tr>
-<tr data-page-node-id="f0oSwupSJUTw9mq2dbcBhm"><td class="kbd n-amber" data-page-node-id="2J5BVvAgJiv9nBfrqkmnB1">P2</td><td data-page-node-id="wPEOfrZoCsfWekQ30QYK7K">keyword_research 入参 includeKeywords→keywords（兼容两者）、补 clicks/impressions 输出</td><td data-page-node-id="ldUnXDA5PozVLGxxIinGSC">keyword_research</td></tr>
-<tr data-page-node-id="zeHPPTZaHQ4ECowbJ45y7H"><td class="kbd" data-page-node-id="xBmAVaQClhDSA26ZxCvZ0o">P3</td><td data-page-node-id="FRif0RpXsoYdd0YyTguLI1">实现 returnFields；4 个工具名对齐官方 MCP Code；market_research 补缺失统计字段；traffic_listing_stat 回填 asin</td><td data-page-node-id="IDCTYTQlg4SR0C8fnDZfDs">多项</td></tr>
-</table>
-</div>
+    <h2 data-page-node-id="w8yGzmowRUT2R4zxizlqd2">三、修复优先级建议</h2>
+    <div class="card" data-page-node-id="0Dg5KqUZfHkfBpHcq8ifNz">
+      <table data-page-node-id="oGg1Y9uI2fhVusNQJa83GW">
+        <tr data-page-node-id="gyvHGa00nIUFT8QDz6Qa7w">
+          <th data-page-node-id="4vBnD5yn4BVlMo8Zy0VXw2">优先级</th>
+          <th data-page-node-id="A6GfiIkQPO8MrB1vDLXakZ">问题</th>
+          <th data-page-node-id="tRMgO8OoqLTS1IflNCpcBu">涉及</th>
+        </tr>
+        <tr data-page-node-id="tJLpyCw1xMVD7jNctmzUAd">
+          <td class="kbd n-red" data-page-node-id="aFAMEKFcYTVW6zQcExh4dZ">P0</td>
+          <td data-page-node-id="eVT2kfiAAb5nze6JsMjy4Y">product_node、asin_sales_trend 走官方 OpenAPI 且无 secret-key，恒返回空且吞错
+          </td>
+          <td data-page-node-id="Byh4QLjBc1ywXwhvU7FyBz">2 个接口不可用</td>
+        </tr>
+        <tr data-page-node-id="l1chqkwm5Kat8f4CkljpZM">
+          <td class="kbd n-red" data-page-node-id="CcwyldHchHiDXsAS00xJ70">P0</td>
+          <td data-page-node-id="IgnTfGHsZZ4grJn0alN6wU">month→monthName 映射缺 <code
+              data-page-node-id="9Imw445fUmXTHA2xsYScZn">bsr_sales_</code> 前缀，带月份查询必为空</td>
+          <td data-page-node-id="scxquCUF3aTdErThybCnQ7">competitor_lookup、product_research</td>
+        </tr>
+        <tr data-page-node-id="NGwwsnIxpuk7sR9LLuMa31">
+          <td class="kbd n-red" data-page-node-id="0pBqWTCcPKfBsDCwipU6f6">P0</td>
+          <td data-page-node-id="1vlBsG7VZ1QkPMQkrmgnsv">数据库补齐 8 个接口计费配置（生产库同样要检查）</td>
+          <td data-page-node-id="ryU7hIqkzgRUkxH4qNxw3p">8 个接口报错</td>
+        </tr>
+        <tr data-page-node-id="NEqLbbvOyQxeC7Nbn0xqTi">
+          <td class="kbd n-red" data-page-node-id="cg4OxTJpJl4xlgprF47ce4">P1</td>
+          <td data-page-node-id="P1nroOfnBckJG91RAQPaii">competitionTransformer
+            字段命名/缺失对齐官方（units、bsrCr、revenue、primePrice、sku、pkgDimensions 等）</td>
+          <td data-page-node-id="odLD5h5XI430CmWDZoJ54Y">
+            competitor_lookup、product_research、traffic_listing、asin_competitor</td>
+        </tr>
+        <tr data-page-node-id="QFfKkPuKew2osvdlbzBC4Z">
+          <td class="kbd n-red" data-page-node-id="yx74FTuu4uIuQMEwctIsnT">P1</td>
+          <td data-page-node-id="lpQs4rhpycsOIQmnk3dueu">bsr_sales、asin_sales
+            输出结构对齐官方（estDailySales/estMonthSales/itemList、asinDetail/dailyItemList）</td>
+          <td data-page-node-id="0fQmvSj9XJyMmZwrcJyS06">2 个接口</td>
+        </tr>
+        <tr data-page-node-id="L4jMIoR0u9H1M4xjbL1a2l">
+          <td class="kbd n-amber" data-page-node-id="Gy6wSg7euZdIhhZu7nDOcy">P2</td>
+          <td data-page-node-id="5X4u1Egloy4sNWJFkWwCun">asin_detail 的
+            subcategories(数组)、zoomImageUrl(bigImageUrl)、primePrice(primeExclusivePrice)、firstRatingDate(firstReviewDate)
+            映射</td>
+          <td data-page-node-id="5wUYsG06RZt275qfBCr8E4">asin_detail_lookup</td>
+        </tr>
+        <tr data-page-node-id="AHlcDGLJsr6txkha2Qye3f">
+          <td class="kbd n-amber" data-page-node-id="pr4RPIQol7EIz6VG56aWM6">P2</td>
+          <td data-page-node-id="0NrwhBLvEv0hFHpGu8W6x8">统一 tools/call 返回包裹格式；清理上游泄漏字段（guestId/took/url 等）</td>
+          <td data-page-node-id="0Gt7dIvRx2mgXaLSPoC4eq">全局</td>
+        </tr>
+        <tr data-page-node-id="f0oSwupSJUTw9mq2dbcBhm">
+          <td class="kbd n-amber" data-page-node-id="2J5BVvAgJiv9nBfrqkmnB1">P2</td>
+          <td data-page-node-id="wPEOfrZoCsfWekQ30QYK7K">keyword_research 入参 includeKeywords→keywords（兼容两者）、补
+            clicks/impressions 输出</td>
+          <td data-page-node-id="ldUnXDA5PozVLGxxIinGSC">keyword_research</td>
+        </tr>
+        <tr data-page-node-id="zeHPPTZaHQ4ECowbJ45y7H">
+          <td class="kbd" data-page-node-id="xBmAVaQClhDSA26ZxCvZ0o">P3</td>
+          <td data-page-node-id="FRif0RpXsoYdd0YyTguLI1">实现 returnFields；4 个工具名对齐官方 MCP Code；market_research
+            补缺失统计字段；traffic_listing_stat 回填 asin</td>
+          <td data-page-node-id="IDCTYTQlg4SR0C8fnDZfDs">多项</td>
+        </tr>
+      </table>
+    </div>
 
-<h2 data-page-node-id="FPKN7MpKjTQOSfBBJDJUJX">四、测试方法说明</h2>
-<div class="card" data-page-node-id="fWyRQopQUX2FVFNl68B8K5">
-<ul data-page-node-id="M82dHqOPF2ib0LdEdKGqrl">
-<li data-page-node-id="6q5KDkwk9Uz3IgxS2c07P0">官方文档：抓取 open.sellersprite.com/api 全部 46 个接口页，解析出参数表与请求示例，与 21 个已开发工具逐一映射。</li>
-<li data-page-node-id="VAZnilOrgQIOFEjH3GJFKz">实测：用官方文档的示例参数调用 <code data-page-node-id="oAmKicdxbOELhtDMquS80V">http://127.0.0.1:18080/mcp</code> 的 <code data-page-node-id="0XUC27sz2OZyoOXyWyVvfG">tools/call</code>（X-API-Key: demo-key-001）。官方示例日期多为 2025 年（已过期），已用近期日期（202607/202608/20260822）重测。</li>
-<li data-page-node-id="9OsDwhZjA4XMoP20fmEtiN">16/21 个工具取得真实数据并逐字段对比；competitor_lookup、product_research、traffic_listing 因卖家精灵会话查询配额耗尽（上游返回 data:null）未能取得实测数据，采用转换器静态分析。</li>
-<li data-page-node-id="euvQDuP2DQxCNQIkCy48G0">测试结果 JSON 均保存在 /tmp/mcp_results/ 目录。</li>
-</ul>
-</div>
+    <h2 data-page-node-id="FPKN7MpKjTQOSfBBJDJUJX">四、测试方法说明</h2>
+    <div class="card" data-page-node-id="fWyRQopQUX2FVFNl68B8K5">
+      <ul data-page-node-id="M82dHqOPF2ib0LdEdKGqrl">
+        <li data-page-node-id="6q5KDkwk9Uz3IgxS2c07P0">官方文档：抓取 open.sellersprite.com/api 全部 46 个接口页，解析出参数表与请求示例，与 21
+          个已开发工具逐一映射。</li>
+        <li data-page-node-id="VAZnilOrgQIOFEjH3GJFKz">实测：用官方文档的示例参数调用 <code
+            data-page-node-id="oAmKicdxbOELhtDMquS80V">http://127.0.0.1:18080/mcp</code> 的 <code
+            data-page-node-id="0XUC27sz2OZyoOXyWyVvfG">tools/call</code>（X-API-Key: demo-key-001）。官方示例日期多为 2025
+          年（已过期），已用近期日期（202607/202608/20260822）重测。</li>
+        <li data-page-node-id="9OsDwhZjA4XMoP20fmEtiN">16/21
+          个工具取得真实数据并逐字段对比；competitor_lookup、product_research、traffic_listing 因卖家精灵会话查询配额耗尽（上游返回
+          data:null）未能取得实测数据，采用转换器静态分析。</li>
+        <li data-page-node-id="euvQDuP2DQxCNQIkCy48G0">测试结果 JSON 均保存在 /tmp/mcp_results/ 目录。</li>
+      </ul>
+    </div>
 
-<div class="footer" data-page-node-id="Vs439vzK6XcFsjJMB6nnvA">生成于 2026-08-31 ｜ MCP 对比测试报告</div>
-</div>
+    <div class="footer" data-page-node-id="Vs439vzK6XcFsjJMB6nnvA">生成于 2026-08-31 ｜ MCP 对比测试报告</div>
+  </div>
 </body>
+
 </html>

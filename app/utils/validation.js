@@ -9,6 +9,12 @@
 // 支持的亚马逊站点编码
 const MARKETPLACES = ['US', 'JP', 'UK', 'DE', 'FR', 'IT', 'ES', 'CA', 'IN', 'MX', 'AU', 'AE', 'BR', 'SA'];
 
+// marketplace 公开代码 → marketId (整数)
+const MARKET_ID_MAP = {
+  US: 1, DE: 4, UK: 3, JP: 6, FR: 5, IT: 35691, ES: 44551,
+  CA: 7, IN: 44571, MX: 771770
+};
+
 // 分页每页条数：仅支持 20 / 60 / 100，默认 60
 const PAGE_SIZES = [20, 60, 100];
 const DEFAULT_PAGE_SIZE = 60;
@@ -95,6 +101,7 @@ function toStringArray(value) {
 
 module.exports = {
   MARKETPLACES,
+  MARKET_ID_MAP,
   PAGE_SIZES,
   DEFAULT_PAGE_SIZE,
   MATCH_TYPES,
