@@ -24,6 +24,10 @@ const FIELD_ALIAS = {
   minNewAvgUnits: 'minNewAvgSales', maxNewAvgUnits: 'maxNewAvgSales'
 };
 
+// 每页条数仅支持 20/50/100，默认 50
+const PAGE_SIZES = [20, 50, 100];
+const DEFAULT_PAGE_SIZE = 50;
+
 // 官方维度筛选参数（存在即透传，参数名与官方一致）
 const FILTER_PARAMS = [
   'minAvgUnits', 'maxAvgUnits',
@@ -74,6 +78,13 @@ module.exports = {
     const orderField = args.order && args.order.field ? String(args.order.field) : (args.orderField || 'total_sales');
     const orderDesc = args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false);
 
+    const size = args.size == null || args.size === '' ? DEFAULT_PAGE_SIZE : Number(args.size);
+    if (!PAGE_SIZES.includes(size)) {
+      const err = new Error(`size must be one of: ${PAGE_SIZES.join(', ')}`);
+      err.code = -32602;
+      throw err;
+    }
+
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       marketId,
@@ -86,12 +97,10 @@ module.exports = {
       'order.desc': orderDesc ? 'true' : 'false',
       sellerNations: args.sellerLocation ? String(args.sellerLocation) : '',
       page: (args.page && !isNaN(Number(args.page))) ? Number(args.page) : 1,
-      size: (args.size && !isNaN(Number(args.size))) ? Number(args.size) : 50
+      size,
+      // 不传 month 时官方口径为“最近30天”，对应上游 bsr_sales_nearly
+      monthName: month ? `bsr_sales_monthly_${month}` : 'bsr_sales_nearly'
     };
-
-    if (month) {
-      params.monthName = `bsr_sales_monthly_${month}`;
-    }
 
     // 官方维度筛选参数：按上游表单参数名映射后加入
     for (const key of FILTER_PARAMS) {
