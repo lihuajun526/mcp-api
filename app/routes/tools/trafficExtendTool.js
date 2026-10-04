@@ -1,19 +1,25 @@
 const { queryTrafficExtend } = require('../../services/queries/trafficExtendQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { BusinessError } = require('../../errors');
-
-// marketplace 字符串 → 第三方 market 整数
-const MARKETPLACE_TO_MARKET_ID = {
-  US: 1, UK: 2, DE: 3, FR: 4, JP: 5,
-  CA: 6, IT: 7, ES: 8, IN: 9, AU: 10, MX: 11
-};
+const { MARKET_ID_MAP } = require('../../utils/validation');
 
 // Open API 排序字段名 → 第三方 orderColumn 整数（与 traffic_extend 的 orderColumn 枚举保持一致）
 const ORDER_FIELD_MAP = {
-  searches: 5, purchases: 6, purchaseRate: 7, products: 8,
-  supplyDemandRatio: 10, monopolyClickRate: 11, trafficPercentage: 12,
-  bid: 13, avgPrice: 14, updatedTime: 15, searchesRank: 2,
-  titleDensity: 4, top3ClickingRate: 16, top3ConversionRate: 17
+  trafficPercentage: 12,
+  relationAsin: 20,
+  searchesRank: 4,
+  searches: 5,
+  purchases: 6,
+  purchaseRate: 7,
+  titleDensity: 15,
+  products: 8,
+  supplyDemandRatio: 9,
+  adProduct: 10,
+  bid: 11,
+  impressions: 25,
+  clicks: 24,
+  totalClickRate: 19,
+  totalConversionRate: 16
 };
 
 function resolveOrderColumn(orderField) {
@@ -72,7 +78,7 @@ module.exports = {
       queryVariations,
       asinList,
       originAsinList: asinList,
-      market: MARKETPLACE_TO_MARKET_ID[marketplace] || 1,
+      market: MARKET_ID_MAP[marketplace] || 1,
       page,
       month: args.historyDate || '',
       size,
@@ -81,7 +87,7 @@ module.exports = {
       exactly: false,
       ac: args.amazonChoice === true || args.amazonChoice === 'true',
       filterDeletedKeywords: false,
-      keywordBidMatchType: args.keywordBidMatchType || 'exact'
+      keywordBidMatchType: 'exact'
     };
 
     // 范围筛选参数（与 Open API 文档保持一致）

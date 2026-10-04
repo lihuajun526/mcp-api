@@ -1,11 +1,6 @@
 const { queryKeywordMiner } = require('../../services/queries/keywordMinerQuery');
 const { buildSuccess } = require('../../toolResponse');
-
-// marketplace 字符串 → 第三方 market 整数
-const MARKETPLACE_TO_MARKET_ID = {
-  US: 1, UK: 2, DE: 3, FR: 4, JP: 5,
-  CA: 6, IT: 7, ES: 8, IN: 9, AU: 10, MX: 11
-};
+const { MARKET_ID_MAP } = require('../../utils/validation');
 
 // 对外排序字段名 → 上游 orderBy 整数编码
 const ORDER_FIELD_MAP = {
@@ -97,7 +92,7 @@ module.exports = {
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       keywordList: keywordList.map(String),
-      market: MARKETPLACE_TO_MARKET_ID[marketplace] || 1,
+      market: MARKET_ID_MAP[marketplace] || 1,
       pageNum: page,
       pageSize: size,
       historyDate: args.historyDate ? String(args.historyDate) : '',

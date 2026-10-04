@@ -1000,7 +1000,24 @@
           "properties": {
             "field": {
               "type": "string",
-              "description": "排序字段，默认 trafficPercentage；可选：searches、purchases、purchaseRate、products、supplyDemandRatio、monopolyClickRate、trafficPercentage、bid、avgPrice、updatedTime、searchesRank、titleDensity、top3ClickingRate、top3ConversionRate"
+              "description": "排序字段，默认 trafficPercentage；可选：trafficPercentage、relationAsin、searchesRank、searches、purchases、purchaseRate、titleDensity、products、supplyDemandRatio、adProduct、bid、impressions、clicks、totalClickRate、totalConversionRate",
+              "enum": [
+                "trafficPercentage",
+                "relationAsin",
+                "searchesRank",
+                "searches",
+                "purchases",
+                "purchaseRate",
+                "titleDensity",
+                "products",
+                "supplyDemandRatio",
+                "adProduct",
+                "bid",
+                "impressions",
+                "clicks",
+                "totalClickRate",
+                "totalConversionRate"
+              ]
             },
             "desc": {
               "type": "boolean",
@@ -1011,15 +1028,6 @@
         "amazonChoice": {
           "type": "boolean",
           "description": "仅返回亚马逊推荐词，默认 false"
-        },
-        "keywordBidMatchType": {
-          "type": "string",
-          "description": "（非官方扩展）PPC出价匹配类型，透传给上游：exact（精准，默认）、phrase（词组）、broad（广泛）",
-          "enum": [
-            "exact",
-            "phrase",
-            "broad"
-          ]
         },
         "includeKeywords": {
           "type": "array",
