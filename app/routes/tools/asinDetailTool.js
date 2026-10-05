@@ -1,5 +1,6 @@
 const { queryAsinDetail } = require('../../services/queries/asinDetailQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 module.exports = {
   name: 'asin_detail',
@@ -11,7 +12,7 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = assertToolMarketplace('asin_detail', args.marketplace);
 
     const params = {
       marketplace, // 供后处理使用，不发往上游

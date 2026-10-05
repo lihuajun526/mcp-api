@@ -10,8 +10,8 @@ const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'TRAFFIC_EXTEND';
 
 async function fetchTrafficExtend(params, session) {
-  // marketplace 仅供 transformer 使用，不发往上游
-  const { marketplace, ...payload } = params;
+  // marketplace / order 仅供 transformer 使用，不发往上游
+  const { marketplace, order, ...payload } = params;
 
   const headers = {
     accept: 'application/json, text/plain, */*',

@@ -1,0 +1,178 @@
+### appendix 表0: #|参数|参数名称|参数描述
+  1 | nearly | 最近 30 天 | 
+  2 | yyyyMM | 查询具体的月份，如：202507，最多支持前24个月 | 
+### appendix 表1: #|参数|参数名称|参数描述
+  1 | US | 美国站 | USD($)
+  2 | JP | 日本站 | JPY(￥)
+  3 | UK | 英国站 | GBP(£)
+  4 | DE | 德国站 | EUR(€)
+  5 | FR | 法国站 | EUR(€)
+  6 | IT | 意大利站 | EUR(€)
+  7 | ES | 西班牙站 | EUR(€)
+  8 | CA | 加拿大站 | C$($)
+  9 | IN | 印度站 | INR(₹)
+### appendix 表2: #|参数|参数名称|参数描述
+  1 | null | 无限制 | 
+  2 | 1 | 近 30 天 | 
+  3 | 3 | 近 3 个月 | 
+  4 | 6 | 近半年 | 
+  5 | 12 | 近 1 年 | 
+  6 | 24 | 近 2 年 | 
+### appendix 表3: #|参数|参数名称|参数描述
+  1 | ST/SS | 小号标准尺寸 | 
+  2 | LS | 大号标准尺寸 | 
+  3 | SO | 小号大件 | 
+  4 | MO | 中号大件 | 
+  5 | LO/LB | 大号大件 | 
+  6 | SP | 特殊大件 | 
+  7 | O | 其他尺寸 | 
+  8 | ELO | 超大尺寸：0 至 50 磅 | 
+  9 | EL5O | 超大尺寸：50 到 70 磅（不含 50 磅） | 
+  10 | EL7O | 超大尺寸：70 至 150 磅（不含 70 磅） | 
+  11 | EL15O | 超大尺寸：150 磅以上（不含 150 磅） | 
+### appendix 表4: #|参数|参数名称|参数描述
+  1 | SM | 小号 | 
+  2 | ST | 标准 | 
+  3 | OV | 大件 | 
+  4 | SS | 超大尺寸 | 
+  5 | O | 其他尺寸 | 
+### appendix 表5: #|参数|参数名称|参数描述
+  1 | EN | 信封装 | 
+  2 | ST | 标准 | 
+  3 | SO | 小号大件 | 
+  4 | MO | 中号大件 | 
+  5 | LO | 大号大件 | 
+  6 | SP | 特殊大件 | 
+  7 | O | 其他尺寸 | 
+### appendix 表6: #|参数|参数名称|参数描述
+  1 | SL | 小号信封 | 
+  2 | NL | 标准信封 | 
+  3 | LL | 大号信封 | 
+  4 | ELL | 超大号信封 | 
+  5 | SM | 小包裹 | 
+  6 | SD | 标准包裹 | 
+  7 | SB | 小号大件 | 
+  8 | NB | 标准大件 | 
+  9 | LB | 大号大件 | 
+  10 | SPO | 特殊大件 | 
+  11 | O | 其他尺寸 | 
+### appendix 表7: #|参数|参数名称|参数描述
+  1 | CN | 中国 | 
+  2 | HK | 中国香港特区 | 
+  3 | US | 美国 | 
+  4 | JP | 日本 | 
+  5 | DE | 德国 | 
+  6 | FR | 法国 | 
+### appendix 表8: #|参数|参数名称|参数描述
+  1 | total_units | 月销量 | 
+  2 | total_amount | 月销售额 | 
+  3 | bsr_rank | bsr排名 | 
+  4 | price | 价格 | 
+  5 | rating | 评分 | 
+  6 | reviews | 评分数 | 
+  7 | profit | 毛利率 | 
+  8 | reviews_rate | 留评率 | 
+  9 | available_date | 上架时间 | 
+  10 | questions | Q & A | 
+  11 | total_units_growth | 月销量增长率 | 
+  12 | total_amount_growth | 月销售额增长率 | 
+  13 | reviews_increasement | 月新增评分数 | 
+  14 | bsr_rank_cv | 近7天BSR增长数 | 
+  15 | bsr_rank_cr | 近7天BSR增长率 | 
+  16 | amz_unit | 子体销量 | 
+### appendix 表9: #|参数|参数名称|参数描述
+  1 | N | 一般性市场 | 
+  2 | S1,S2,S3 | 季节性市场(1-3月旺季) | 
+  3 | S4,S5,S6 | 季节性市场(4-6月旺季) | 
+  4 | S7,S8,S9 | 季节性市场(7-9月旺季) | 
+  5 | S10,S11,S12 | 季节性市场(10-12月旺季) | 
+  6 | I | 持续增长市场 | 
+  7 | D | 持续衰退市场 | 
+### appendix 表10: #|参数|参数名称|参数描述
+  1 | searches | 月搜索量 | 
+  2 | keywordsIsHide | 月购买量 | 
+  3 | searches_growth | 增长率 | 
+  4 | yearly_growth_rate | 同比增长率 | 
+  5 | growth_rate_trend_min | 近3个月增长率 | 
+  6 | monopoly_click_rate | 点击集中度 | 
+  7 | goods_value | 货流值 | 
+### appendix 表11: #|参数|参数名称|参数描述
+  1 | searchfrequencyrank | 搜索排名 | 
+  2 | n1RankGrowthValue | 周变化量 | 
+  3 | n1RankGrowthRate | 周变化率 | 
+  4 | monopolyClickRate | 点击集中度 | 
+### appendix 表12: #|参数|参数名称|参数描述
+  1 | naturalSearching | 自然搜索词 | 
+  2 | amazonChoice | AC推荐词 | 
+  3 | editorialRecommendations | ER推荐词 | 
+  4 | fourStar | 四星推荐词 | 
+  5 | highlyRated | HR推荐词 | 
+  6 | sponsorBrand | 品牌推荐词 | 
+  7 | sponsorVideo | 视频推荐词 | 
+  8 | ads | SP广告词 | 
+### appendix 表13: #|参数|参数名称|参数描述
+  1 | primary | 主要流量词 | 
+  2 | precise | 精准流量词 | 
+  3 | preciseLongTail | 转化流失词 | 
+### appendix 表14: #|参数|参数名称|参数描述
+  1 | excellent | 转化优质词 | 
+  2 | stable | 转化平稳词 | 
+  3 | lost | 转化流失词 | 
+  4 | invalid | 无效曝光词 | 
+### appendix 表15: #|参数|参数名称|参数描述
+  1 | mib | 捆绑销售组合 | 
+  2 | fbt | 组合购买 | 
+  3 | csi | 相似产品 | 
+  4 | cob | 品牌推荐 | 
+  5 | mie | 更多相关 | 
+  6 | bab | 买了又买 | 
+  7 | vav | 看了又看 | 
+  8 | avp | 看了还看 | 
+  9 | bav | 看了商品却买了其他商品 | 
+  10 | asf | 看了或买了的产品 | 
+  11 | cpf | 低碳环保型产品 | 
+  12 | bca | 类目品牌广告 | 
+  13 | fsa | 4星及以上的商品广告 | 
+  14 | sp | 商品广告 | 
+### appendix 表16: #|参数|参数名称|参数描述
+  1 | rankPosition | 自然排名 | 
+  2 | adPosition | 广告排名 | 
+  3 | createdTime | 创建时间 | 
+  4 | searchesRank | 搜索量周排名 | 
+  5 | searches | 月搜索量 | 
+  6 | purchases | 月购买量 | 
+  7 | purchaseRate | 购买率 | 
+  8 | products | 商品数 | 
+  9 | supplyDemandRatio | 供需比 | 
+  10 | latest1daysAds | 广告竞品数 | 
+  11 | bid | PPC竞价 | 
+  12 | trafficPercentage | 流量占比 | 
+### appendix 表17: #|参数|参数名称|参数描述
+  1 | searchfrequencyrank | 现排名 | 
+  2 | cprExact | spr | 
+  3 | titleDensityExact | 标题密度 | 
+  4 | searches | 搜索量周排名 | 
+### appendix 表18: #|参数|参数名称|参数描述
+  1 | trafficPercentage | 流量占比 | 
+  2 | relationAsin | 相关ASIN | 
+  3 | searchesRank | ABA周排名 | 
+  4 | searches | 月搜索量 | 
+  5 | purchases | 月购买量 | 
+  6 | purchaseRate | 购买率 | 
+  7 | spr | spr | 
+  8 | titleDensity | 标题密度 | 
+  9 | products | 商品数 | 
+  10 | supplyDemandRatio | 供需比 | 
+  11 | adProduct | 广告竞品数 | 
+  12 | monopolyClickRate | 点击集中度 | 
+  13 | bid | PPC竞价 | 
+### appendix 表19: #|参数|参数名称|参数描述
+  1 | searchRank | 排名 | 
+  2 | searchRankGrowthValue | 月变化量 | 
+  3 | searchRankGrowthRate | 月变化率 | 
+  4 | sumClickRate | 前3asin点击占比 | 
+### appendix 表20: #|参数|参数名称|参数描述
+  1 | g | 克 | 
+  2 | kg | 千克 | 
+  3 | oz | 盎司 | 
+  4 | lb | 磅 | 

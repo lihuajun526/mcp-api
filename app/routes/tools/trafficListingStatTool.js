@@ -1,10 +1,11 @@
 const { queryTrafficListingStat } = require('../../services/queries/trafficListingStatQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 // marketplace 公开代码 → station 代码 (US→COM)
 const MARKET_STATION_MAP = {
   US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
+  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU', BR: 'BR'
 };
 
 module.exports = {
@@ -22,7 +23,7 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = assertToolMarketplace('traffic_listing_stat', args.marketplace);
     const asinList = Array.isArray(args.asinList) ? args.asinList : [String(args.asinList)];
     if (asinList.length > 20) {
       const err = new Error('asinList supports at most 20 ASINs');

@@ -1,10 +1,6 @@
 const { queryKeywordResearch } = require('../../services/queries/keywordResearchQuery');
 const { buildSuccess } = require('../../toolResponse');
-
-const MARKET_STATION_MAP = {
-  US: 'US', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
-};
+const { resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
 
 module.exports = {
   name: 'keyword_research',
@@ -16,9 +12,12 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = String(args.marketplace);
-    const station = MARKET_STATION_MAP[marketplace] || marketplace;
-    const size = Math.min(Number(args.size) || 100, 200);
+    // marketId 必须按站点映射（原实现写死 '1'，导致所有站点都按美国站出数）
+    const marketId = resolveToolMarketId('keyword_research', args.marketplace);
+    const marketplace = String(args.marketplace).trim().toUpperCase();
+    const station = marketplace;
+    // 分页：20/50/100，默认 50（通用档）
+    const size = resolveToolPageSize('keyword_research', args.size);
     const page = Math.max(Number(args.page) || 1, 1);
     const orderField = (args.order && args.order.field) || args.orderField || 'searches';
     const orderDesc = (args.order && args.order.desc != null ? args.order.desc : args.orderDesc) !== false;
@@ -31,7 +30,7 @@ module.exports = {
       supplement: args.supplement || 'N',
       usestatic: 'R',
       exportGkImages: 'false',
-      marketId: '1',
+      marketId: String(marketId),
       limitUserStatic: 'true',
       adminDes: 'N',
       presetMode: '',

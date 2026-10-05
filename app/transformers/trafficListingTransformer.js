@@ -1,3 +1,5 @@
+const { resolveOrder, resolvePaging } = require('../utils/validation');
+
 function toInt(v) {
   if (v == null) return null;
   const n = Number(v);
@@ -68,8 +70,8 @@ function normalizeItem(raw) {
  * @param {object} request - 原始请求参数
  */
 function transformTrafficListingResponse(rawData, request) {
-  const page = Number(request.page) || 1;
-  const size = Number(request.size) || 50;
+  const { page, size } = resolvePaging(request, 50);
+  const order = resolveOrder(request, 'relationCount');
 
   const empty = {
     page,
@@ -77,10 +79,7 @@ function transformTrafficListingResponse(rawData, request) {
     total: 0,
     pages: 0,
     items: [],
-    order: {
-      field: request.orderField || 'relationCount',
-      desc: request.orderDesc !== false
-    }
+    order
   };
 
   if (!rawData) return empty;
@@ -92,7 +91,8 @@ function transformTrafficListingResponse(rawData, request) {
     : (Array.isArray(rawData.items) ? rawData.items : []);
 
   const total = toInt(pager.total) || 0;
-  const respPage = toInt(pager.page || pager.pageNum) || page;
+  // 上游 pagerDto.page 恒为 1（分页靠 pageNum 参数生效），故页码以请求值为准
+  const respPage = page;
   const respSize = toInt(pager.size || pager.pageSize) || size;
   const pages = total > 0 && respSize > 0 ? Math.ceil(total / respSize) : 0;
 
@@ -102,10 +102,7 @@ function transformTrafficListingResponse(rawData, request) {
     total,
     pages,
     items: rawItems.map(normalizeItem).filter(Boolean),
-    order: {
-      field: request.orderField || 'relationCount',
-      desc: request.orderDesc !== false
-    }
+    order
   };
 }
 

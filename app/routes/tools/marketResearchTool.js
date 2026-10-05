@@ -1,6 +1,6 @@
 const { queryMarketResearch } = require('../../services/queries/marketResearchQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertMonth, MARKET_ID_MAP } = require('../../utils/validation');
+const { assertMonth, resolveToolMarketId } = require('../../utils/validation');
 
 // 官方参数名 → 上游表单参数名（名称不同的才需映射，其余同名直接透传）
 const FIELD_ALIAS = {
@@ -73,7 +73,7 @@ module.exports = {
     }
 
     const marketplace = String(args.marketplace);
-    const marketId = MARKET_ID_MAP[marketplace] || 1;
+    const marketId = resolveToolMarketId('market_research', marketplace);
     const month = args.month != null && args.month !== '' ? assertMonth(args.month) : '';
     const orderField = args.order && args.order.field ? String(args.order.field) : (args.orderField || 'total_sales');
     const orderDesc = args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false);

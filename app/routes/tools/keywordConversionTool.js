@@ -1,5 +1,6 @@
 const { queryKeywordConversion } = require('../../services/queries/keywordConversionQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 // 对外时间类型 WEEK | 90D → 上游 timeType：WEEK→w、90D→90D
 const TIME_TYPE_MAP = { WEEK: 'w', '90D': '90D' };
@@ -49,11 +50,13 @@ module.exports = {
     const page = Math.max(Number(args.page) || 1, 1);
     const size = resolvePageSize(args.size);
 
+    const marketplace = assertToolMarketplace('keyword_conversion', args.marketplace);
+
     const params = {
-      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
+      marketplace, // 供 transformer 使用，不发往上游
       pageNum: page,
       pageSize: size,
-      market: String(args.marketplace),
+      market: marketplace,
       timeType,
       bidMatchType: args.keywordBidMatchType || 'exact', // PPC竞价模式：phrase/exact/broad
       keywordMatchType: 'all',

@@ -1,6 +1,6 @@
 const { queryProductNode } = require('../../services/queries/productNodeQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertMonth } = require('../../utils/validation');
+const { assertMonth, assertToolMarketplace } = require('../../utils/validation');
 
 module.exports = {
   // 查产品类目
@@ -16,7 +16,7 @@ module.exports = {
     const month = args.month != null && args.month !== '' ? assertMonth(args.month) : null;
 
     const data = await queryProductNode(user, {
-      marketplace: String(args.marketplace.toUpperCase()),
+      marketplace: assertToolMarketplace('product_node', args.marketplace),
       nodeIdPath: args.nodeIdPath != null ? String(args.nodeIdPath) : '',
       keyword: args.keyword != null ? String(args.keyword) : '',
       month

@@ -1,6 +1,7 @@
 const { queryAsinCompetitor } = require('../../services/queries/asinCompetitorQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { isEmpty } = require('../../utils/stringUtils');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 module.exports = {
   // 查询ASIN竞品数据
@@ -13,9 +14,11 @@ module.exports = {
       throw err;
     }
 
+    const marketplace = assertToolMarketplace('asin_competitor', args.marketplace);
+
     const params = {
-      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
-      market: String(args.marketplace),      // 上游字段名为 market
+      marketplace, // 供 transformer 使用，不发往上游
+      market: marketplace, // 上游字段名为 market
       monthName: 'bsr_sales_nearly',
       asins: [String(args.asin)],
       page: 1,

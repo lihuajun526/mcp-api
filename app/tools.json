@@ -7,18 +7,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ]
         },
         "month": {
@@ -66,12 +66,13 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 60，仅支持 20/60/100",
+          "description": "每页条数，仅支持 20/60/100，默认 60",
           "enum": [
             20,
             60,
             100
-          ]
+          ],
+          "default": 60
         },
         "order": {
           "type": "object",
@@ -109,18 +110,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ]
         },
         "asin": {
@@ -158,18 +159,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ]
         },
         "month": {
@@ -285,12 +286,13 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 60，仅支持 20/60/100",
+          "description": "每页条数，仅支持 20/60/100，默认 60",
           "enum": [
             20,
             60,
             100
-          ]
+          ],
+          "default": 60
         },
         "order": {
           "type": "object",
@@ -480,18 +482,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -525,18 +527,21 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -662,18 +667,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -707,18 +712,22 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "SA",
+            "AE"
           ]
         },
         "keywords": {
@@ -740,9 +749,13 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，默认 15，最大 15",
-          "minimum": 1,
-          "maximum": 15
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
         },
         "order": {
           "type": "object",
@@ -945,18 +958,21 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
           ]
         },
         "asinList": {
@@ -990,9 +1006,13 @@
         },
         "size": {
           "type": "integer",
-          "description": "每页条数，最大50，默认50",
-          "minimum": 1,
-          "maximum": 50
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
         },
         "order": {
           "type": "object",
@@ -1214,18 +1234,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -1265,18 +1285,21 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
           ]
         },
         "keyword": {
@@ -1317,17 +1340,16 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 9 站：US/JP/UK/DE/FR/IT/ES/CA/IN",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
+            "CA",
             "IN"
           ]
         },
@@ -1533,18 +1555,22 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "SA",
+            "AE"
           ]
         },
         "year": {
@@ -1730,18 +1756,22 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "SA",
+            "AE"
           ]
         },
         "date": {
@@ -1902,18 +1932,21 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
           ]
         },
         "asin": {
@@ -1949,18 +1982,20 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 12 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU"
           ]
         },
         "asinList": {
@@ -1997,18 +2032,20 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 12 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU"
           ]
         },
         "asinList": {
@@ -2102,18 +2139,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ]
         },
         "month": {
@@ -2437,18 +2474,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ],
           "minLength": 2,
           "maxLength": 8
@@ -2487,18 +2524,18 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX"
           ]
         },
         "asin": {
@@ -2530,18 +2567,21 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
-            "IN"
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
           ]
         },
         "keywordList": {
@@ -2782,22 +2822,22 @@
       "properties": {
         "marketplace": {
           "type": "string",
-          "description": "亚马逊站点，例如 US、UK、DE、JP、AE、SA",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
           "enum": [
             "US",
-            "CA",
-            "MX",
+            "JP",
             "UK",
             "DE",
             "FR",
             "IT",
             "ES",
-            "JP",
+            "CA",
             "IN",
-            "AU",
-            "AE",
+            "MX",
             "BR",
-            "SA"
+            "AU",
+            "SA",
+            "AE"
           ]
         },
         "returnFields": {

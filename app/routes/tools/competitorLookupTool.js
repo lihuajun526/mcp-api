@@ -2,9 +2,9 @@ const { queryCompetingLookup } = require('../../services/queries/competitorLooku
 const { buildSuccess } = require('../../toolResponse');
 const { BusinessError } = require('../../errors');
 const {
-  assertMarketplace,
+  assertToolMarketplace,
   assertMonth,
-  resolvePageSize,
+  resolveToolPageSize,
   assertMatchType,
   toSymbolFlag,
   toStringArray
@@ -21,9 +21,9 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = assertMarketplace(args.marketplace);
+    const marketplace = assertToolMarketplace('competitor_lookup', args.marketplace);
     const month = args.month != null && args.month !== '' ? assertMonth(args.month) : null;
-    const size = resolvePageSize(args.size);
+    const size = resolveToolPageSize('competitor_lookup', args.size);
     const matchType = assertMatchType(args.matchType);
     const asins = toStringArray(args.asins);
 

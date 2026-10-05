@@ -1,3 +1,5 @@
+const { resolveOrder, resolvePaging } = require('../utils/validation');
+
 function toInt(value) {
   if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
@@ -94,17 +96,17 @@ function transformItem(item) {
  * @param {object} request - 原始请求参数
  */
 function transformTrafficExtendResponse(raw, request) {
+  const { page: reqPage, size: reqSize } = resolvePaging(request, 50);
+  const order = resolveOrder(request, 'trafficPercentage');
+
   const empty = {
     marketplace: (request && request.marketplace) || null,
     asinList: (request && request.asinList) || [],
     pages: 0,
-    page: request.page || 1,
-    size: request.size || 50,
+    page: reqPage,
+    size: reqSize,
     total: 0,
-    order: {
-      field: request.orderField || '',
-      desc: request.orderDesc !== false
-    },
+    order,
     items: []
   };
 
@@ -115,8 +117,8 @@ function transformTrafficExtendResponse(raw, request) {
     : [];
 
   const total = toInt(raw.total);
-  const page = toInt(raw.page) || request.page || 1;
-  const size = toInt(raw.size) || request.size || 50;
+  const page = toInt(raw.page) || reqPage;
+  const size = toInt(raw.size) || reqSize;
   const pages = total && size ? Math.ceil(total / size) : 0;
 
   return {
@@ -126,10 +128,7 @@ function transformTrafficExtendResponse(raw, request) {
     page,
     size,
     total,
-    order: {
-      field: request.orderField || '',
-      desc: request.orderDesc !== false
-    },
+    order,
     items
   };
 }

@@ -1,5 +1,5 @@
 const { queryTrafficKeywordStat } = require('../../services/queries/trafficKeywordStatQuery');
-const { assertMonth, MARKET_ID_MAP } = require('../../utils/validation');
+const { assertMonth, resolveToolMarketId } = require('../../utils/validation');
 const { buildSuccess } = require('../../toolResponse');
 
 module.exports = {
@@ -17,11 +17,11 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = String(args.marketplace).trim().toUpperCase();
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       asin: String(args.asin),
-      marketId: MARKET_ID_MAP[marketplace] || 1,
+      marketId: resolveToolMarketId('traffic_keyword_stat', marketplace),
       month: args.month != null && args.month !== '' ? assertMonth(args.month) : '',
       forceReStat: false,
       badges: [],

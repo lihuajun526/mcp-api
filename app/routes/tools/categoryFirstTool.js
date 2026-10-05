@@ -1,6 +1,6 @@
 const { queryCategoryFirst } = require('../../services/queries/categoryFirstQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertMarketplace } = require('../../utils/validation');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 module.exports = {
   // 获取站点一级类目
@@ -13,7 +13,7 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = assertMarketplace(args.marketplace);
+    const marketplace = assertToolMarketplace('first_category', args.marketplace);
     const data = await queryCategoryFirst(user, { marketplace });
 
     return buildSuccess(args, data);

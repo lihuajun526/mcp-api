@@ -1,4 +1,5 @@
 const cheerio = require('cheerio');
+const { resolveOrder, resolvePaging } = require('../utils/validation');
 
 function parseNum(str) {
   if (!str) return null;
@@ -198,11 +199,11 @@ function parsePagination($) {
  * @param {object} request - 原始请求参数
  */
 function transformMarketResearchResponse(html, request) {
-  const reqPage = Number(request.page) || 1;
-  const reqSize = Number(request.size) || 50;
+  const { page: reqPage, size: reqSize } = resolvePaging(request, 50);
+  const order = resolveOrder(request, 'total_sales');
 
   if (!html || typeof html !== 'string') {
-    return { marketplace: request.marketplace, page: reqPage, size: reqSize, total: 0, pages: 0, items: [] };
+    return { marketplace: request.marketplace, page: reqPage, size: reqSize, total: 0, pages: 0, items: [], order };
   }
 
   const $ = cheerio.load(html);
@@ -228,10 +229,7 @@ function transformMarketResearchResponse(html, request) {
     total,
     pages,
     items,
-    order: {
-      field: request.orderField || 'total_sales',
-      desc: request.orderDesc !== false
-    }
+    order
   };
 }
 

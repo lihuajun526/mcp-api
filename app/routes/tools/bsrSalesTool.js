@@ -1,5 +1,6 @@
 const { queryBsrSales } = require('../../services/queries/bsrSalesQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 module.exports = {
   name: 'bsr_prediction',
@@ -11,9 +12,11 @@ module.exports = {
       throw err;
     }
 
+    const marketplace = assertToolMarketplace('bsr_prediction', args.marketplace);
+
     const params = {
-      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
-      station: String(args.marketplace),
+      marketplace, // 供 transformer 使用，不发往上游
+      station: marketplace,
       cid: String(args.categoryId),
       bsr: Number(args.bsr)
     };

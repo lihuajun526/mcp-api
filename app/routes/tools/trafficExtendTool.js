@@ -1,7 +1,7 @@
 const { queryTrafficExtend } = require('../../services/queries/trafficExtendQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { BusinessError } = require('../../errors');
-const { MARKET_ID_MAP } = require('../../utils/validation');
+const { resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
 
 // Open API 排序字段名 → 第三方 orderColumn 整数（与 traffic_extend 的 orderColumn 枚举保持一致）
 const ORDER_FIELD_MAP = {
@@ -63,11 +63,12 @@ module.exports = {
       throw new BusinessError('asinList 最多支持 20 个 ASIN', 400);
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = String(args.marketplace).trim().toUpperCase();
     const orderField = args.order && args.order.field ? String(args.order.field) : (args.orderField ? String(args.orderField) : undefined);
     const orderDesc = args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false);
     const page = Math.max(Number(args.page) || 1, 1);
-    const size = Math.min(Number(args.size) || 50, 50);
+    // 分页：20/50/100，默认 50（通用档）
+    const size = resolveToolPageSize('traffic_extend', args.size);
 
     // queryType: 0 所有变体, 1 畅销变体, 2 当前变体(默认)
     const queryType = args.queryType != null ? Number(args.queryType) : 2;
@@ -78,12 +79,15 @@ module.exports = {
       queryVariations,
       asinList,
       originAsinList: asinList,
-      market: MARKET_ID_MAP[marketplace] || 1,
+      market: resolveToolMarketId('traffic_extend', marketplace),
       page,
       month: args.historyDate || '',
       size,
       orderColumn: resolveOrderColumn(orderField),
       desc: orderDesc,
+      // 供 transformer 回显排序信息（上游 payload 会剔除该字段），
+      // 避免响应里的 order 永远回退成默认值
+      order: { field: orderField || 'trafficPercentage', desc: orderDesc !== false },
       exactly: false,
       ac: args.amazonChoice === true || args.amazonChoice === 'true',
       filterDeletedKeywords: false,

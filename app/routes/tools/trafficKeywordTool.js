@@ -1,11 +1,12 @@
 const { queryTrafficKeyword } = require('../../services/queries/trafficKeywordQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertMonth } = require('../../utils/validation');
+const { assertMonth, assertToolMarketplace } = require('../../utils/validation');
 
 // 将 marketplace 公开代码（US/UK/DE 等）映射到 sellersprite 站点代码（COM/UK/DE 等）
 const MARKET_CODE_MAP = {
   US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
+  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN',
+  AU: 'AU', BR: 'BR', AE: 'AE'
 };
 
 // 官方 MCP 排序字段枚举（表2.3 流量词列表排序字段）→ 上游 order 整数
@@ -104,7 +105,7 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = assertToolMarketplace('traffic_keyword', args.marketplace);
     const market = MARKET_CODE_MAP[marketplace] || marketplace;
     const size = resolvePageSize(args.size);
     const page = Math.max(Number(args.page) || 1, 1);

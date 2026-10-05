@@ -1,0 +1,184 @@
+##### competitor_lookup   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace
+  官方有 / 本地缺 (3): keywordEqual, matchType, nodeIdPathEqual
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - size: 官方integer vs 本地integer[20,60,100]  [官方desc: 每页条数]
+    - variation: 官方string vs 本地string["N","Y"]  [官方desc: 是否查询变体ASIN，如果没有明确指定则要设置成: Y 可选值(仅填写字段名): - Y: exclude - N: include ]
+
+##### asin_competitor
+  官方required: marketplace,asin  ||  本地required: marketplace,asin
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string["US","JP","UK","DE","FR","IT","ES","CA","IN","MX","BR","AU","AE"] vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin]
+
+##### product_research   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace
+  官方有 / 本地缺 (2): nodeIdPath, nodeIdPathEqual
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - badgeAC: 官方string vs 本地string["Y"]  [官方desc: 是否有热销标识 Amazon's Choice]
+    - badgeBS: 官方string vs 本地string["Y"]  [官方desc: 是否有热销标识 Best Seller]
+    - badgeNR: 官方string vs 本地string["Y"]  [官方desc: 是否有新品标识 New Release]
+    - filterSub: 官方string vs 本地string["Y"]  [官方desc: 是否筛选子类目，Y：是]
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - matchType: 官方integer vs 本地integer[1,2,3]  [官方desc: "匹配方式, 默认: 2 可选值(必须严格使用下列数字值之一): 1: 词组匹配 2: 模糊匹配 3: 精准匹配 禁止使用未列出的值。 ]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - size: 官方integer vs 本地integer[20,60,100]  [官方desc: 每页条数]
+    - variation: 官方string vs 本地string["N","Y"]  [官方desc: 是否查询变体ASIN，如果没有明确指定则要设置成: Y 可选值(仅填写字段名): - Y: exclude - N: include ]
+    - weightUnit: 官方string vs 本地string["g","lb","oz","kg"]  [官方desc: 重量单位，默认：g 可选值(仅填写字段名): - g: 克 - kg: 千克 - ounces: 盎司 - pounds: 磅 禁止使用未列出的值。 ]
+
+##### asin_detail
+  官方required: marketplace,asin  ||  本地required: marketplace,asin
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string["US","JP","UK","DE","FR","IT","ES","CA","IN","MX","BR","AU","AE"] vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin]
+
+##### traffic_keyword   [官方入参包裹: request]
+  官方required: asin,marketplace  ||  本地required: marketplace,asin
+  官方有 / 本地缺 (1): includeTop10AsinData
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - size: 官方integer vs 本地integer[20,50,100]  [官方desc: 每页条数]
+
+##### asin_prediction
+  官方required: marketplace,asin  ||  本地required: marketplace,asin
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string["US","JP","UK","DE","FR","IT","ES","CA","IN","MX","BR","AU","AE"] vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin]
+
+##### keyword_research   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace,keywords
+  官方有 / 本地缺 (1): departments
+  本地有 / 官方无 (1): supplement
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+
+##### traffic_extend   [官方入参包裹: request]
+  官方required: asinList,marketplace,queryType  ||  本地required: marketplace,asinList
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - queryType: 官方integer vs 本地integer[0,1,2]  [官方desc: 查询方式, 默认: 2 可选值(必须严格使用下列数字值之一): 0: 所有变体 1: 畅销变体 2: 当前变体 禁止使用未列出的值。 ]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+
+##### bsr_prediction
+  官方required: marketplace,bsr,categoryId  ||  本地required: marketplace,categoryId,bsr
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string["US","JP","UK","DE","FR","IT","ES","CA","IN","MX","BR","AU","AE"] vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin]
+
+##### google_trend   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - googleProp: 官方string vs 本地string["web","shoppingCart"]  [官方desc: 搜索来源类型（枚举值）: web, shoppingCart]
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+
+##### keyword_conversion   [官方入参包裹: request]
+  官方required: keyword,marketplace,timeType  ||  本地required: marketplace,keyword
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (1): keywordBidMatchType
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - matchType: 官方integer vs 本地integer[0,1]  [官方desc: 匹配类型，作用于 includeKeywords，0词组匹配 1广泛匹配]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - size: 官方integer vs 本地integer[20,50,100]  [官方desc: 每页条数]
+    - timeType: 官方string vs 本地string["WEEK","90D"]  [官方desc: 时间类型（枚举值）：WEEK,90D]
+
+##### aba_research_weekly   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace
+  官方有 / 本地缺 (3): date, maxImpressions, minImpressions
+  本地有 / 官方无 (4): year, month, week, exactFlag
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: country code]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - searchModel: 官方integer vs 本地integer[1,2,3,4,5,6]  [官方desc: 搜索模式 可选值(仅填写字段名): 1: 热门市场 2: 异动市场 3: 持续增长市场 4: 快速飙升市场 5: 潜力市场 6: 长尾市场 禁止使用未列出的值。 ]
+    - size: 官方integer vs 本地integer[20,50,100]  [官方desc: 每页条数]
+
+##### aba_research_monthly   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace
+  官方有 / 本地缺 (4): maxClicks, maxSPR, minClicks, minSPR
+  本地有 / 官方无 (1): exactFlag
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: country code]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - searchModel: 官方integer vs 本地integer[1,2,3,4,5,6]  [官方desc: 查询方式, 默认: 2 可选值(必须严格使用下列数字值之一): 1: 热门市场 2: 异动市场 3: 持续增长市场 4: 快速飙升市场 5: 潜力市场 6: 长尾市场 禁止使用未列出的值。 ]
+    - size: 官方integer vs 本地integer[20,50,100]  [官方desc: 每页条数]
+
+##### traffic_keyword_stat
+  官方required: marketplace,asin  ||  本地required: marketplace,asin
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string["US","JP","UK","DE","FR","IT","ES","CA","IN","MX","BR","AU","AE"] vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin]
+
+##### traffic_listing_stat
+  官方required: marketplace,asin  ||  本地required: marketplace,asinList
+  官方有 / 本地缺 (2): asin, month
+  本地有 / 官方无 (1): asinList
+  参数类型/枚举差异:
+    - marketplace: 官方string["US","JP","UK","DE","FR","IT","ES","CA","IN","MX","BR","AU","AE"] vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin]
+
+##### traffic_listing   [官方入参包裹: request]
+  官方required: asinList,marketplace,relations  ||  本地required: marketplace,asinList
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - size: 官方integer vs 本地integer[20,50,100]  [官方desc: 每页条数]
+
+##### market_research   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - newProduct: 官方integer vs 本地integer[1,3,6,12]  [官方desc: 新品定义阈值（单位：月），用于指定将上架在该时间范围内的商品视为新品。可根据行业特性调整，如服装类通常为 1，母婴等长生命周期行业可设为 6]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - size: 官方integer vs 本地integer[20,50,100]  [官方desc: 每页条数]
+
+##### product_node   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+
+##### asin_sales_trend
+  官方required: marketplace,asin  ||  本地required: marketplace,asin
+  官方有 / 本地缺 (0): 
+  本地有 / 官方无 (0): 
+  参数类型/枚举差异:
+    - marketplace: 官方string["US","JP","UK","DE","FR","IT","ES","CA","IN","MX","BR","AU","AE"] vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin]
+
+##### keyword_miner   [官方入参包裹: request]
+  官方required: marketplace  ||  本地required: marketplace,keywordList
+  官方有 / 本地缺 (3): keyword, maxTitleDensity, minTitleDensity
+  本地有 / 官方无 (2): matchType, keywordBidMatchType
+  参数类型/枚举差异:
+    - filterRootWord: 官方integer vs 本地integer[0,1]  [官方desc: 过滤词根 可选值(必须严格使用下列数字值之一): 0: 包含所有 1: 只包含词根 禁止使用未列出的值。 ]
+    - marketplace: 官方string vs 本地string["US","CA","MX","UK","DE","FR","IT","ES","JP","IN"]  [官方desc: Amazon 站点代码（枚举值）：US, JP, UK, DE, FR, IT, ES, CA, IN, MX, BR, AU, AE]
+    - returnFields: 官方string vs 本地array  [官方desc: 指定返回的字段，多个字段用逗号隔开。不指定则返回所有字段。例如：asin,title,price,totalUnits,totalAmount]
+    - size: 官方integer vs 本地integer[20,50,100]  [官方desc: 每页条数]

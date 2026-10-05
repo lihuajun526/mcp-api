@@ -6,6 +6,8 @@
  * 输出格式: { guestId, pages, page, size, total, took, url, order, items, ... }
  */
 
+const { resolveOrder, resolvePaging } = require('../utils/validation');
+
 function toInt(v) {
   if (v == null) return null;
   const n = Number(v);
@@ -81,8 +83,8 @@ function normalizeItem(raw) {
 }
 
 function transformAbaResearchResponse(rawData, request) {
-  const page = Math.max(Number(request.page) || 1, 1);
-  const size = Math.min(Number(request.size) || 40, 40);
+  const { page, size } = resolvePaging(request, 40);
+  const order = resolveOrder(request, 'searchfrequencyrank');
 
   const empty = {
     guestId: null,
@@ -92,10 +94,7 @@ function transformAbaResearchResponse(rawData, request) {
     total: 0,
     took: 0,
     url: null,
-    order: {
-      field: request.orderField || 'searchfrequencyrank',
-      desc: request.orderDesc !== false
-    },
+    order,
     items: [],
     terminal: null,
     hasNextPage: null,
@@ -120,10 +119,7 @@ function transformAbaResearchResponse(rawData, request) {
     total,
     took: rawData.took || 0,
     url: rawData.url || null,
-    order: rawData.order || {
-      field: request.orderField || 'searchfrequencyrank',
-      desc: request.orderDesc !== false
-    },
+    order,
     items,
     terminal: rawData.terminal || null,
     hasNextPage: respPage < pages,

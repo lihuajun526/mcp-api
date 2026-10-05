@@ -1,6 +1,6 @@
 const { queryAsinSalesTrend } = require('../../services/queries/asinSalesTrendQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { MARKET_ID_MAP } = require('../../utils/validation');
+const { resolveToolMarketId } = require('../../utils/validation');
 
 module.exports = {
   name: 'asin_sales_trend',
@@ -12,11 +12,11 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = String(args.marketplace).trim().toUpperCase();
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       asin: String(args.asin),
-      marketId: MARKET_ID_MAP[marketplace] || 1
+      marketId: resolveToolMarketId('asin_sales_trend', marketplace)
     };
 
     const data = await queryAsinSalesTrend(user, params);

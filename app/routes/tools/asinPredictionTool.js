@@ -1,5 +1,6 @@
 const { queryAsinPrediction } = require('../../services/queries/asinPredictionQuery');
 const { buildSuccess } = require('../../toolResponse');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 module.exports = {
   name: 'asin_prediction',
@@ -11,9 +12,11 @@ module.exports = {
       throw err;
     }
 
+    const marketplace = assertToolMarketplace('asin_prediction', args.marketplace);
+
     const params = {
-      marketplace: String(args.marketplace), // 供 transformer 使用，不发往上游
-      station: String(args.marketplace),
+      marketplace, // 供 transformer 使用，不发往上游
+      station: marketplace,
       asin: String(args.asin)
     };
 

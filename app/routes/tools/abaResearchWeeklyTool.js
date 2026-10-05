@@ -1,11 +1,13 @@
 const { queryAbaResearchWeekly } = require('../../services/queries/abaResearchWeeklyQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { nthSaturday } = require('./proxyParamAdapter');
+const { assertToolMarketplace } = require('../../utils/validation');
 
 // marketplace 公开代码 → 第三方 market 代码 (US→COM)
 const MARKET_CODE_MAP = {
   US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
+  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN',
+  AU: 'AU', BR: 'BR', AE: 'AE', SA: 'SA'
 };
 
 // 分页大小取值枚举项为 20/50/100，默认 50
@@ -89,7 +91,7 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = assertToolMarketplace('aba_research_weekly', args.marketplace);
     const market = MARKET_CODE_MAP[marketplace] || marketplace;
     const page = Math.max(Number(args.page) || 1, 1);
     const size = resolveSize(args.size);

@@ -1,0 +1,167 @@
+##### competitor_lookup
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | month:string | keyword:string | brand:string | sellerName:string | asins:array | nodeIdPath:string | variation:string enum=[N,Y] | page:integer | size:integer enum=[20,60,100] | order:object | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, month, keyword, brand, sellerName, asins, nodeIdPath, variation, page, size, order, returnFields
+  官方required: request | 本地required: marketplace
+  官方工具描述: 查询 Amazon 商品列表数据，支持按市场、月份、品牌、卖家、ASIN、类目、关键词等条件筛选， 并返回商品的销量、销售额、BSR、价格、评分、卖家、类目、变体等核心运营指标。 适用于以下场景： - 选品分析（找高销量 / 高增长商品） - 类目或关键词下的商品调研 - 竞品监控（品牌 / 卖家 / ASIN 对比） - 市场趋势与榜单分析 
+  官方schema名:  | 
+
+##### asin_competitor
+  官方参数: marketplace:string enum=[US,JP,UK,DE,FR,IT,ES,CA,IN,MX,BR,AU,AE] REQ | asin:string REQ | size:integer | returnFields:string
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asin:string REQ | size:integer | returnFields:array
+  官方required: marketplace,asin | 本地required: marketplace,asin
+  官方工具描述: 查询指定 Amazon ASIN 的竞品数据，获取相关竞品 ASIN 信息，帮助进行竞品分析、选品研究和市场调研 
+  官方schema名:  | 
+
+##### product_research
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | month:string | keyword:string | matchType:integer enum=[1,2,3] | excludeKeywords:string | includeBrands:string | excludeBrands:string | includeSellers:string | excludeSellers:string | nodeIdPaths:array | filterSub:string enum=[Y] | variation:string enum=[N,Y] | fulfillment:string | sellerNation:string | dimensionType:string | weightUnit:string enum=[g,lb,oz,kg] | badgeBS:string enum=[Y] | badgeAC:string enum=[Y] | badgeNR:string enum=[Y] | availableMonth:integer | page:integer | size:integer enum=[20,60,100] | order:object | minPrice:number | maxPrice:number | minRating:number | maxRating:number | minRatings:integer | maxRatings:integer | minRatingsCv:integer | maxRatingsCv:integer | minSellers:integer | maxSellers:integer | minProfit:number | maxProfit:number | minBsr:integer | maxBsr:integer | minBsrCv:integer | maxBsrCv:integer | minBsrCr:number | maxBsrCr:number | minUnits:integer | maxUnits:integer | minAmzUnit:integer | maxAmzUnit:integer | minRevenue:number | maxRevenue:number | minRevenueCr:number | maxRevenueCr:number | minUnitsCr:number | maxUnitsCr:number | minWeights:number | maxWeights:number | minVariations:integer | maxVariations:integer | minSubBsrRank:integer | maxSubBsrRank:integer | minFba:number | maxFba:number | minLqs:number | maxLqs:number | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, month, keyword, matchType, excludeKeywords, includeBrands, excludeBrands, includeSellers, excludeSellers, nodeIdPaths, filterSub, variation, fulfillment, sellerNation, dimensionType, weightUnit, badgeBS, badgeAC, badgeNR, availableMonth, page, size, order, minPrice, maxPrice, minRating, maxRating, minRatings, maxRatings, minRatingsCv, maxRatingsCv, minSellers, maxSellers, minProfit, maxProfit, minBsr, maxBsr, minBsrCv, maxBsrCv, minBsrCr, maxBsrCr, minUnits, maxUnits, minAmzUnit, maxAmzUnit, minRevenue, maxRevenue, minRevenueCr, maxRevenueCr, minUnitsCr, maxUnitsCr, minWeights, maxWeights, minVariations, maxVariations, minSubBsrRank, maxSubBsrRank, minFba, maxFba, minLqs, maxLqs, returnFields
+  官方required: request | 本地required: marketplace
+  官方工具描述: 高级商品筛选工具，用于在 Amazon 指定市场中， 根据关键词、品牌、卖家、类目、价格区间、销量、销售额、 BSR 排名及增长、评分、评论数、利润率、配送方式等多维条件， 精准筛选符合特定商业条件的商品列表。 适用于以下场景： - 爆品 / 潜力品筛选 - 蓝海机会挖掘 - 条件化选品（价格、利润、销量、竞争度） - 按规则扫描整个类目或关键词市场 
+  官方schema名:  | 
+
+##### asin_detail
+  官方参数: marketplace:string enum=[US,JP,UK,DE,FR,IT,ES,CA,IN,MX,BR,AU,AE] REQ | asin:string REQ | returnFields:string
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asin:string REQ | returnFields:array
+  官方required: marketplace,asin | 本地required: marketplace,asin
+  官方工具描述: 查询 Amazon 单个商品（ASIN）的完整详情信息。 返回商品的基础信息、类目结构、价格与促销、 评分与评论、卖家与配送方式、变体信息、 Listing 页面质量得分以及 Best Seller、Amazon's Choice 等运营标识。 适用于以下场景： - 单 ASIN 商品深度分析 - 竞品拆解与对比 - 商品进入可行性评估 - 商品详情页质量与风险判断 
+  官方schema名:  | 
+
+##### traffic_keyword
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asin:string REQ | keyword:string | page:integer | size:integer enum=[20,50,100] | month:string | badges:array | trafficKeywordTypes:array | conversionKeywordTypes:array | order:object | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, asin, keyword, page, size, month, badges, trafficKeywordTypes, conversionKeywordTypes, order, returnFields
+  官方required: request | 本地required: marketplace,asin
+  官方工具描述: 查询指定 ASIN 在 Amazon 指定市场下的搜索关键词表现数据， 支持近 30 天或指定历史月份， 返回 ASIN 实际获得曝光和流量的关键词列表， 包含搜索量、自然排名、广告排名、流量占比、转化表现及 PPC 竞价参考， 用于关键词挖掘、Listing 优化和广告投放分析。 
+  官方schema名:  | 
+
+##### asin_prediction
+  官方参数: marketplace:string enum=[US,JP,UK,DE,FR,IT,ES,CA,IN,MX,BR,AU,AE] REQ | asin:string REQ | returnFields:string
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asin:string REQ | returnFields:array
+  官方required: marketplace,asin | 本地required: marketplace,asin
+  官方工具描述: 查询指定 ASIN 在 Amazon 对应市场的商品基础信息及销量与销售额预测数据。 该接口返回 ASIN 近14个月的销量数据，并提供按日维度与月维度汇总的销量、销售额、价格及 BSR 等预测指标。 适用于以下场景： - ASIN 销量趋势分析与判断 - 商品增长性与生命周期判断 - 竞品销售表现对比分析 - 选品评估 
+  官方schema名:  | 
+
+##### keyword_research
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | keywords:string REQ | excludeKeywords:string | month:string | page:integer | size:integer | order:object | supplement:string enum=[N,Y] | minSearches:integer | maxSearches:integer | minSearchesCr:number | maxSearchesCr:number | minProducts:integer | maxProducts:integer | minPurchases:integer | maxPurchases:integer | minPurchaseRate:number | maxPurchaseRate:number | withYearlyGrowth:boolean | minSearchMonthCv:integer | maxSearchMonthCv:integer | minSearchMonthCr:number | maxSearchMonthCr:number | minSearchNearlyCv:integer | maxSearchNearlyCv:integer | minSearchNearlyCr:number | maxSearchNearlyCr:number | marketPeriod:string | minAvgPrice:number | maxAvgPrice:number | minRatings:integer | maxRatings:integer | minRating:number | maxRating:number | minBid:number | maxBid:number | minAraClickRate:number | maxAraClickRate:number | minGoodsValue:number | maxGoodsValue:number | minSupplyDemandRatio:number | maxSupplyDemandRatio:number | minWordCount:integer | maxWordCount:integer | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, keywords, excludeKeywords, month, page, size, order, supplement, minSearches, maxSearches, minSearchesCr, maxSearchesCr, minProducts, maxProducts, minPurchases, maxPurchases, minPurchaseRate, maxPurchaseRate, withYearlyGrowth, minSearchMonthCv, maxSearchMonthCv, minSearchMonthCr, maxSearchMonthCr, minSearchNearlyCv, maxSearchNearlyCv, minSearchNearlyCr, maxSearchNearlyCr, marketPeriod, minAvgPrice, maxAvgPrice, minRatings, maxRatings, minRating, maxRating, minBid, maxBid, minAraClickRate, maxAraClickRate, minGoodsValue, maxGoodsValue, minSupplyDemandRatio, maxSupplyDemandRatio, minWordCount, maxWordCount, returnFields
+  官方required: request | 本地required: marketplace,keywords
+  官方工具描述: 专业级 Amazon 关键词市场与选品分析工具。 本工具用于从真实卖家视角，综合评估某个关键词或关键词市场 是否具备进入价值、扩展潜力或投放价值。 工具基于以下核心维度进行分析： - 市场需求：月搜索量、购买量、搜索增长趋势 - 市场竞争：商品数量、供需比、头部垄断程度 - 转化能力：购买率、点击集中度、共享转化率 - 成本结构：平均售价、PPC 竞价区间 - 成熟度判断：市场周期、新兴或成熟细分市场 适合在以下场景调用： - 判断某个关键词是否值得进入或重点布局 - 筛选高需求 / 低竞争 / 高增长的潜力关键词 - 进行新品选品前的市场可行性验证 - 对比多个关键词，选择更优的投放或开发方向 返回结果应从「卖家决策角度」进行解读： - 搜索量高 + 供需比高：代表需求强且竞争相对可控 - 搜索增长率为正：代表市场处于上升期 - 购买率高：代表关键词具备真实成交能力 - PPC 竞价低 
+  官方schema名:  | 
+
+##### traffic_extend
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asinList:array REQ | historyDate:string | queryType:integer enum=[0,1,2] | page:integer | size:integer | order:object | amazonChoice:boolean | includeKeywords:array | excludeKeywords:array | minSearches:integer | maxSearches:integer | minSearchRank:integer | maxSearchRank:integer | minPurchases:integer | maxPurchases:integer | minPurchaseRate:number | maxPurchaseRate:number | minProducts:integer | maxProducts:integer | minSupplyDemandRatio:number | maxSupplyDemandRatio:number | minBid:number | maxBid:number | minAdProducts:integer | maxAdProducts:integer | minAvgPrice:number | maxAvgPrice:number | minWordCount:integer | maxWordCount:integer | minSPR:integer | maxSPR:integer | minTitleDensity:integer | maxTitleDensity:integer | minMonopolyClickRate:number | maxMonopolyClickRate:number | minTrafficPercentage:number | maxTrafficPercentage:number | minConversionRate:number | maxConversionRate:number | minCompetitors:integer | maxCompetitors:integer | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, asinList, historyDate, queryType, page, size, order, amazonChoice, includeKeywords, excludeKeywords, minSearches, maxSearches, minSearchRank, maxSearchRank, minPurchases, maxPurchases, minPurchaseRate, maxPurchaseRate, minProducts, maxProducts, minSupplyDemandRatio, maxSupplyDemandRatio, minBid, maxBid, minAdProducts, maxAdProducts, minAvgPrice, maxAvgPrice, minWordCount, maxWordCount, minSPR, maxSPR, minTitleDensity, maxTitleDensity, minMonopolyClickRate, maxMonopolyClickRate, minTrafficPercentage, maxTrafficPercentage, minConversionRate, maxConversionRate, minCompetitors, maxCompetitors, returnFields
+  官方required: request | 本地required: marketplace,asinList
+  官方工具描述: 用于在指定 Amazon 站点中，根据 ASIN、时间范围及多维筛选条件， 批量搜索并分析高价值关键词的工具。 该工具适用于： - 关键词拓展与筛选 - 广告投放关键词决策（PPC） - 市场需求与竞争强度评估 - 选品或Listing优化前的关键词调研 返回结果包含：搜索量、购买量、转化率、PPC竞价、供需比、 广告竞争度、点击集中度、关联ASIN等核心商业指标， 可直接用于“是否值得投放 / 是否值得进入”的判断。 
+  官方schema名:  | 
+
+##### bsr_prediction
+  官方参数: marketplace:string enum=[US,JP,UK,DE,FR,IT,ES,CA,IN,MX,BR,AU,AE] REQ | bsr:integer REQ | categoryId:string REQ | returnFields:string
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | categoryId:string REQ | bsr:integer REQ | returnFields:array
+  官方required: marketplace,bsr,categoryId | 本地required: marketplace,categoryId,bsr
+  官方工具描述: 根据 Amazon 指定市场下的一级类目节点和大类 BSR 排名， 预测该 BSR 在当前类目中的日销量和近 30 天销量， 并返回对应 BSR 区间的销量预测明细， 用于评估类目热度和市场容量。 
+  官方schema名:  | 
+
+##### google_trend
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | keyword:string | googleProp:string enum=[web,shoppingCart] | monthly:boolean | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, keyword, googleProp, monthly, returnFields
+  官方required: request | 本地required: marketplace
+  官方工具描述: 用于查询 Google Trends 中指定关键词在特定市场的搜索热度变化趋势。 该工具基于 Google 搜索行为（非 Amazon 站内）， 反映真实用户在搜索引擎层面的需求变化， 可用于验证某个关键词或产品概念是否处于： - 上升期 - 稳定期 - 衰退期 - 周期性波动 适合与 Amazon 关键词数据结合使用，用于： - 新品立项前的需求趋势验证 - 判断关键词是否为“短期热词”还是“长期需求” - 对比不同平台（Google vs Amazon）的需求变化节奏 
+  官方schema名:  | 
+
+##### keyword_conversion
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | keyword:string REQ | timeType:string enum=[WEEK,90D] | page:integer | size:integer enum=[20,50,100] | keywordBidMatchType:string enum=[phrase,exact,broad] | matchType:integer enum=[0,1] | includeKeywords:array | excludeKeywords:array | customAvgProductPrice:number | minSearches:integer | maxSearches:integer | minClicks:integer | maxClicks:integer | minPurchases:integer | maxPurchases:integer | minSearchConvRate:number | maxSearchConvRate:number | minClickConvRate:number | maxClickConvRate:number | minPpc:number | maxPpc:number | minCpa:number | maxCpa:number | minProductPrice:number | maxProductPrice:number | minAcos:number | maxAcos:number | minClickingRate:number | maxClickingRate:number | minConversionRate:number | maxConversionRate:number | minPhraseCount:integer | maxPhraseCount:integer | minBudget:number | maxBudget:number | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, keyword, timeType, page, size, keywordBidMatchType, matchType, includeKeywords, excludeKeywords, customAvgProductPrice, minSearches, maxSearches, minClicks, maxClicks, minPurchases, maxPurchases, minSearchConvRate, maxSearchConvRate, minClickConvRate, maxClickConvRate, minPpc, maxPpc, minCpa, maxCpa, minProductPrice, maxProductPrice, minAcos, maxAcos, minClickingRate, maxClickingRate, minConversionRate, maxConversionRate, minPhraseCount, maxPhraseCount, minBudget, maxBudget, returnFields
+  官方required: request | 本地required: marketplace,keyword
+  官方工具描述: 亚马逊关键词转化率分析，识别高转化搜索词
+  官方schema名:  | 
+
+##### aba_research_weekly
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | year:integer | month:integer | week:integer | departments:array | includeKeywords:string | excludeKeywords:string | exactFlag:boolean | page:integer | size:integer enum=[20,50,100] | order:object | searchModel:integer enum=[1,2,3,4,5,6] | rankGrowthValue:number | rankGrowthRate:number | minRankGrowthRate:number | maxRankGrowthRate:number | minSearchRank:integer | maxSearchRank:integer | minSearches:integer | maxSearches:integer | minMonopolyClickRate:number | maxMonopolyClickRate:number | minConversionRate:number | maxConversionRate:number | minWordCount:integer | maxWordCount:integer | minSPR:integer | maxSPR:integer | minTitleDensity:integer | maxTitleDensity:integer | minClicks:integer | maxClicks:integer | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, year, month, week, departments, includeKeywords, excludeKeywords, exactFlag, page, size, order, searchModel, rankGrowthValue, rankGrowthRate, minRankGrowthRate, maxRankGrowthRate, minSearchRank, maxSearchRank, minSearches, maxSearches, minMonopolyClickRate, maxMonopolyClickRate, minConversionRate, maxConversionRate, minWordCount, maxWordCount, minSPR, maxSPR, minTitleDensity, maxTitleDensity, minClicks, maxClicks, returnFields
+  官方required: request | 本地required: marketplace
+  官方工具描述: 用于在指定 Amazon 站点和时间点（按周）， 系统性发现【热门 / 异动 / 增长 / 潜力】关键词的分析工具。 该工具以“关键词趋势变化”为核心， 结合搜索排名变化、搜索量、点击、转化、PPC竞价、 以及头部ASIN与品牌集中度等指标， 帮助 AI 判断： - 当前市场有哪些正在上升或爆发的关键词 - 哪些关键词存在流量红利或增长机会 - 哪些关键词已被头部品牌高度垄断 - 是否适合新进入、广告投放或加大预算 适用场景： - 市场趋势监控 - 选品前的关键词机会发现 - 广告投放关键词挖掘（PPC） - 判断“增长中关键词 vs 已饱和关键词” 
+  官方schema名:  | 
+
+##### aba_research_monthly
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | date:string | departments:array | includeKeywords:string | excludeKeywords:string | exactFlag:boolean | page:integer | size:integer enum=[20,50,100] | order:object | searchModel:integer enum=[1,2,3,4,5,6] | minRankGrowthRate:number | maxRankGrowthRate:number | minSearchRank:integer | maxSearchRank:integer | minSearches:integer | maxSearches:integer | minMonopolyClickRate:number | maxMonopolyClickRate:number | minConversionRate:number | maxConversionRate:number | minWordCount:integer | maxWordCount:integer | minTitleDensity:integer | maxTitleDensity:integer | minImpressions:integer | maxImpressions:integer | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, date, departments, includeKeywords, excludeKeywords, exactFlag, page, size, order, searchModel, minRankGrowthRate, maxRankGrowthRate, minSearchRank, maxSearchRank, minSearches, maxSearches, minMonopolyClickRate, maxMonopolyClickRate, minConversionRate, maxConversionRate, minWordCount, maxWordCount, minTitleDensity, maxTitleDensity, minImpressions, maxImpressions, returnFields
+  官方required: request | 本地required: marketplace
+  官方工具描述: 用于在指定 Amazon 站点和时间点（按月）， 系统性发现【热门 / 异动 / 增长 / 潜力】关键词的分析工具。 该工具以“关键词趋势变化”为核心， 结合搜索排名变化、搜索量、点击、转化、PPC竞价、 以及头部ASIN与品牌集中度等指标， 帮助 AI 判断： - 当前市场有哪些正在上升或爆发的关键词 - 哪些关键词存在流量红利或增长机会 - 哪些关键词已被头部品牌高度垄断 - 是否适合新进入、广告投放或加大预算 适用场景： - 市场趋势监控 - 选品前的关键词机会发现 - 广告投放关键词挖掘（PPC） - 判断“增长中关键词 vs 已饱和关键词” 
+  官方schema名:  | 
+
+##### traffic_keyword_stat
+  官方参数: marketplace:string enum=[US,JP,UK,DE,FR,IT,ES,CA,IN,MX,BR,AU,AE] REQ | asin:string REQ | month:string | returnFields:string
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asin:string REQ | month:string | returnFields:array
+  官方required: marketplace,asin | 本地required: marketplace,asin
+  官方工具描述: Amazon ASIN 流量关键词结构【概览统计】工具。 用于快速分析某个 ASIN 当前整体的流量关键词规模， 以及这些流量主要来源于： - 自然搜索 - Amazon 官方推荐体系 - 各类广告（SP / 品牌广告 / 视频广告 / HR） 与“流量词明细接口”不同， 本工具只返回【统计级数据】，不返回具体关键词列表， 适合作为 AI 决策的第一步判断入口。 核心用途： - 判断 ASIN 是否高度依赖广告获取流量 - 评估自然流量与广告流量的结构比例 - 快速对比多个 ASIN 的流量健康度 - 作为是否深入分析（调用明细接口）的前置筛选条件 典型可回答的问题： - 这个 ASIN 的流量主要靠自然搜索还是广告？ - 广告流量词是否明显高于自然流量词？ - Amazon 官方推荐体系（AC / ER / 4星）是否友好？ - 该 ASIN 是否存在“广告堆量型”的风险？ 
+  官方schema名:  | 
+
+##### traffic_listing_stat
+  官方参数: marketplace:string enum=[US,JP,UK,DE,FR,IT,ES,CA,IN,MX,BR,AU,AE] REQ | asin:string REQ | month:string | returnFields:string
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asinList:array REQ | returnFields:array
+  官方有本地无: asin, month
+  本地有官方无: asinList
+  官方required: marketplace,asin | 本地required: marketplace,asinList
+  官方工具描述: Amazon ASIN 流量来源结构分析工具（免费 / 付费 + 关联类型分布）。 本工具用于统计某个 ASIN 当前所获得的全部流量来源， 并从两个核心维度进行拆解： 1. 免费流量 vs 付费流量的整体占比 2. 不同流量“关联类型”（relation）的数量分布 这是一个【结构型统计接口】，不返回具体关键词或 ASIN 明细， 只用于判断“流量是如何被获取的”。 核心用途： - 判断 ASIN 是否高度依赖广告或付费引流 - 分析免费流量（自然、关联、推荐）的贡献程度 - 快速识别 ASIN 的主要流量获取模式 - 辅助评估投放策略是否健康、是否具备自然增长能力 典型可回答的问题： - 这个 ASIN 的流量主要来自免费还是付费？ - 广告投放是否是当前的主要流量来源？ - 不同关联流量类型各占多少？ - 是否存在“流量结构失衡”的风险？ 
+  官方schema名:  | 
+
+##### traffic_listing
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asinList:array REQ | relations:array | variations:boolean | page:integer | size:integer enum=[20,50,100] | order:object | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, asinList, relations, variations, page, size, order, returnFields
+  官方required: request | 本地required: marketplace,asinList
+  官方工具描述: 查询指定 ASIN 在 Amazon 站内的关联商品列表，用于分析竞品结构与关联关系。 该工具基于 Amazon 站内关系模型，返回与目标 ASIN 存在 关联、竞品或同类关系的商品数据，包括销量、BSR、价格、 利润率、评分、卖家结构、变体信息等核心指标。 适用于以下场景： - 查找目标 ASIN 的直接竞品与强关联商品 - 分析某个市场的头部商品结构与集中度 - 判断新品进入时将面对的主要对手 - 分析变体数量、卖家数量、品牌垄断程度 
+  官方schema名:  | 
+
+##### market_research
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | month:string | nodeIdPath:string | departmentKeyword:string | topNum:integer | newProduct:integer enum=[1,3,6,12] | sellerLocation:string | page:integer | size:integer enum=[20,50,100] | order:object | minAvgUnits:number | maxAvgUnits:number | minAvgRevenue:number | maxAvgRevenue:number | minAvgRatings:number | maxAvgRatings:number | minAvgRating:number | maxAvgRating:number | minAvgBsr:number | maxAvgBsr:number | minAvgPrice:number | maxAvgPrice:number | minWeight:number | maxWeight:number | minVolume:number | maxVolume:number | minAvgProfit:number | maxAvgProfit:number | minTopAvgUnits:number | maxTopAvgUnits:number | minTopAvgRevenue:number | maxTopAvgRevenue:number | minTopAvgBsr:number | maxTopAvgBsr:number | minGoodsCount:integer | maxGoodsCount:integer | minBrands:integer | maxBrands:integer | minSellers:integer | maxSellers:integer | minAvgSellers:number | maxAvgSellers:number | minGoodsCrn:number | maxGoodsCrn:number | minBrandCrn:number | maxBrandCrn:number | minSellerCrn:number | maxSellerCrn:number | minEbcProportion:number | maxEbcProportion:number | minFbaProportion:number | maxFbaProportion:number | minFbmProportion:number | maxFbmProportion:number | minAmazonSelfProportion:number | maxAmazonSelfProportion:number | minNewProportion:number | maxNewProportion:number | minNewCount:integer | maxNewCount:integer | minNewAvgRatings:number | maxNewAvgRatings:number | minNewAvgPrice:number | maxNewAvgPrice:number | minNewAvgRating:number | maxNewAvgRating:number | minNewAvgUnits:number | maxNewAvgUnits:number | minNewAvgRevenue:number | maxNewAvgRevenue:number | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, month, nodeIdPath, departmentKeyword, topNum, newProduct, sellerLocation, page, size, order, minAvgUnits, maxAvgUnits, minAvgRevenue, maxAvgRevenue, minAvgRatings, maxAvgRatings, minAvgRating, maxAvgRating, minAvgBsr, maxAvgBsr, minAvgPrice, maxAvgPrice, minWeight, maxWeight, minVolume, maxVolume, minAvgProfit, maxAvgProfit, minTopAvgUnits, maxTopAvgUnits, minTopAvgRevenue, maxTopAvgRevenue, minTopAvgBsr, maxTopAvgBsr, minGoodsCount, maxGoodsCount, minBrands, maxBrands, minSellers, maxSellers, minAvgSellers, maxAvgSellers, minGoodsCrn, maxGoodsCrn, minBrandCrn, maxBrandCrn, minSellerCrn, maxSellerCrn, minEbcProportion, maxEbcProportion, minFbaProportion, maxFbaProportion, minFbmProportion, maxFbmProportion, minAmazonSelfProportion, maxAmazonSelfProportion, minNewProportion, maxNewProportion, minNewCount, maxNewCount, minNewAvgRatings, maxNewAvgRatings, minNewAvgPrice, maxNewAvgPrice, minNewAvgRating, maxNewAvgRating, minNewAvgUnits, maxNewAvgUnits, minNewAvgRevenue, maxNewAvgRevenue, returnFields
+  官方required: request | 本地required: marketplace
+  官方工具描述: Amazon 类目市场分析工具，用于从“类目维度”评估市场规模、 竞争强度、盈利空间以及新品进入可行性。 该工具回答的核心问题包括： - 这个类目整体有多大？是否有足够销量与销售额？ - 类目是否被头部商品或头部品牌高度垄断？ - 平均价格、利润率是否具备盈利空间？ - FBA / FBM / Amazon 自营结构是否健康？ - 新品在该类目中是否仍有成长机会？ 适用于以下场景： - 选品前的类目筛选与市场可行性判断 - 新品是否适合进入该类目 - 类目竞争激烈程度评估 - 对比多个类目，寻找更优的切入市场 
+  官方schema名:  | 
+
+##### product_node
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | nodeIdPath:string | keyword:string | month:string | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, nodeIdPath, keyword, month, returnFields
+  官方required: request | 本地required: marketplace
+  官方工具描述: 查询 Amazon 产品类目信息的工具。 支持通过类目节点路径、类目名称、关键词或节点 ID 搜索类目， 并返回类目的层级路径、名称以及该类目下的商品数量。 适用于以下场景： - 根据关键词查找对应的 Amazon 类目 - 获取类目的完整层级结构 - 选品前评估类目规模（商品数量） - 为后续商品搜索或筛选提供类目参数 
+  官方schema名:  | 
+
+##### asin_sales_trend
+  官方参数: marketplace:string enum=[US,JP,UK,DE,FR,IT,ES,CA,IN,MX,BR,AU,AE] REQ | asin:string REQ | returnFields:string
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | asin:string REQ | returnFields:array
+  官方required: marketplace,asin | 本地required: marketplace,asin
+  官方工具描述: 查询指定 ASIN 的月度销售趋势数据 包含 ASIN 详细信息(返回商品的基础信息、类目结构、价格与促销、评分与评论、卖家与配送方式、变体信息、Listing 页面质量得分以及 Best Seller、Amazon's Choice 等运营标识) 以及父体和子体的销量、销售额、历史价格、平均价格等历史趋势指标 
+  官方schema名:  | 
+
+##### keyword_miner
+  官方参数: request:object REQ
+  本地参数: marketplace:string enum=[US,CA,MX,UK,DE,FR,IT,ES,JP,IN] REQ | keywordList:array REQ | historyDate:string | page:integer | size:integer enum=[20,50,100] | order:object | filterRootWord:integer enum=[0,1] | matchType:integer enum=[0,1] | keywordBidMatchType:string enum=[phrase,exact,broad] | amazonChoice:boolean | includeKeywords:array | excludeKeywords:array | minSearch:integer | maxSearch:integer | minPurchases:integer | maxPurchases:integer | minPurchasesRate:number | maxPurchasesRate:number | minSPR:integer | maxSPR:integer | minRelevancy:number | maxRelevancy:number | minSearchRank:integer | maxSearchRank:integer | minProducts:integer | maxProducts:integer | minSupplyDemandRatio:number | maxSupplyDemandRatio:number | minAdProducts:integer | maxAdProducts:integer | minMonopolyClickRate:number | maxMonopolyClickRate:number | minBid:number | maxBid:number | minWordCount:integer | maxWordCount:integer | minPrice:number | maxPrice:number | minRatings:integer | maxRatings:integer | minRating:number | maxRating:number | returnFields:array
+  官方有本地无: request
+  本地有官方无: marketplace, keywordList, historyDate, page, size, order, filterRootWord, matchType, keywordBidMatchType, amazonChoice, includeKeywords, excludeKeywords, minSearch, maxSearch, minPurchases, maxPurchases, minPurchasesRate, maxPurchasesRate, minSPR, maxSPR, minRelevancy, maxRelevancy, minSearchRank, maxSearchRank, minProducts, maxProducts, minSupplyDemandRatio, maxSupplyDemandRatio, minAdProducts, maxAdProducts, minMonopolyClickRate, maxMonopolyClickRate, minBid, maxBid, minWordCount, maxWordCount, minPrice, maxPrice, minRatings, maxRatings, minRating, maxRating, returnFields
+  官方required: request | 本地required: marketplace,keywordList
+  官方工具描述: 【READ‑ONLY, NO‑DESTRUCTIVE】本工具仅查询统计数据，不会修改、新增、删除任何业务数据。 Amazon 高级关键词流量与竞争分析工具（卖家决策级）。 本工具用于从真实 Amazon 卖家视角，系统性评估某个关键词 或一组关键词是否具备以下价值： - 是否存在真实且稳定的搜索与购买需求 - 是否存在可进入空间，而非被头部卖家或广告完全垄断 - 是否适合作为自然流量词、广告投放词或新品切入词 工具综合分析以下核心维度： 1. 需求强度：搜索量、购买量、购买率 2. 竞争强度：商品数、广告竞品数、标题密度、搜索排名 3. 垄断程度：点击集中度（monopolyClickRate）、SPR 4. 成本结构：PPC 竞价区间、平均售价 5. 相关性质量：关键词与市场的相关度、词长、类目匹配 6. 商业信号：是否为 Amazon Choice 关键词 适合在以下场景中调用： - 
+  官方schema名:  | 

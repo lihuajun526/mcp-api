@@ -1,8 +1,10 @@
-// marketId → marketplace 字符串映射
-const MARKET_ID_TO_MARKETPLACE = {
-  1: 'US', 2: 'UK', 3: 'DE', 4: 'FR', 5: 'JP',
-  6: 'CA', 7: 'IT', 8: 'ES', 9: 'IN', 10: 'AU', 11: 'MX'
-};
+const { resolveOrder, resolvePaging, MARKET_ID_MAP } = require('../utils/validation');
+
+// marketId → marketplace 字符串映射（由 utils/validation 的权威映射反推，避免多处口径不一致）
+const MARKET_ID_TO_MARKETPLACE = Object.entries(MARKET_ID_MAP).reduce((acc, [code, id]) => {
+  acc[id] = code;
+  return acc;
+}, {});
 
 function toInt(value) {
   if (value == null || value === '') return null;
@@ -70,15 +72,17 @@ function transformItem(raw, marketplace) {
  * @param {object} request   - 原始请求参数
  */
 function transformKeywordMinerResponse(raw, request) {
+  const paging = resolvePaging(request, 50);
+  const order = resolveOrder(request, '');
   const empty = {
     guestId: null,
     pages: 0,
-    page: request.page || 1,
-    size: request.size || 50,
+    page: paging.page,
+    size: paging.size,
     total: 0,
     took: 0,
     url: null,
-    order: { field: request.orderField || '', desc: request.orderDesc !== false },
+    order,
     items: [],
     terminal: null,
     hasNextPage: null,
@@ -93,8 +97,8 @@ function transformKeywordMinerResponse(raw, request) {
     : [];
 
   const total = toInt(raw.total);
-  const page = toInt(raw.page) || request.page || 1;
-  const size = toInt(raw.size) || request.size || 50;
+  const page = toInt(raw.page) || paging.page;
+  const size = toInt(raw.size) || paging.size;
   const pages = total && size ? Math.ceil(total / size) : 0;
 
   return {
@@ -105,7 +109,7 @@ function transformKeywordMinerResponse(raw, request) {
     total,
     took: 0,
     url: null,
-    order: { field: request.orderField || '', desc: request.orderDesc !== false },
+    order,
     items,
     terminal: null,
     hasNextPage: null,

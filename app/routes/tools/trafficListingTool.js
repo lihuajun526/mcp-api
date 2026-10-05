@@ -1,7 +1,7 @@
 const { queryTrafficListing } = require('../../services/queries/trafficListingQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { BusinessError } = require('../../errors');
-const { MARKET_ID_MAP } = require('../../utils/validation');
+const { resolveToolMarketId } = require('../../utils/validation');
 
 // 分页大小取值枚举项为 20/50/100，默认 50
 const SIZE_ENUM = [20, 50, 100];
@@ -84,13 +84,13 @@ module.exports = {
       throw new BusinessError('单次查询 ASIN 数量不能超过 20 个', 400);
     }
 
-    const marketplace = String(args.marketplace);
+    const marketplace = String(args.marketplace).trim().toUpperCase();
     const orderField = resolveOrderField(args.order && args.order.field !== undefined ? args.order.field : args.orderField);
     const orderDesc = args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false);
 
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
-      market: MARKET_ID_MAP[marketplace] || 1,
+      market: resolveToolMarketId('traffic_listing', marketplace),
       pageNum: (args.page && !isNaN(Number(args.page))) ? Number(args.page) : 1,
       pageSize: resolveSize(args.size),
       desc: orderDesc,

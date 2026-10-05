@@ -1,6 +1,6 @@
 const { queryKeywordMiner } = require('../../services/queries/keywordMinerQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { MARKET_ID_MAP } = require('../../utils/validation');
+const { resolveToolMarketId } = require('../../utils/validation');
 
 // 对外排序字段名 → 上游 orderBy 整数编码
 const ORDER_FIELD_MAP = {
@@ -85,19 +85,21 @@ module.exports = {
     const orderField = args.order && args.order.field;
     const orderDesc = args.order && args.order.desc;
 
-    const marketplace = String(args.marketplace);
+    const marketplace = String(args.marketplace).trim().toUpperCase();
     const page = Math.max(Number(args.page) || 1, 1);
     const size = resolvePageSize(args.size);
 
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       keywordList: keywordList.map(String),
-      market: MARKET_ID_MAP[marketplace] || 1,
+      market: resolveToolMarketId('keyword_miner', marketplace),
       pageNum: page,
       pageSize: size,
       historyDate: args.historyDate ? String(args.historyDate) : '',
       orderBy: resolveOrderBy(orderField),
       desc: orderDesc !== false,
+      // 供 transformer 回显排序信息（上游 payload 会剔除该字段）
+      order: { field: orderField || 'relevancy', desc: orderDesc !== false },
       filterRootWord: args.filterRootWord != null ? Number(args.filterRootWord) : 0,
       matchType: args.matchType != null ? Number(args.matchType) : 1, // 0=词组匹配，1=广泛匹配（默认）
       amazonChoice: args.amazonChoice === true || args.amazonChoice === 'true',

@@ -1,9 +1,9 @@
 const { queryProductResearch } = require('../../services/queries/productResearchQuery');
 const { buildSuccess } = require('../../toolResponse');
 const {
-  assertMarketplace,
+  assertToolMarketplace,
   assertMonth,
-  resolvePageSize,
+  resolveToolPageSize,
   assertMatchType,
   toSymbolFlag
 } = require('../../utils/validation');
@@ -35,9 +35,9 @@ module.exports = {
       throw err;
     }
 
-    const marketplace = assertMarketplace(args.marketplace);
+    const marketplace = assertToolMarketplace('product_research', args.marketplace);
     const month = args.month != null && args.month !== '' ? assertMonth(args.month) : null;
-    const size = resolvePageSize(args.size);
+    const size = resolveToolPageSize('product_research', args.size);
     const matchType = assertMatchType(args.matchType);
     // 官方 filterSub 为 String（Y=是），项目 schema 为 boolean，两者都兼容
     const filterSub = args.filterSub === true || String(args.filterSub).toUpperCase() === 'Y';
