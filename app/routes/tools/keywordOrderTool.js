@@ -1,12 +1,8 @@
 const { queryKeywordOrder } = require('../../services/queries/keywordOrderQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { BusinessError } = require('../../errors');
-
-// marketplace 公开代码 → station 代码 (出单词反查页面使用公开站点代码)
-const MARKET_STATION_MAP = {
-  US: 'US', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU'
-};
+const { toStationCode } = require('../../utils/marketplace');
+const { resolveToolPageSize } = require('../../utils/validation');
 
 module.exports = {
   name: 'keyword_order',
@@ -35,9 +31,11 @@ module.exports = {
     const orderField = (args.order && args.order.field) || args.orderField;
     const orderDesc = args.order && args.order.desc != null ? args.order.desc : args.orderDesc;
 
-    const station = MARKET_STATION_MAP[String(args.marketplace)] || String(args.marketplace);
+    // marketplace 公开代码 → station 代码（出单词反查页面使用公开站点代码）
+    const station = toStationCode(args.marketplace);
     const reverseType = String(args.reverseType);
     const date = args.date ? String(args.date) : '';
+    const size = resolveToolPageSize('keyword_order', args.size);
 
     // 根据 reverseType 和 date 构造表名
     let table = '';
@@ -65,7 +63,8 @@ module.exports = {
       loadVariations: variationStr === 'N' ? 'true' : 'false',
       reverseType,
       textareaValue: asins.join(','),
-      page: Math.max(Number(args.page) || 1, 1)
+      page: Math.max(Number(args.page) || 1, 1),
+      size
     };
 
     const data = await queryKeywordOrder(user, params);

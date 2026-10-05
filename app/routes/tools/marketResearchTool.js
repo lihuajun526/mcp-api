@@ -1,6 +1,6 @@
 const { queryMarketResearch } = require('../../services/queries/marketResearchQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertMonth, resolveToolMarketId } = require('../../utils/validation');
+const { assertMonth, resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
 
 // 官方参数名 → 上游表单参数名（名称不同的才需映射，其余同名直接透传）
 const FIELD_ALIAS = {
@@ -23,10 +23,6 @@ const FIELD_ALIAS = {
   minNewAvgRatings: 'minNewAvgReviews', maxNewAvgRatings: 'maxNewAvgReviews',
   minNewAvgUnits: 'minNewAvgSales', maxNewAvgUnits: 'maxNewAvgSales'
 };
-
-// 每页条数仅支持 20/50/100，默认 50
-const PAGE_SIZES = [20, 50, 100];
-const DEFAULT_PAGE_SIZE = 50;
 
 // 官方维度筛选参数（存在即透传，参数名与官方一致）
 const FILTER_PARAMS = [
@@ -77,13 +73,7 @@ module.exports = {
     const month = args.month != null && args.month !== '' ? assertMonth(args.month) : '';
     const orderField = args.order && args.order.field ? String(args.order.field) : (args.orderField || 'total_sales');
     const orderDesc = args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false);
-
-    const size = args.size == null || args.size === '' ? DEFAULT_PAGE_SIZE : Number(args.size);
-    if (!PAGE_SIZES.includes(size)) {
-      const err = new Error(`size must be one of: ${PAGE_SIZES.join(', ')}`);
-      err.code = -32602;
-      throw err;
-    }
+    const size = resolveToolPageSize('market_research', args.size);
 
     const params = {
       marketplace, // 供 transformer 使用，不发往上游

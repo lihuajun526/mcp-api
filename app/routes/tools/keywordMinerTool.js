@@ -1,6 +1,6 @@
 const { queryKeywordMiner } = require('../../services/queries/keywordMinerQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { resolveToolMarketId } = require('../../utils/validation');
+const { resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
 
 // 对外排序字段名 → 上游 orderBy 整数编码
 const ORDER_FIELD_MAP = {
@@ -29,22 +29,8 @@ function resolveOrderBy(orderField) {
   return ORDER_FIELD_MAP[orderField] || ORDER_FIELD_MAP.relevancy;
 }
 
-// 分页大小仅支持 20/50/100，默认 50
-const PAGE_SIZES = [20, 50, 100];
-const DEFAULT_PAGE_SIZE = 50;
 // keywordList 必填，最多 200 个关键词
 const MAX_KEYWORD_LIST_LENGTH = 200;
-
-function resolvePageSize(value) {
-  if (value == null || value === '') return DEFAULT_PAGE_SIZE;
-  const size = Number(value);
-  if (!PAGE_SIZES.includes(size)) {
-    const err = new Error(`size must be one of: ${PAGE_SIZES.join(', ')}`);
-    err.code = -32602;
-    throw err;
-  }
-  return size;
-}
 
 const RANGE_FIELDS = [
   'minSearch', 'maxSearch',
@@ -87,7 +73,7 @@ module.exports = {
 
     const marketplace = String(args.marketplace).trim().toUpperCase();
     const page = Math.max(Number(args.page) || 1, 1);
-    const size = resolvePageSize(args.size);
+    const size = resolveToolPageSize('keyword_miner', args.size);
 
     const params = {
       marketplace, // 供 transformer 使用，不发往上游

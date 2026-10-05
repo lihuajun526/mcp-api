@@ -4,92 +4,17 @@
  * MCP 工具入参公共校验/归一化工具。
  * 校验失败统一抛出带 JSON-RPC 错误码 -32602 的 Error，
  * 由 mcpProtocolRoute 转换为标准 JSON-RPC error 响应。
+ *
+ * 说明：站点（marketplace）相关映射与校验已全部收敛到 app/utils/marketplace.js，
+ * 本文件仅保留站点以外的参数校验（月份/分页/排序/匹配方式等）。
+ * 站点工具函数在此处 re-export，保持既有 `require('../../utils/validation')` 调用不变。
  */
 
-// 支持的亚马逊站点编码
-const MARKETPLACES = ['US', 'JP', 'UK', 'DE', 'FR', 'IT', 'ES', 'CA', 'IN', 'MX', 'AU', 'AE', 'BR', 'SA'];
-
-// marketplace 公开代码 → marketId (整数)
-// 取值来源：卖家精灵前端站点表（code → marketId），与上游 market/marketId 参数一致。
-// 注意：并非所有上游接口都支持全部站点，各接口可用站点见 TOOL_MARKETPLACES。
-const MARKET_ID_MAP = {
-  US: 1, DE: 4, UK: 3, JP: 6, FR: 5, IT: 35691, ES: 44551,
-  CA: 7, IN: 44571, MX: 771770, BR: 15, AU: 111172, AE: 9, SA: 13
-};
-
-// 支持 marketId 查询的站点（= MARKET_ID_MAP 的键）
-const MARKET_ID_SUPPORTED = Object.keys(MARKET_ID_MAP);
+const marketplace = require('./marketplace');
 
 // ---------------------------------------------------------------------------
-// 站点分组：按上游各接口实际支持的站点集合划分
+// 分页
 // ---------------------------------------------------------------------------
-const G_CORE_10 = ['US', 'JP', 'UK', 'DE', 'FR', 'IT', 'ES', 'CA', 'IN', 'MX'];
-const G_CORE_14 = [...G_CORE_10, 'BR', 'AU', 'SA', 'AE'];
-const G_CORE_13 = [...G_CORE_10, 'BR', 'AU', 'AE'];
-const G_CORE_12 = [...G_CORE_10, 'BR', 'AU'];
-const G_CORE_9 = ['US', 'JP', 'UK', 'DE', 'FR', 'IT', 'ES', 'CA', 'IN'];
-
-/**
- * 每个工具支持的 marketplace 枚举（权威口径）。
- * 与 tools.json 中对应工具的 marketplace.enum 必须保持一致。
- */
-const TOOL_MARKETPLACES = {
-  // 10 站
-  asin_detail: G_CORE_10,
-  asin_competitor: G_CORE_10,
-  asin_prediction: G_CORE_10,
-  asin_sales_trend: G_CORE_10,
-  bsr_prediction: G_CORE_10,
-  competitor_lookup: G_CORE_10,
-  product_research: G_CORE_10,
-  product_node: G_CORE_10,
-  market_research: G_CORE_10,
-  // 14 站
-  keyword_research: G_CORE_14,
-  first_category: G_CORE_14,
-  aba_research_weekly: G_CORE_14,
-  aba_research_monthly: G_CORE_14,
-  // 13 站
-  keyword_miner: G_CORE_13,
-  google_trend: G_CORE_13,
-  traffic_keyword: G_CORE_13,
-  traffic_keyword_stat: G_CORE_13,
-  traffic_extend: G_CORE_13,
-  // 12 站
-  traffic_listing: G_CORE_12,
-  traffic_listing_stat: G_CORE_12,
-  // 9 站
-  keyword_conversion: G_CORE_9
-};
-
-/** 取某工具支持的站点列表；未知工具回退为公共 14 站。 */
-function getToolMarketplaces(toolName) {
-  return TOOL_MARKETPLACES[toolName] || MARKETPLACES;
-}
-
-/**
- * 归一化并校验某工具的 marketplace，返回大写站点编码。
- * 站点不在该工具支持列表内时抛 -32602。
- */
-function assertToolMarketplace(toolName, value) {
-  const code = String(value == null ? '' : value).trim().toUpperCase();
-  const allowed = getToolMarketplaces(toolName);
-  if (!allowed.includes(code)) {
-    throw paramError(`marketplace must be one of: ${allowed.join(', ')}`);
-  }
-  return code;
-}
-
-/** 某工具的 marketplace → 上游 marketId（整数）。 */
-function resolveToolMarketId(toolName, value) {
-  const code = assertToolMarketplace(toolName, value);
-  return MARKET_ID_MAP[code];
-}
-
-/** 某工具的 marketplace → 上游 station/market 代码字符串（US→COM 等由调用方决定）。 */
-function resolveToolMarketplace(toolName, value) {
-  return assertToolMarketplace(toolName, value);
-}
 
 // 分页每页条数：官方口径「默认 50，最大 100」（多数工具）
 const PAGE_SIZES = [20, 50, 100];
@@ -119,17 +44,6 @@ function paramError(message) {
 
 function isBlank(value) {
   return value === undefined || value === null || String(value).trim() === '';
-}
-
-/**
- * 归一化并校验 marketplace，返回大写站点编码。
- */
-function assertMarketplace(value) {
-  const marketplace = String(value == null ? '' : value).trim().toUpperCase();
-  if (!MARKETPLACES.includes(marketplace)) {
-    throw paramError(`marketplace must be one of: ${MARKETPLACES.join(', ')}`);
-  }
-  return marketplace;
 }
 
 /**
@@ -170,20 +84,6 @@ function resolveToolPageSize(toolName, value) {
     throw paramError(`size must be one of: ${conf.sizes.join(', ')}`);
   }
   return size;
-}
-
-/**
- * 解析 marketId（整数）。站点不在支持列表时显式报错，
- * 禁止再退化成 `|| 1`（会把 AU/AE/BR/SA 静默当成美国站返回错误数据）。
- */
-function requireMarketId(marketplace) {
-  const code = String(marketplace == null ? '' : marketplace).trim().toUpperCase();
-  if (!Object.prototype.hasOwnProperty.call(MARKET_ID_MAP, code)) {
-    throw paramError(
-      `marketplace ${code || '(empty)'} 不支持该接口的按站点查询，仅支持: ${MARKET_ID_SUPPORTED.join(', ')}`
-    );
-  }
-  return MARKET_ID_MAP[code];
 }
 
 /**
@@ -256,28 +156,36 @@ function toStringArray(value) {
 }
 
 module.exports = {
-  MARKETPLACES,
-  MARKET_ID_MAP,
-  MARKET_ID_SUPPORTED,
-  TOOL_MARKETPLACES,
+  // 分页
   PAGE_SIZES,
   DEFAULT_PAGE_SIZE,
   PAGE_SIZES_60,
   DEFAULT_PAGE_SIZE_60,
   TOOL_PAGE_SIZES,
   MATCH_TYPES,
-  assertMarketplace,
-  assertMonth,
   resolvePageSize,
   resolveToolPageSize,
-  requireMarketId,
-  getToolMarketplaces,
-  assertToolMarketplace,
-  resolveToolMarketId,
-  resolveToolMarketplace,
+  // 通用
+  assertMonth,
   assertMatchType,
   toSymbolFlag,
   resolveOrder,
   resolvePaging,
-  toStringArray
+  toStringArray,
+  // 站点（转发 marketplace.js，保持既有调用路径不变）
+  MARKETPLACES: marketplace.MARKETPLACES,
+  MARKET_ID_MAP: marketplace.MARKET_ID_MAP,
+  MARKET_ID_TO_MARKETPLACE: marketplace.MARKET_ID_TO_MARKETPLACE,
+  MARKET_ID_SUPPORTED: marketplace.MARKET_ID_SUPPORTED,
+  MARKET_CODE_MAP: marketplace.MARKET_CODE_MAP,
+  MARKET_STATION_MAP: marketplace.MARKET_STATION_MAP,
+  TOOL_MARKETPLACES: marketplace.TOOL_MARKETPLACES,
+  getToolMarketplaces: marketplace.getToolMarketplaces,
+  assertToolMarketplace: marketplace.assertToolMarketplace,
+  resolveToolMarketId: marketplace.resolveToolMarketId,
+  resolveToolMarketplace: marketplace.resolveToolMarketplace,
+  assertMarketplace: marketplace.assertMarketplace,
+  requireMarketId: marketplace.requireMarketId,
+  toMarketCode: marketplace.toMarketCode,
+  toStationCode: marketplace.toStationCode
 };

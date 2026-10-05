@@ -1,13 +1,7 @@
 const { queryTrafficKeyword } = require('../../services/queries/trafficKeywordQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertMonth, assertToolMarketplace } = require('../../utils/validation');
-
-// 将 marketplace 公开代码（US/UK/DE 等）映射到 sellersprite 站点代码（COM/UK/DE 等）
-const MARKET_CODE_MAP = {
-  US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN',
-  AU: 'AU', BR: 'BR', AE: 'AE'
-};
+const { assertToolMarketplace, toMarketCode } = require('../../utils/marketplace');
+const { assertMonth, resolveToolPageSize } = require('../../utils/validation');
 
 // 官方 MCP 排序字段枚举（表2.3 流量词列表排序字段）→ 上游 order 整数
 const ORDER_FIELD_MAP = {
@@ -34,10 +28,6 @@ const BADGES = [
   'NATURAL_SEARCHING', 'AMAZON_CHOICE', 'EDITORIAL_RECOMMENDATIONS', 'FOUR_STAR',
   'SPONSOR_BRAND', 'SPONSOR_VIDEO', 'HIGHLY_RATED', 'ADS'
 ];
-
-// 分页大小仅支持 20/50/100，默认 50（注意事项 4）
-const PAGE_SIZES = [20, 50, 100];
-const DEFAULT_PAGE_SIZE = 50;
 
 function paramError(message) {
   const err = new Error(message);
@@ -66,15 +56,6 @@ function resolveOrderDesc(order) {
     return order.desc === true || order.desc === 'true';
   }
   return false;
-}
-
-function resolvePageSize(value) {
-  if (value === null || value === undefined || value === '') return DEFAULT_PAGE_SIZE;
-  const size = Number(value);
-  if (!PAGE_SIZES.includes(size)) {
-    throw paramError(`size must be one of: ${PAGE_SIZES.join(', ')}`);
-  }
-  return size;
 }
 
 // 校验数组型枚举参数；未传或空数组返回 []
@@ -106,8 +87,9 @@ module.exports = {
     }
 
     const marketplace = assertToolMarketplace('traffic_keyword', args.marketplace);
-    const market = MARKET_CODE_MAP[marketplace] || marketplace;
-    const size = resolvePageSize(args.size);
+    // 将 marketplace 公开代码（US/UK/DE 等）映射到 sellersprite 站点代码（COM/UK/DE 等）
+    const market = toMarketCode(marketplace);
+    const size = resolveToolPageSize('traffic_keyword', args.size);
     const page = Math.max(Number(args.page) || 1, 1);
     const skip = (page - 1) * size;
 

@@ -138,7 +138,7 @@ function parseTotal($) {
  * @param {object} request - 原始请求参数
  */
 function transformKeywordOrderResponse(html, request) {
-  const size = 50;
+  const size = Number(request.size) || 50;
   const page = Math.max(Number(request.page) || 1, 1);
 
   const empty = {

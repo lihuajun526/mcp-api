@@ -1,11 +1,7 @@
 const { queryTrafficListing } = require('../../services/queries/trafficListingQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { BusinessError } = require('../../errors');
-const { resolveToolMarketId } = require('../../utils/validation');
-
-// 分页大小取值枚举项为 20/50/100，默认 50
-const SIZE_ENUM = [20, 50, 100];
-const DEFAULT_SIZE = 50;
+const { resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
 
 // 排序字段枚举：relationCount（关联Asin数，默认）、createdTime（引流时间）
 const ORDER_FIELDS = ['relationCount', 'createdTime'];
@@ -31,16 +27,6 @@ function paramError(message) {
   const err = new Error(message);
   err.code = -32602;
   return err;
-}
-
-/** 校验 size 枚举（20/50/100），缺省为 50 */
-function resolveSize(value) {
-  if (value == null || value === '') return DEFAULT_SIZE;
-  const size = Number(value);
-  if (!SIZE_ENUM.includes(size)) {
-    throw paramError('size must be one of: 20, 50, 100');
-  }
-  return size;
 }
 
 /** 校验排序字段枚举（relationCount/createdTime），缺省为 relationCount */
@@ -92,7 +78,7 @@ module.exports = {
       marketplace, // 供 transformer 使用，不发往上游
       market: resolveToolMarketId('traffic_listing', marketplace),
       pageNum: (args.page && !isNaN(Number(args.page))) ? Number(args.page) : 1,
-      pageSize: resolveSize(args.size),
+      pageSize: resolveToolPageSize('traffic_listing', args.size),
       desc: orderDesc,
       orderField,
       relations: resolveRelations(args.relations),

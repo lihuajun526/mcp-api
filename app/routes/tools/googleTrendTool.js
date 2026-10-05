@@ -1,13 +1,6 @@
 const { queryGoogleTrend } = require('../../services/queries/googleTrendQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertToolMarketplace } = require('../../utils/validation');
-
-// marketplace 公开代码 → 第三方 station 代码 (US→COM)
-const MARKET_CODE_MAP = {
-  US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN',
-  AU: 'AU', BR: 'BR', AE: 'AE'
-};
+const { assertToolMarketplace, toMarketCode } = require('../../utils/marketplace');
 
 module.exports = {
   name: 'google_trend',
@@ -20,7 +13,8 @@ module.exports = {
     }
 
     const marketplace = assertToolMarketplace('google_trend', args.marketplace);
-    const station = MARKET_CODE_MAP[marketplace] || marketplace;
+    // marketplace 公开代码 → 第三方 station 代码 (US→COM)
+    const station = toMarketCode(marketplace);
     // gprop: '' = 网页搜索, 'froogle' = 购物搜索
     const gprop = args.googleProp === 'shoppingCart' ? 'froogle' : '';
     const intervalYear = Number(args.intervalYear) || 5;

@@ -1,12 +1,6 @@
 const { queryTrafficListingStat } = require('../../services/queries/trafficListingStatQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertToolMarketplace } = require('../../utils/validation');
-
-// marketplace 公开代码 → station 代码 (US→COM)
-const MARKET_STATION_MAP = {
-  US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN', AU: 'AU', BR: 'BR'
-};
+const { assertToolMarketplace, toMarketCode } = require('../../utils/marketplace');
 
 module.exports = {
   name: 'traffic_listing_stat',
@@ -34,7 +28,7 @@ module.exports = {
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       asinList,
-      station: MARKET_STATION_MAP[marketplace] || marketplace,
+      station: toMarketCode(marketplace),
       queryVariations: true
     };
 

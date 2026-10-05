@@ -2498,10 +2498,6 @@
           "type": "string",
           "description": "搜索关键字，可输入 nodeId 或类目名称，例如 Books 或 4053"
         },
-        "month": {
-          "type": "string",
-          "description": "查询历史月份类目，严格 yyyyMM 格式（6位数字），例如 202502；留空表示最新数据"
-        },
         "returnFields": {
           "type": "array",
           "items": {

@@ -1,32 +1,12 @@
 const { queryAbaResearchMonthly } = require('../../services/queries/abaResearchMonthlyQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { assertToolMarketplace } = require('../../utils/validation');
-
-// marketplace 公开代码 → 第三方 market 代码 (US→COM)
-const MARKET_CODE_MAP = {
-  US: 'COM', CA: 'CA', MX: 'MX', UK: 'UK', DE: 'DE',
-  FR: 'FR', IT: 'IT', ES: 'ES', JP: 'JP', IN: 'IN',
-  AU: 'AU', BR: 'BR', AE: 'AE', SA: 'SA'
-};
-
-// 分页大小取值枚举项为 20/50/100，默认 50
-const SIZE_ENUM = [20, 50, 100];
-const DEFAULT_SIZE = 50;
+const { assertToolMarketplace, toMarketCode } = require('../../utils/marketplace');
+const { resolveToolPageSize } = require('../../utils/validation');
 
 function paramError(message) {
   const err = new Error(message);
   err.code = -32602;
   return err;
-}
-
-/** 校验 size 枚举（20/50/100），缺省为 50 */
-function resolveSize(value) {
-  if (value == null || value === '') return DEFAULT_SIZE;
-  const size = Number(value);
-  if (!SIZE_ENUM.includes(size)) {
-    throw paramError('size must be one of: 20, 50, 100');
-  }
-  return size;
 }
 
 /**
@@ -66,9 +46,10 @@ module.exports = {
     }
 
     const marketplace = assertToolMarketplace('aba_research_monthly', args.marketplace);
-    const market = MARKET_CODE_MAP[marketplace] || marketplace;
+    // marketplace 公开代码 → 第三方 market 代码 (US→COM)
+    const market = toMarketCode(marketplace);
     const page = Math.max(Number(args.page) || 1, 1);
-    const size = resolveSize(args.size);
+    const size = resolveToolPageSize('aba_research_monthly', args.size);
     const orderField = (args.order && args.order.field != null ? String(args.order.field) : null) || args.orderField || 'searchfrequencyrank';
     const orderDesc = args.order && args.order.desc !== undefined ? args.order.desc !== false : (args.orderDesc !== false);
 
