@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformMarketResearchResponse } = require('../../transformers/marketResearchTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'MARKET_RESEARCH';
+const ENDPOINT_CODE = 'market_research';
 
 async function fetchMarketResearch(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -39,8 +39,8 @@ async function queryMarketResearch(user, params) {
   const html = await fetchMarketResearch(params, session);
   const transformed = sanitizeInternalFields(transformMarketResearchResponse(html, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

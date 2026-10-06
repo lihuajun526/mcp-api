@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformCompetitionResponse } = require('../../transformers/competitionTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'PRODUCT_RESEARCH';
+const ENDPOINT_CODE = 'product_research';
 
 // 将 open API month（YYYYMM 或 YYYY-MM）映射为内部 monthName
 function toMonthName(month) {
@@ -43,8 +43,8 @@ async function queryProductResearch(user, request) {
   const raw = await fetchProductResearch(request, session);
   const transformed = sanitizeInternalFields(transformCompetitionResponse(raw, request));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
   return transformed;

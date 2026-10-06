@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformTrafficListingResponse } = require('../../transformers/trafficListingTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'TRAFFIC_LISTING';
+const ENDPOINT_CODE = 'traffic_listing';
 
 async function fetchTrafficListing(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -42,8 +42,8 @@ async function queryTrafficListing(user, params) {
   const rawData = raw && raw.data ? raw.data : raw;
   const transformed = sanitizeInternalFields(transformTrafficListingResponse(rawData, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

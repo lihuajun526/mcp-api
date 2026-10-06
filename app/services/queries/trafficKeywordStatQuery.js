@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformTrafficKeywordStatResponse } = require('../../transformers/trafficKeywordStatTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'TRAFFIC_KEYWORD_STAT';
+const ENDPOINT_CODE = 'traffic_keyword_stat';
 
 async function fetchTrafficKeywordStat(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -42,8 +42,8 @@ async function queryTrafficKeywordStat(user, params) {
   const rawData = raw && raw.data ? raw.data : raw;
   const transformed = sanitizeInternalFields(transformTrafficKeywordStatResponse(rawData, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

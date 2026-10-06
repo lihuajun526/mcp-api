@@ -114,9 +114,10 @@ async function handleProxyCall(toolName, args, user) {
 
   // 积分扣除：调用成功后扣除（与本地工具行为一致）
   if (user) {
-    const endpointCode = 'SS_' + originName.toUpperCase();
-    const costPoints = await billingService.getCostPoints(endpointCode);
-    await billingService.deductAndRecord(user.userId, endpointCode, costPoints, 'SS_MCP');
+    // 计费编码对齐 sdx_api_endpoint_pricing.code：小写工具名（ss_ 前缀），如 ss_keepa_info
+    const toolCode = config.sellerSpriteMcp.prefix + originName;
+    const pricing = await billingService.getPricing(toolCode);
+    await billingService.deductAndRecord(user, pricing, 'SS_MCP');
   }
 
   return buildSuccess(args, data);

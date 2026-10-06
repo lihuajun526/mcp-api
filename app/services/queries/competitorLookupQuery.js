@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformCompetitionResponse } = require('../../transformers/competitionTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'COMPETING_LOOKUP';
+const ENDPOINT_CODE = 'competitor_lookup';
 
 async function fetchCompetingLookup(request, session) {
   const headers = {
@@ -36,8 +36,8 @@ async function queryCompetingLookup(user, request) {
   const raw = await fetchCompetingLookup(request, session);
   const transformed = sanitizeInternalFields(transformCompetitionResponse(raw, request));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, request, transformed);
   return transformed;

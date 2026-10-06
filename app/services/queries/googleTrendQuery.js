@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformGoogleTrendResponse } = require('../../transformers/googleTrendTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'GOOGLE_TREND';
+const ENDPOINT_CODE = 'google_trend';
 
 async function fetchGoogleTrend(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -45,8 +45,8 @@ async function queryGoogleTrend(user, params) {
   const rawData = raw && raw.data ? raw.data : raw;
   const transformed = sanitizeInternalFields(transformGoogleTrendResponse(rawData, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

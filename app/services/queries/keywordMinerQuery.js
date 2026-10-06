@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformKeywordMinerResponse } = require('../../transformers/keywordMinerTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'KEYWORD_MINER';
+const ENDPOINT_CODE = 'keyword_miner';
 
 async function fetchKeywordMiner(params, session) {
   // marketplace / order 仅供 transformer 使用，不发往上游
@@ -45,8 +45,8 @@ async function queryKeywordMiner(user, params) {
   const rawData = raw && raw.data ? raw.data : raw;
   const transformed = sanitizeInternalFields(transformKeywordMinerResponse(rawData, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

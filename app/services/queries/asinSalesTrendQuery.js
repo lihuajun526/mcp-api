@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformAsinSalesTrendResponse } = require('../../transformers/asinSalesTrendTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'ASIN_SALES_TREND';
+const ENDPOINT_CODE = 'asin_sales_trend';
 
 async function fetchAsinSalesTrend(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -36,8 +36,8 @@ async function queryAsinSalesTrend(user, params) {
   const raw = await fetchAsinSalesTrend(params, session);
   const transformed = sanitizeInternalFields(transformAsinSalesTrendResponse(raw, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformKeywordResearchResponse } = require('../../transformers/keywordResearchTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'KEYWORD_RESEARCH';
+const ENDPOINT_CODE = 'keyword_research';
 
 async function fetchKeywordResearch(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -37,8 +37,8 @@ async function queryKeywordResearch(user, params) {
   const html = await fetchKeywordResearch(params, session);
   const transformed = sanitizeInternalFields(transformKeywordResearchResponse(html, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

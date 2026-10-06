@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformBsrSalesResponse } = require('../../transformers/bsrSalesTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'BSR_SALES';
+const ENDPOINT_CODE = 'bsr_prediction';
 
 async function fetchBsrSales(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -47,8 +47,8 @@ async function queryBsrSales(user, params) {
   const raw = await fetchBsrSales(params, session);
   const transformed = sanitizeInternalFields(transformBsrSalesResponse(raw, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

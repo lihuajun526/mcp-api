@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformKeywordConversionResponse } = require('../../transformers/keywordConversionTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'KEYWORD_CONVERSION';
+const ENDPOINT_CODE = 'keyword_conversion';
 
 async function fetchKeywordConversion(params, session) {
   // marketplace 仅供 transformer 使用，不发往上游
@@ -43,8 +43,8 @@ async function queryKeywordConversion(user, params) {
   const pager = raw && raw.data && raw.data.pager ? raw.data.pager : (raw && raw.data ? raw.data : raw);
   const transformed = sanitizeInternalFields(transformKeywordConversionResponse(pager, params));
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;

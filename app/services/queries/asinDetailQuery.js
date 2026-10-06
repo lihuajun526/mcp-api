@@ -7,7 +7,7 @@ const sessionService = require('../sessionService');
 const { transformAsinDetailResponse } = require('../../transformers/asinDetailTransformer');
 
 const PROVIDER = 'SELLERSPRITE';
-const ENDPOINT_CODE = 'ASIN_DETAIL';
+const ENDPOINT_CODE = 'asin_detail';
 
 // marketplace 公开代码 → Amazon 站点域名
 const MARKETPLACE_DOMAIN = {
@@ -59,8 +59,8 @@ async function queryAsinDetail(user, params) {
     transformed.asinUrl = `https://${domain}/dp/${transformed.asin}`;
   }
 
-  const cost = await billingService.getCostPoints(ENDPOINT_CODE);
-  await billingService.deductAndRecord(user.userId, ENDPOINT_CODE, cost, PROVIDER);
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   await cacheService.set(PROVIDER, ENDPOINT_CODE, params, transformed);
   return transformed;
