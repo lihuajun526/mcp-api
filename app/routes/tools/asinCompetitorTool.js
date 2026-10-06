@@ -1,7 +1,7 @@
 const { queryAsinCompetitor } = require('../../services/queries/asinCompetitorQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { isEmpty } = require('../../utils/stringUtils');
-const { assertToolMarketplace } = require('../../utils/validation');
+const { assertToolMarketplace, resolveToolPageSize } = require('../../utils/validation');
 
 module.exports = {
   // 查询ASIN竞品数据
@@ -16,13 +16,16 @@ module.exports = {
 
     const marketplace = assertToolMarketplace('asin_competitor', args.marketplace);
 
+    // size：可选 20/60/100，默认 60（与 tools.json schema 的 enum/default 保持一致）
+    const size = resolveToolPageSize('asin_competitor', args.size);
+
     const params = {
       marketplace, // 供 transformer 使用，不发往上游
       market: marketplace, // 上游字段名为 market
       monthName: 'bsr_sales_nearly',
       asins: [String(args.asin)],
       page: 1,
-      size: (args.size && !isNaN(Number(args.size))) ? Number(args.size) : 20,
+      size,
       symbolFlag: false,
       nodeIdPaths: [],
       order: { field: 'total_units', desc: true },

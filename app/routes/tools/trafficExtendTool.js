@@ -1,7 +1,7 @@
 const { queryTrafficExtend } = require('../../services/queries/trafficExtendQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { BusinessError } = require('../../errors');
-const { resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
+const { resolveToolMarketId, resolveToolPageSize, assertMonth } = require('../../utils/validation');
 
 // Open API 排序字段名 → 第三方 orderColumn 整数（与 traffic_extend 的 orderColumn 枚举保持一致）
 const ORDER_FIELD_MAP = {
@@ -81,7 +81,7 @@ module.exports = {
       originAsinList: asinList,
       market: resolveToolMarketId('traffic_extend', marketplace),
       page,
-      month: args.historyDate || '',
+      month: args.historyDate ? assertMonth(args.historyDate) : '',
       size,
       orderColumn: resolveOrderColumn(orderField),
       desc: orderDesc,

@@ -1,5 +1,8 @@
 const db = require('../../db');
+const billingService = require('../billingService');
 
+const ENDPOINT_CODE = 'product_node';
+const PROVIDER = 'LOCAL_DB';
 const SELECT_COLUMNS = 'node_id, label, products, node_label_locale, node_label_path_locale';
 
 async function queryProductNode(user, request) {
@@ -43,6 +46,9 @@ async function queryProductNode(user, request) {
   }
 
   const rows = await db.query(sql, params);
+
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   return rows.map((row) => ({
     nodeIdPath: row.node_id,

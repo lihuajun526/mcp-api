@@ -1,6 +1,6 @@
 const { queryKeywordMiner } = require('../../services/queries/keywordMinerQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
+const { resolveToolMarketId, resolveToolPageSize, assertMonth } = require('../../utils/validation');
 
 // 对外排序字段名 → 上游 orderBy 整数编码
 const ORDER_FIELD_MAP = {
@@ -81,7 +81,7 @@ module.exports = {
       market: resolveToolMarketId('keyword_miner', marketplace),
       pageNum: page,
       pageSize: size,
-      historyDate: args.historyDate ? String(args.historyDate) : '',
+      historyDate: args.historyDate ? assertMonth(args.historyDate) : '',
       orderBy: resolveOrderBy(orderField),
       desc: orderDesc !== false,
       // 供 transformer 回显排序信息（上游 payload 会剔除该字段）

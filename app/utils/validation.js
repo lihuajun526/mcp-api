@@ -20,7 +20,7 @@ const marketplace = require('./marketplace');
 const PAGE_SIZES = [20, 50, 100];
 const DEFAULT_PAGE_SIZE = 50;
 
-// 例外档：competitor_lookup / product_research 的 size 为 20/60/100，默认 60
+// 例外档：competitor_lookup / product_research / asin_competitor 的 size 为 20/60/100，默认 60
 const PAGE_SIZES_60 = [20, 60, 100];
 const DEFAULT_PAGE_SIZE_60 = 60;
 
@@ -30,7 +30,8 @@ const DEFAULT_PAGE_SIZE_60 = 60;
  */
 const TOOL_PAGE_SIZES = {
   competitor_lookup: { sizes: PAGE_SIZES_60, defaultSize: DEFAULT_PAGE_SIZE_60 },
-  product_research: { sizes: PAGE_SIZES_60, defaultSize: DEFAULT_PAGE_SIZE_60 }
+  product_research: { sizes: PAGE_SIZES_60, defaultSize: DEFAULT_PAGE_SIZE_60 },
+  asin_competitor: { sizes: PAGE_SIZES_60, defaultSize: DEFAULT_PAGE_SIZE_60 }
 };
 
 // 关键词匹配方式：1 词组匹配，2 模糊匹配，3 精准匹配
@@ -74,7 +75,7 @@ function resolvePageSize(value) {
 
 /**
  * 归一化分页大小（按工具）：未登记 TOOL_PAGE_SIZES 的工具走通用档 20/50/100（默认 50），
- * competitor_lookup / product_research 走 20/60/100（默认 60）。
+ * competitor_lookup / product_research / asin_competitor 走 20/60/100（默认 60）。
  */
 function resolveToolPageSize(toolName, value) {
   const conf = TOOL_PAGE_SIZES[toolName] || { sizes: PAGE_SIZES, defaultSize: DEFAULT_PAGE_SIZE };

@@ -93,7 +93,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"units\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -104,7 +104,7 @@
   },
   {
     "name": "asin_competitor",
-    "description": "查询 ASIN 竞品数据：输入一个亚马逊 ASIN，返回与该商品具有较高竞争关系的竞品列表及其销量、销额、BSR、评分、利润等数据。适用于竞品分析、选品研究、市场调研。鉴权由服务端处理，模型不要传递 API Key。data 直接返回竞品对象数组（对齐官方 /api/62），字段包含 asin/brand/brandUrl/imageUrl/title/parent/nodeId/nodeIdPath/nodeLabelPath/bsr/bsrCr/bsrCv/units/unitsGr/amzUnit/amzSales/revenue/price/primePrice/profit/fba/ratings/ratingsRate/rating/ratingsCv/ratingDelta/fulfillment/sellers/sellerId/sellerName/sellerNation/badge{bestSeller,amazonChoice,newRelease,ebc,video}/weight/dimension/subcategories 等。",
+    "description": "查询 ASIN 竞品数据：输入一个亚马逊 ASIN，返回与该商品具有较高竞争关系的竞品列表及其销量、销额、BSR、评分、利润等数据。适用于竞品分析、选品研究、市场调研。鉴权由服务端处理，模型不要传递 API Key。data 直接返回竞品对象数组，字段包含 asin/brand/brandUrl/imageUrl/title/parent/nodeId/nodeIdPath/nodeLabelPath/bsr/bsrCr/bsrCv/units/unitsGr/amzUnit/amzSales/revenue/price/primePrice/profit/fba/ratings/ratingsRate/rating/ratingsCv/ratingDelta/fulfillment/sellers/sellerId/sellerName/sellerNation/badge{bestSeller,amazonChoice,newRelease,ebc,video}/weight/dimension/subcategories 等。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -132,16 +132,20 @@
         },
         "size": {
           "type": "integer",
-          "description": "返回竞品数量，默认 20，最大 100",
-          "minimum": 1,
-          "maximum": 100
+          "description": "返回竞品数量，可选 20/60/100，默认 60",
+          "enum": [
+            20,
+            60,
+            100
+          ],
+          "default": 60
         },
         "returnFields": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"units\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -242,7 +246,7 @@
         },
         "dimensionType": {
           "type": "string",
-          "description": "尺寸类型，多个用逗号分隔；见附录表 1.4"
+          "description": "尺寸类型，多个用逗号分隔。可选值：SS（小号标准尺寸）、LS（大号标准尺寸）、SB（小号大件）、LB（大号大件）、ELO（超大尺寸0-50磅）、EL5O（超大尺寸50-70磅）、EL7O（超大尺寸70-150磅）、EL15O（超大尺寸150磅以上）、O（其他尺寸）"
         },
         "weightUnit": {
           "type": "string",
@@ -277,7 +281,7 @@
         },
         "availableMonth": {
           "type": "integer",
-          "description": "上架月数筛选，例如 6 表示近 6 个月内上架；见附录表 1.3"
+          "description": "上架月数筛选，例如 6 表示近 6 个月内上架"
         },
         "page": {
           "type": "integer",
@@ -465,7 +469,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"units\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -509,7 +513,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"title\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -593,7 +597,7 @@
         },
         "trafficKeywordTypes": {
           "type": "array",
-          "description": "流量占比类型过滤（表2.0），可选值：PRIMARY（主要流量词）、PRECISE（精准流量词）、PRECISE_LONG_TAIL（长尾流量词）；留空表示全部",
+          "description": "流量占比类型过滤，可选值：PRIMARY（主要流量词）、PRECISE（精准流量词）、PRECISE_LONG_TAIL（长尾流量词）；留空表示全部",
           "items": {
             "type": "string",
             "enum": [
@@ -605,7 +609,7 @@
         },
         "conversionKeywordTypes": {
           "type": "array",
-          "description": "流量转化类型过滤（表2.1），可选值：EXCELLENT（转化优质词）、STABLE（转化平稳词）、LOST（转化流失词）、INVALID（无效曝光词）；留空表示全部",
+          "description": "流量转化类型过滤，可选值：EXCELLENT（转化优质词）、STABLE（转化平稳词）、LOST（转化流失词）、INVALID（无效曝光词）；留空表示全部",
           "items": {
             "type": "string",
             "enum": [
@@ -618,7 +622,7 @@
         },
         "order": {
           "type": "object",
-          "description": "排序设置（见表2.3）",
+          "description": "排序设置",
           "properties": {
             "field": {
               "type": "string",
@@ -649,7 +653,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searches\",\"purchases\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -661,7 +665,7 @@
   },
   {
     "name": "asin_prediction",
-    "description": "ASIN销量预测：根据亚马逊 ASIN 预测商品月均销量，并返回历史日销售额、日价格、日BSR排名及月度统计数据。当用户需要估算某个 ASIN 的销量趋势或历史销售数据时调用。鉴权由服务端处理，模型不要传递 API Key。返回结构为 asinDetail{asin,title,brand,availableDate,category,categoryId,imageUrl,ratings,rating}、dailyItemList[{date,bsr,sales,amount,price}]、monthItemList[{date,sales,amount,price}]。",
+    "description": "ASIN销量预测：根据亚马逊 ASIN 返回每日 BSR 排名与预估日销量、日销售额、日均价，以及月度汇总数据。当用户需要查看某 ASIN 最近一段时间的日颗粒度销售数据，或快速估算当前月销量时调用。与 asin_sales_trend 的区别：本工具提供按天记录的细粒度数据（日BSR+日销量），适合分析短期波动；asin_sales_trend 提供按月聚合的更长周期历史趋势，并区分父体/子体销量，适合分析长期趋势和季节性。鉴权由服务端处理，模型不要传递 API Key。返回结构：asinDetail{asin/title/brand/availableDate/category/categoryId/imageUrl/ratings/rating}、dailyItemList[{date/bsr/sales/amount/price}]（日度数据）、monthItemList[{date/sales/amount/price}]（月度汇总）。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -694,7 +698,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"asinDetail\",\"dailyItemList\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -759,7 +763,7 @@
         },
         "order": {
           "type": "object",
-          "description": "排序设置（见表1.8）",
+          "description": "排序设置",
           "properties": {
             "field": {
               "type": "string",
@@ -789,11 +793,11 @@
           "description": "最大月搜索量",
           "minimum": 0
         },
-        "minSearchesCr": {
+        "minGrowth": {
           "type": "number",
           "description": "最小月搜索量增长率（%）"
         },
-        "maxSearchesCr": {
+        "maxGrowth": {
           "type": "number",
           "description": "最大月搜索量增长率（%）"
         },
@@ -829,41 +833,41 @@
           "type": "boolean",
           "description": "是否仅新细分市场，默认 false"
         },
-        "minSearchMonthCv": {
+        "minYearlyGrowth": {
           "type": "integer",
           "description": "最小月搜索量同比增长值"
         },
-        "maxSearchMonthCv": {
+        "maxYearlyGrowth": {
           "type": "integer",
           "description": "最大月搜索量同比增长值"
         },
-        "minSearchMonthCr": {
+        "minYearlyGrowthRate": {
           "type": "number",
           "description": "最小月搜索量同比增长率（%）"
         },
-        "maxSearchMonthCr": {
+        "maxYearlyGrowthRate": {
           "type": "number",
           "description": "最大月搜索量同比增长率（%）"
         },
-        "minSearchNearlyCv": {
+        "minGrowthTrendMin": {
           "type": "integer",
           "description": "最小月搜索量近3个月增长值"
         },
-        "maxSearchNearlyCv": {
+        "maxGrowthTrendMin": {
           "type": "integer",
           "description": "最大月搜索量近3个月增长值"
         },
-        "minSearchNearlyCr": {
+        "minGrowthRateTrendMin": {
           "type": "number",
           "description": "最小月搜索量近3个月增长率（%）"
         },
-        "maxSearchNearlyCr": {
+        "maxGrowthRateTrendMin": {
           "type": "number",
           "description": "最大月搜索量近3个月增长率（%）"
         },
         "marketPeriod": {
           "type": "string",
-          "description": "市场周期/季节性筛选，例如 S1,S2 表示1月和2月旺季，留空表示不限（见表1.7）"
+          "description": "市场周期/季节性筛选，S1~S12 分别对应 1~12 月旺季，多个用逗号分隔，例如 S1,S2 表示 1 月和 2 月旺季；留空表示不限"
         },
         "minAvgPrice": {
           "type": "number",
@@ -875,20 +879,20 @@
           "description": "最大均价",
           "minimum": 0
         },
-        "minRatings": {
+        "minAvgReviews": {
           "type": "integer",
           "description": "最小评分数",
           "minimum": 0
         },
-        "maxRatings": {
+        "maxAvgReviews": {
           "type": "integer",
           "description": "最大评分数"
         },
-        "minRating": {
+        "minAvgRating": {
           "type": "number",
           "description": "最小评分值"
         },
-        "maxRating": {
+        "maxAvgRating": {
           "type": "number",
           "description": "最大评分值"
         },
@@ -901,11 +905,11 @@
           "type": "number",
           "description": "最大PPC竞价（$）"
         },
-        "minAraClickRate": {
+        "minMonopolyClickRate": {
           "type": "number",
           "description": "最小点击集中度"
         },
-        "maxAraClickRate": {
+        "maxMonopolyClickRate": {
           "type": "number",
           "description": "最大点击集中度"
         },
@@ -940,7 +944,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"keywords\",\"searches\",\"purchases\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -952,7 +956,7 @@
   },
   {
     "name": "traffic_extend",
-    "description": "拓展流量词：查询一个或多个 ASIN 在近30天内进入亚马逊前台搜索结果前3页的所有搜索流量词（最多20个ASIN）。返回关键词的月搜索量、月购买量、购买率、商品数、PPC出价、供需比、流量占比、标题密度、SPR、点击垄断率、前三点击率、前三转化率及各 ASIN 流量分布等数据。适用于分析竞品流量来源、挖掘多ASIN共同流量词、拓展关键词词库等场景。鉴权由服务端处理，模型不要传递 API Key。",
+    "description": "拓展流量词：批量查询多个 ASIN（最多20个）在近30天内进入亚马逊前台搜索结果前3页的所有搜索流量词，并标注每个关键词在各 ASIN 上的具体排名和流量贡献。与 traffic_keyword 的区别：traffic_keyword 仅查单个 ASIN 的流量词；本工具支持多 ASIN 联合查询，可找出多个竞品共同争夺的高价值词。适用于竞品词矩阵分析、多品联合关键词规划。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages/order、items(keyword/keywordCn/searches/products/purchases/purchaseRate/bid/bidMax/bidMin/searchesRank/latest1daysAds/latest7daysAds/latest30daysAds/supplyDemandRatio/trafficPercentage/avgPrice/avgRatings/avgRating/titleDensity/spr/monopolyClickRate/top3ClickingRate/top3ConversionRate/relationVariationsItems[{asin/trafficPercentage/title/price/reviews/rating}])。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1016,7 +1020,7 @@
         },
         "order": {
           "type": "object",
-          "description": "排序设置（见表2.5）",
+          "description": "排序设置",
           "properties": {
             "field": {
               "type": "string",
@@ -1216,7 +1220,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searches\",\"trafficPercentage\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -1252,7 +1256,7 @@
         },
         "categoryId": {
           "type": "string",
-          "description": "类目节点ID(cid)，例如 2619525011",
+          "description": "亚马逊一级类目数字ID，通过 asin_detail 返回的 bsrId 字段或 product_node 工具获取，例如 2619525011",
           "minLength": 1,
           "maxLength": 32
         },
@@ -1266,7 +1270,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"bsr\",\"estDailySales\",\"estMonthSales\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -1279,7 +1283,7 @@
   },
   {
     "name": "google_trend",
-    "description": "谷歌趋势：查询关键词在 Google Trends 上近5年（或近1年）的搜索热度趋势，按周聚合。返回时间序列数据（时间戳+热度值0~100）及 Google Trends 链接。适用于分析关键词的季节性趋势、长期走势。鉴权由服务端处理，模型不要传递 API Key。",
+    "description": "谷歌趋势：查询关键词在 Google Trends 上近5年（或近1年）的搜索热度趋势，按周（或月）聚合。适用于判断关键词的季节性规律、长期增衰趋势，辅助选品时机决策。支持谷歌网页搜索或谷歌购物搜索两种来源。鉴权由服务端处理，模型不要传递 API Key。返回字段：marketplace、keyword、link（Google Trends 原始链接）、range{week/month/quarter/half/year/threeYear/all}（各时段热度均值，0~100）、items[{time（毫秒时间戳）/value（热度值0~100）}]。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1318,12 +1322,20 @@
           "type": "boolean",
           "description": "是否按月聚合（false=按周，默认 false）"
         },
+        "intervalYear": {
+          "type": "integer",
+          "description": "查询时间范围（年）：1=近1年，5=近5年（默认）",
+          "enum": [
+            1,
+            5
+          ]
+        },
         "returnFields": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"range\",\"items\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -1334,7 +1346,7 @@
   },
   {
     "name": "keyword_conversion",
-    "description": "关键字转化率：查询亚马逊关键词的搜索转化率、点击转化率、PPC竞价、CPA、预算、ACOS等广告相关数据。返回关键词的月搜索量、点击量、购买量、搜索转化率、点击转化率、词组/精准/广泛PPC及CPA、均价、广告预算、ACOS、前三 ASIN 数据。适用于评估关键词的商业价值和广告投放效率。鉴权由服务端处理，模型不要传递 API Key。",
+    "description": "关键字转化率：查询亚马逊关键词的搜索转化率、点击转化率、PPC竞价、CPA、预算、ACOS等广告相关数据。适用于评估关键词的商业价值和广告投放效率，选择广告投放词、分析投放成本。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages、items(keyword/keywordCn/searches/clicks/purchases/searchConvRate（搜索转化率）/clickConvRate（点击转化率）/clickingRate（前三点击占比）/conversionRate（前三转化占比）/phraseCount/phrasePpc{value/min/max}/exactPpc/broadPpc/phraseCpa/exactCpa/broadCpa/avgProductPrice/phraseBudget/exactBudget/broadBudget/phraseAcos/exactAcos/broadAcos/top3Asins[{asin/clickRate/conversionRate}]/top10Asins[{asin/keyword/asinPrice/asinReviews/asinRating/rankPage/position}])。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1537,7 +1549,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searchConvRate\",\"clickConvRate\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -1549,7 +1561,7 @@
   },
   {
     "name": "aba_research_weekly",
-    "description": "ABA数据选品-按周：基于亚马逊 ABA（Amazon Brand Analytics）每周数据，筛选高潜力搜索关键词及其竞争热度。返回关键词的ABA搜索排名、搜索量、购买量、购买率、点击量、曝光量、排名变化、前三品牌/ASIN等。支持按部门、关键词、排名范围等多维度筛选。鉴权由服务端处理，模型不要传递 API Key。",
+    "description": "ABA数据选品-按周：基于亚马逊 ABA（Amazon Brand Analytics）的周维度数据，发现趋势关键词和潜力赛道。与按月版本的区别：本工具用周为单位，可看近1/4/12周的排名变化（w1/w4/w12SearchRank），适合追踪短期爆款趋势；aba_research_monthly 用月为单位，适合分析中长期规律。支持按类目、关键词、排名范围、搜索量、点击量、曝光量、转化率等多维度筛选。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages/hasNextPage/order、items(keyword/keywordCn/departments/searchRank（ABA搜索排名）/searchRankCv（排名变化量）/searchRankCr（排名变化率）/searches/purchases/purchaseRate/clicks/impressions/searchRankGrowthValue/searchRankGrowthRate/w1SearchRank/w1RankGrowthValue/w1RankGrowthRate/w4SearchRank/w4RankGrowthValue/w4RankGrowthRate/w12SearchRank/w12RankGrowthValue/w12RankGrowthRate/bid/bidMax/bidMin/cvsShareRate/clickShareRate/titleDensityExact/cprExact/top3Brands[{brand/clickRate/conversionRate}]/top3AsinDtoList[{asin/clickRate/conversionRate}])。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1622,7 +1634,7 @@
         },
         "order": {
           "type": "object",
-          "description": "排序设置（见表2.4）",
+          "description": "排序设置",
           "properties": {
             "field": {
               "type": "string",
@@ -1734,12 +1746,21 @@
           "type": "integer",
           "description": "最大点击量"
         },
+        "minImpressions": {
+          "type": "integer",
+          "description": "最小曝光量",
+          "minimum": 0
+        },
+        "maxImpressions": {
+          "type": "integer",
+          "description": "最大曝光量"
+        },
         "returnFields": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searchRank\",\"searches\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -1750,7 +1771,7 @@
   },
   {
     "name": "aba_research_monthly",
-    "description": "ABA数据选品-按月：基于亚马逊 ABA（Amazon Brand Analytics）每月数据，筛选高潜力搜索关键词及其竞争热度。与按周版本类似，但使用月度ABA数据，适合分析月度趋势和更长时间范围的关键词表现。鉴权由服务端处理，模型不要传递 API Key。",
+    "description": "ABA数据选品-按月：基于亚马逊 ABA（Amazon Brand Analytics）的月维度数据，发现稳定需求关键词和潜力赛道。与按周版本的区别：本工具用月为单位（date 参数格式 yyyyMM），适合分析中长期关键词规律和月度季节性波动；aba_research_weekly 以周为单位，适合追踪短期爆款趋势。支持按类目、关键词、排名范围、搜索量、点击量、曝光量、转化率等多维度筛选。鉴权由服务端处理，模型不要传递 API Key。返回字段与 aba_research_weekly 一致：page/size/total/pages/hasNextPage/order、items(keyword/keywordCn/departments/searchRank/searchRankCv/searchRankCr/searches/purchases/purchaseRate/clicks/impressions/searchRankGrowthValue/searchRankGrowthRate/bid/bidMax/bidMin/cvsShareRate/clickShareRate/titleDensityExact/cprExact/top3Brands/top3AsinDtoList)。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1815,7 +1836,7 @@
         },
         "order": {
           "type": "object",
-          "description": "排序设置（见表2.4）",
+          "description": "排序设置",
           "properties": {
             "field": {
               "type": "string",
@@ -1892,6 +1913,15 @@
           "type": "integer",
           "description": "最大词数"
         },
+        "minSPR": {
+          "type": "integer",
+          "description": "最小SPR",
+          "minimum": 0
+        },
+        "maxSPR": {
+          "type": "integer",
+          "description": "最大SPR"
+        },
         "minTitleDensity": {
           "type": "integer",
           "description": "最小标题密度",
@@ -1900,6 +1930,15 @@
         "maxTitleDensity": {
           "type": "integer",
           "description": "最大标题密度"
+        },
+        "minClicks": {
+          "type": "integer",
+          "description": "最小点击量",
+          "minimum": 0
+        },
+        "maxClicks": {
+          "type": "integer",
+          "description": "最大点击量"
         },
         "minImpressions": {
           "type": "integer",
@@ -1915,7 +1954,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searchRank\",\"searches\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -1964,7 +2003,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"keywords\",\"ranks\",\"ads\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -2014,7 +2053,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"relations\",\"freeRelations\",\"paidRelations\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -2121,7 +2160,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"title\",\"price\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -2457,7 +2496,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"nodeLabelPath\",\"totalUnits\",\"avgPrice\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -2503,7 +2542,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"nodeIdPath\",\"nodeLabelPath\",\"products\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [
@@ -2514,7 +2553,7 @@
   },
   {
     "name": "asin_sales_trend",
-    "description": "查询 ASIN 销量趋势：输入亚马逊站点和 ASIN，返回该 ASIN 的父体/子体月度销量、销售额趋势数据，以及商品基本信息。适用于分析商品的历史销售趋势、季节性规律及增长情况。鉴权由服务端处理，模型不要传递 API Key。返回字段：asin（ASIN 对象，包含 asin/asinUrl/marketplace/availableDate/brand/brandUrl/bsrId/bsrLabel/bsrRank/subcategories/createdTime/dimensions/firstRatingDate/imageUrl/zoomImageUrl/lqs/nodeId/nodeIdPath/nodeLabelPath/parent/price/primePrice/deliveryPrice/coupon/rating/ratings/reviews/variantRatings/variantReviews/sellerId/sellerName/fulfillment/sellers/title/updatedTime/variations/weight/skuList/variationList/features/overviews/badge{bestSeller,amazonChoice,newRelease,ebc,video}）、salesTrendPoints（月度趋势点列表，包含 month/price/averagePrice/parentUnitSales/childUnitSales/parentSalesRevenue/childSalesRevenue）。",
+    "description": "查询 ASIN 销量趋势：输入亚马逊站点和 ASIN，返回该 ASIN 的父体/子体月度销量、销售额历史趋势，以及完整商品详情。适用于分析商品的历史销售规律、季节性波动及长期增衰趋势。与 asin_prediction 的区别：本工具返回按月聚合的历史趋势数据（可回溯多个月），并区分父体/子体销量，适合分析长期规律；asin_prediction 提供按天记录的细粒度短期数据，更适合估算当前时点销量。鉴权由服务端处理，模型不要传递 API Key。返回字段：asin（ASIN 对象，包含 asin/asinUrl/marketplace/availableDate/brand/brandUrl/bsrId/bsrLabel/bsrRank/subcategories/createdTime/dimensions/firstRatingDate/imageUrl/zoomImageUrl/lqs/nodeId/nodeIdPath/nodeLabelPath/parent/price/primePrice/deliveryPrice/coupon/rating/ratings/reviews/variantRatings/variantReviews/sellerId/sellerName/fulfillment/sellers/title/updatedTime/variations/weight/skuList/variationList/features/overviews/badge{bestSeller,amazonChoice,newRelease,ebc,video}）、salesTrendPoints（月度趋势点列表，包含 month/price/averagePrice/parentUnitSales/childUnitSales/parentSalesRevenue/childSalesRevenue）。",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2545,7 +2584,7 @@
           "items": {
             "type": "string"
           },
-          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"monthlySalesUnits\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"salesTrendPoints\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
         }
       },
       "required": [

@@ -46,7 +46,7 @@ npm run crawl:category
 
 ## Redis 会话准备（用于 asin / 查竞品接口）
 
-需要提前写入 `mcp:session:SELLERSPRITE` 列表（多个账号则写入多个元素，网关按轮询使用），元素示例：
+需要提前写入 `mcp:session:SELLERSPRITE` 哈希（hash 的每个 field 为一个账号标识，value 为该账号会话 JSON，网关按 field 轮询使用），value 示例：
 
 ```json
 {

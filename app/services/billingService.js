@@ -11,8 +11,16 @@ function monthOf(date = new Date()) {
 /**
  * 查询接口定价（sdx_api_endpoint_pricing，仅 online 生效）。
  * 返回 { code, name, credits }，name 用于写入调用明细的 tool_name。
+ * 定价表低频变更，进程内缓存 60s，避免每次调用都查库。
  */
+const PRICING_CACHE_TTL_MS = 60000;
+const _pricingCache = new Map(); // toolCode -> { value, expireAt }
+
 async function getPricing(toolCode) {
+  const hit = _pricingCache.get(toolCode);
+  if (hit && hit.expireAt > Date.now()) {
+    return hit.value;
+  }
   const rows = await db.query(
     "SELECT code, name, credits_per_call FROM sdx_api_endpoint_pricing WHERE code = ? AND status = 'online' LIMIT 1",
     [toolCode]
@@ -20,11 +28,13 @@ async function getPricing(toolCode) {
   if (!rows.length) {
     throw new BusinessError(`接口未配置价格: ${toolCode}`, 400);
   }
-  return {
+  const value = {
     code: rows[0].code,
     name: rows[0].name,
     credits: Number(rows[0].credits_per_call)
   };
+  _pricingCache.set(toolCode, { value, expireAt: Date.now() + PRICING_CACHE_TTL_MS });
+  return value;
 }
 
 /**

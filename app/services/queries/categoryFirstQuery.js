@@ -1,4 +1,8 @@
 const db = require('../../db');
+const billingService = require('../billingService');
+
+const ENDPOINT_CODE = 'first_category';
+const PROVIDER = 'LOCAL_DB';
 
 /**
  * 查询指定站点的一级类目列表。
@@ -14,6 +18,9 @@ async function queryCategoryFirst(user, request) {
      ORDER BY id ASC`,
     [marketplace]
   );
+
+  const pricing = await billingService.getPricing(ENDPOINT_CODE);
+  await billingService.deductAndRecord(user, pricing, PROVIDER);
 
   return {
     marketplace,

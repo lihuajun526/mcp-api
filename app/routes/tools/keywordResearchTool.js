@@ -1,6 +1,6 @@
 const { queryKeywordResearch } = require('../../services/queries/keywordResearchQuery');
 const { buildSuccess } = require('../../toolResponse');
-const { resolveToolMarketId, resolveToolPageSize } = require('../../utils/validation');
+const { resolveToolMarketId, resolveToolPageSize, assertMonth } = require('../../utils/validation');
 
 module.exports = {
   name: 'keyword_research',
@@ -36,7 +36,8 @@ module.exports = {
       presetMode: '',
       itemImageRange: '2',
       keywordBidMatchType: 'exact',
-      month: args.month ? String(args.month).replace('-', '') : '',
+      // 兼容 2026-07 写法，统一归一化为 yyyyMM 并严格校验
+      month: args.month ? assertMonth(String(args.month).replace(/-/g, '')) : '',
       minSearches: args.minSearches || '',
       maxSearches: args.maxSearches || '',
       minGrowth: args.minGrowth != null ? args.minGrowth : '',

@@ -55,6 +55,7 @@ INSERT INTO sdx_api_endpoint_pricing (code, name, description, credits_per_call,
   ('asin_competitor', '查 ASIN 竞品数据', '查询 ASIN 的竞品数据', 10, 'online', NOW()),
   ('product_research', '选产品', '多维条件筛选潜力产品', 10, 'online', NOW()),
   ('asin_sales_trend', 'ASIN 销量趋势', 'ASIN 历史销量趋势', 10, 'online', NOW()),
+  ('first_category', '查一级类目', '查询亚马逊站点一级类目列表', 5, 'online', NOW()),
   -- 卖家精灵官方 MCP 代理工具（编码 = ss_ + 上游工具名）
   ('ss_keepa_info', 'Keepa 信息', NULL, 10, 'online', NOW()),
   ('ss_review', '评论分析', NULL, 10, 'online', NOW()),
