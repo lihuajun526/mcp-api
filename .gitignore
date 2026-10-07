@@ -35,6 +35,8 @@ Thumbs.db
 
 # Node (if used for tooling)
 node_modules/
+# Release build output (produced by scripts/pack.js)
+dist-mcp-api/
 
 # Python (if used for tooling)
 __pycache__/

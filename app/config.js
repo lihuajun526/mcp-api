@@ -17,7 +17,9 @@ module.exports = {
   redis: {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: Number(process.env.REDIS_PORT || 6379),
-    password: process.env.REDIS_PASSWORD || undefined
+    password: process.env.REDIS_PASSWORD || undefined,
+    // 与机上其它服务共用 Redis 实例时，用独立 db 隔离本项目键空间
+    db: Number(process.env.REDIS_DB || 0)
   },
   mcp: {
     apiKeyHeader: process.env.MCP_SECURITY_API_KEY_HEADER || 'X-API-Key',

@@ -1,0 +1,185 @@
+name: Pack & Deploy (3 nodes)
+
+# 流水线：打包 + 混淆 → 并行上传三台服务器 → 解压 → 重启 → 健康校验
+#
+# 目标节点（登录账号均为 ubuntu，应用部署在 /home/ubuntu/.space/app/mcp-api）：
+#   tmq01  43.156.1.37     内网 172.22.16.14
+#   tmq02  43.156.54.160   内网 172.22.16.22
+#   tmq03  43.153.215.155  内网 172.22.16.28（MySQL / Redis / nginx 入口）
+#
+# 版本包内 app/ 已由 scripts/pack.js 用 javascript-obfuscator 混淆。
+# 应用配置（含 MCP 密钥等）放在应用目录之外的 /home/ubuntu/.space/app/mcp-api.env，
+# 不会被发布包覆盖；首次部署时由 deploy/restart.sh 从 deploy/env.server.template 生成。
+#
+# 需要在仓库配置的 Secret（Settings → Secrets and variables → Actions）：
+#   DEPLOY_SSH_KEY  必填，三台服务器通用私钥全文（本地 ~/doc/keys/cvm.pem 内容）
+# 可选 Variables（不配则用默认值）：
+#   DEPLOY_USER     默认 ubuntu
+#   DEPLOY_PORT     默认 22
+
+on:
+  push:
+    branches: [main, master, dev]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.analysis/**'
+      - '.workbuddy/**'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-mcp-api-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_NAME: mcp-api
+  DIST_NAME: dist-mcp-api
+  PACKAGE_FILE: mcp-api.zip
+  DEPLOY_USER: ${{ vars.DEPLOY_USER || 'ubuntu' }}
+  DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+  DEPLOY_DIR: /home/ubuntu/.space/app
+  DEPLOY_STAGE: /tmp/mcp-api-release
+
+jobs:
+  # ============================================================
+  # 1. 打包：生成含生产依赖的发布目录、混淆源码并归档
+  # ============================================================
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build release folder (with obfuscation)
+        id: pack
+        run: node scripts/pack.js
+
+      - name: Zip release
+        run: |
+          zip -rq "${{ env.PACKAGE_FILE }}" "${{ env.DIST_NAME }}"
+          ls -lh "${{ env.PACKAGE_FILE }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_FILE }}
+          path: ${{ env.PACKAGE_FILE }}
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Summary
+        run: |
+          {
+            echo "### 打包结果"
+            echo ""
+            echo "| 项 | 值 |"
+            echo "|---|---|"
+            echo "| 版本 | ${{ steps.pack.outputs.version }} |"
+            echo "| 提交 | ${{ steps.pack.outputs.commit }} |"
+            echo "| 分支 | \`${{ github.ref_name }}\` |"
+            echo "| 混淆 | app/**/*.js 已混淆 |"
+            echo "| 包体 | $(du -h "${{ env.PACKAGE_FILE }}" | cut -f1) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ============================================================
+  # 2. 部署：三台并行上传 → 解压 → 重启 → 健康校验
+  # ============================================================
+  deploy:
+    name: Deploy to ${{ matrix.host }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [package]
+    if: ${{ needs.package.result == 'success' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        host:
+          - 43.156.1.37
+          - 43.156.54.160
+          - 43.153.215.155
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_FILE }}
+
+      - name: Upload package via scp
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ matrix.host }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ env.DEPLOY_PORT }}
+          source: ${{ env.PACKAGE_FILE }}
+          target: ${{ env.DEPLOY_STAGE }}
+
+      - name: Unzip and restart service
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ matrix.host }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ env.DEPLOY_PORT }}
+          command_timeout: 5m
+          script_stop: true
+          script: |
+            set -e
+            APP_DIR="${{ env.DEPLOY_DIR }}/${{ env.APP_NAME }}"
+            STAGE="${{ env.DEPLOY_STAGE }}"
+            PKG="$STAGE/${{ env.PACKAGE_FILE }}"
+            DIST="${{ env.DIST_NAME }}"
+
+            echo "----- 1/6 解压到暂存目录 -----"
+            rm -rf "$STAGE/.release"
+            mkdir -p "$STAGE/.release"
+            unzip -oq "$PKG" -d "$STAGE/.release"
+            test -d "$STAGE/.release/$DIST"
+
+            echo "----- 2/6 停止旧版本 -----"
+            if [ -x "$APP_DIR/deploy/restart.sh" ]; then
+              (cd "$APP_DIR" && ./deploy/restart.sh stop) || true
+            fi
+
+            echo "----- 3/6 备份并切换新版本 -----"
+            mkdir -p "${{ env.DEPLOY_DIR }}"
+            rm -rf "${APP_DIR}-bak"
+            if [ -d "$APP_DIR" ]; then mv "$APP_DIR" "${APP_DIR}-bak"; fi
+            mv "$STAGE/.release/$DIST" "$APP_DIR"
+            rm -rf "$STAGE/.release"
+            rm -f "$PKG"
+            chmod +x "$APP_DIR/deploy/restart.sh"
+
+            echo "----- 4/6 执行重启脚本 -----"
+            (cd "$APP_DIR" && ./deploy/restart.sh restart)
+
+            echo "----- 5/6 安装运维脚本 -----"
+            (cd "$APP_DIR" && ./deploy/restart.sh install) || true
+
+            echo "----- 6/6 健康校验 -----"
+            (cd "$APP_DIR" && ./deploy/restart.sh status)
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### 部署结果 — ${{ matrix.host }}"
+            echo ""
+            echo "| 项 | 值 |"
+            echo "|---|---|"
+            echo "| 状态 | ${{ job.status }} |"
+            echo "| 目标 | \`${{ env.DEPLOY_USER }}@${{ matrix.host }}:${{ env.DEPLOY_DIR }}/${{ env.APP_NAME }}\` |"
+            echo "| 提交 | \`${{ github.sha }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
