@@ -48,12 +48,18 @@ async function main() {
 
   console.log('== 3. 真实调用 ss_trademark_country_list ==');
   const okResult = await proxyTools.handleProxyCall('ss_trademark_country_list', {});
-  assert(okResult.code === 'OK' && Array.isArray(okResult.data) && okResult.data.length > 100, '信封统一 {code:OK,data:[...]}', okResult.code);
+  const okPayload = JSON.parse(okResult.content[0].text);
+  assert(
+    okResult.isError === false && okPayload.code === 'OK' && Array.isArray(okPayload.data) && okPayload.data.length > 100,
+    'MCP 信封合规 {content:[{type:text,text:{code:OK,data:[...]}}],isError:false}',
+    okPayload.code
+  );
 
   console.log('== 4. returnFields 裁剪（本地 buildSuccess 行为复用）==');
   const trimmed = await proxyTools.handleProxyCall('ss_trademark_country_list', { returnFields: 'office' });
+  const trimmedPayload = JSON.parse(trimmed.content[0].text);
   assert(
-    trimmed.code === 'OK' && trimmed.data.every((it) => Object.keys(it).length === 1 && it.office),
+    trimmedPayload.code === 'OK' && trimmedPayload.data.every((it) => Object.keys(it).length === 1 && it.office),
     'returnFields=office 生效'
   );
 
@@ -67,7 +73,8 @@ async function main() {
 
   console.log('== 6. 真实业务调用 ss_keepa_info ==');
   const keepa = await proxyTools.handleProxyCall('ss_keepa_info', { marketplace: 'US', asin: 'B07Z82895W' });
-  assert(keepa.code === 'OK' && keepa.data && typeof keepa.data === 'object', 'keepa_info 返回商品画像数据');
+  const keepaPayload = JSON.parse(keepa.content[0].text);
+  assert(keepaPayload.code === 'OK' && keepaPayload.data && typeof keepaPayload.data === 'object', 'keepa_info 返回商品画像数据');
 
   console.log(`\n结果: ${passed} passed, ${failed} failed`);
   proxyTools.close();

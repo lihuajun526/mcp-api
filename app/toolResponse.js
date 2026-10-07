@@ -1,6 +1,7 @@
 /**
  * MCP 工具响应统一处理：
- * 1. buildSuccess(args, data) —— 统一包裹为 { code: 'OK', message: '成功', data }；
+ * 1. buildSuccess(args, data) —— 按 MCP 规范包裹为 { content: [{type:"text", text: JSON}], isError: false }，
+ *    text 内容为业务信封 { code: 'OK', message: '成功', data }；
  * 2. sanitizeInternalFields(data) —— 深度剔除上游内部字段（guestId/took/url/guestVisited/terminal）；
  * 3. applyReturnFields(data, returnFields) —— 按官方 returnFields 参数裁剪返回字段，
  *    大幅降低上下文 Token 消耗（对齐 open.sellersprite.com 的 MCP 行为）。
@@ -77,15 +78,20 @@ function applyReturnFields(data, returnFields) {
 }
 
 /**
- * 统一成功响应：
- * { code: 'OK', message: '成功', data: <清理内部字段 + 按 returnFields 裁剪后的数据> }
+ * 统一成功响应（MCP 规范）：
+ * { content: [{ type: 'text', text: '{"code":"OK","message":"成功","data":...}' }], isError: false }
+ * text 内为业务信封，保持 { code, message, data } 结构供模型/调用方解析。
  */
 function buildSuccess(args, data) {
   let cleaned = sanitizeInternalFields(data);
   if (args && args.returnFields) {
     cleaned = applyReturnFields(cleaned, args.returnFields);
   }
-  return { code: 'OK', message: '成功', data: cleaned };
+  const payload = { code: 'OK', message: '成功', data: cleaned };
+  return {
+    content: [{ type: 'text', text: JSON.stringify(payload) }],
+    isError: false
+  };
 }
 
 module.exports = {

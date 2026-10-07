@@ -17,21 +17,26 @@ function fail(id, code, message) {
 }
 
 /**
- * 工具执行错误统一包裹为 { code, message, data }，
- * data 携带 hint（下一步处理建议）等结构化信息，便于调用方/模型决定后续动作。
+ * 工具执行错误统一包裹为 MCP 规范格式：
+ * { content: [{ type: 'text', text: '{"code":...,"message":...,"data":...}' }], isError: true }
+ * text 内为业务信封，data 携带 hint（下一步处理建议）等结构化信息，便于调用方/模型决定后续动作。
  */
 function errorEnvelope(e) {
   // 注意：不向外暴露 e.url 等第三方/内部实现信息；url 仅记录到服务端日志
   // 仅对已知业务错误类型透出 message，未知系统错误（如数据库连接失败）使用通用提示，避免暴露内部实现细节
   const isSafeError = e instanceof BusinessError || e instanceof UpstreamError;
-  const data = {};
-  if (e.upstreamCode !== undefined && e.upstreamCode !== null) data.upstreamCode = e.upstreamCode;
-  if (e.httpStatus !== undefined && e.httpStatus !== null) data.httpStatus = e.httpStatus;
-  if (e.hint) data.hint = e.hint;
-  return {
+  const detail = {};
+  if (e.upstreamCode !== undefined && e.upstreamCode !== null) detail.upstreamCode = e.upstreamCode;
+  if (e.httpStatus !== undefined && e.httpStatus !== null) detail.httpStatus = e.httpStatus;
+  if (e.hint) detail.hint = e.hint;
+  const payload = {
     code: e.errorCode || 'INTERNAL_ERROR',
     message: isSafeError ? (e.message || 'internal error') : 'internal error',
-    data: Object.keys(data).length ? data : null
+    data: Object.keys(detail).length ? detail : null
+  };
+  return {
+    content: [{ type: 'text', text: JSON.stringify(payload) }],
+    isError: true
   };
 }
 
