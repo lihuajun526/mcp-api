@@ -8,6 +8,20 @@ class BusinessError extends Error {
 }
 
 /**
+ * 查询目标不存在（如 ASIN 未入库）。
+ * 继承 BusinessError，使 errorEnvelope 的 isSafeError 判断自动生效，
+ * message 可安全透出给调用方/模型。
+ */
+class NotFoundError extends BusinessError {
+  constructor(message, options = {}) {
+    super(message, 404);
+    this.name = 'NotFoundError';
+    this.errorCode = 'NOT_FOUND';
+    this.hint = options.hint || null;
+  }
+}
+
+/**
  * 上游（卖家精灵）接口调用错误。
  * 携带结构化信息，便于上层判断下一步处理方式：
  * - upstreamCode: 上游返回的业务错误码
@@ -32,5 +46,6 @@ class UpstreamError extends Error {
 
 module.exports = {
   BusinessError,
+  NotFoundError,
   UpstreamError
 };

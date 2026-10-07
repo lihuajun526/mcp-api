@@ -1,6 +1,7 @@
 const { queryAsinSalesTrend } = require('../../services/queries/asinSalesTrendQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { resolveToolMarketId } = require('../../utils/validation');
+const { NotFoundError } = require('../../errors');
 
 module.exports = {
   name: 'asin_sales_trend',
@@ -20,6 +21,11 @@ module.exports = {
     };
 
     const data = await queryAsinSalesTrend(user, params);
+    if (!data || !data.asin || !data.asin.asin) {
+      throw new NotFoundError(`ASIN ${args.asin} not found on marketplace ${marketplace}`, {
+        hint: '请确认 ASIN 和站点是否正确，该商品可能未被收录'
+      });
+    }
     return buildSuccess(args, data);
   }
 };

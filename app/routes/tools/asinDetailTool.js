@@ -1,6 +1,7 @@
 const { queryAsinDetail } = require('../../services/queries/asinDetailQuery');
 const { buildSuccess } = require('../../toolResponse');
 const { assertToolMarketplace } = require('../../utils/validation');
+const { NotFoundError } = require('../../errors');
 
 module.exports = {
   name: 'asin_detail',
@@ -28,6 +29,11 @@ module.exports = {
     };
 
     const detail = await queryAsinDetail(user, params);
+    if (!detail || !detail.asin) {
+      throw new NotFoundError(`ASIN ${args.asin} not found on marketplace ${marketplace}`, {
+        hint: '请确认 ASIN 和站点是否正确，该商品可能未被收录'
+      });
+    }
     return buildSuccess(args, detail);
   }
 };

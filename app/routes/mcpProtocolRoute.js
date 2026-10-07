@@ -137,4 +137,19 @@ router.post('/mcp', async (req, res) => {
   }
 });
 
+// MCP Streamable HTTP：本服务为无状态、非流式实现，不提供 GET 独立 SSE 通道。
+// 规范要求此时必须回 405 Method Not Allowed（而不是 404）：
+// 官方 SDK 客户端对 405 判定为「服务端不提供 SSE」并静默返回，
+// 对其他非 2xx（尤其 404「Cannot GET /mcp」）则会抛 StreamableHTTPError 并触发 onerror。
+router.get('/mcp', (req, res) => {
+  res.set('Allow', 'POST, DELETE');
+  res.status(405).end();
+});
+
+// 同理：无会话状态可终止，DELETE 亦回 405；规范允许客户端忽略该响应。
+router.delete('/mcp', (req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).end();
+});
+
 module.exports = router;

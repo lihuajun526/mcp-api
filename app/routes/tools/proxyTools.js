@@ -95,7 +95,8 @@ async function listProxiedTools() {
       name: prefix + t.name,
       description: (t.description || '').slice(0, 1024),
       // 入参适配层：按工具覆盖对外 schema（如 keyword_order 暴露 year/month/week，隐藏 date 必填）
-      inputSchema: adaptProxyToolSchema(t.name, t.inputSchema || { type: 'object', properties: {} })
+      inputSchema: adaptProxyToolSchema(t.name, t.inputSchema || { type: 'object', properties: {} }),
+      annotations: { readOnlyHint: true }
     }));
 }
 

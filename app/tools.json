@@ -100,6 +100,9 @@
         "marketplace"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -153,6 +156,9 @@
         "asin"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -476,6 +482,9 @@
         "marketplace"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -521,6 +530,9 @@
         "asin"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -661,6 +673,9 @@
         "asin"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -706,6 +721,9 @@
         "asin"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -952,6 +970,9 @@
         "keywords"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -1228,6 +1249,9 @@
         "asinList"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -1279,6 +1303,9 @@
         "bsr"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -1339,9 +1366,13 @@
         }
       },
       "required": [
-        "marketplace"
+        "marketplace",
+        "keyword"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -1557,6 +1588,9 @@
         "keyword"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -1767,6 +1801,9 @@
         "marketplace"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -1961,6 +1998,9 @@
         "marketplace"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2011,6 +2051,9 @@
         "asin"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2061,6 +2104,9 @@
         "asinList"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2168,6 +2214,9 @@
         "asinList"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2503,6 +2552,9 @@
         "marketplace"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2549,6 +2601,9 @@
         "marketplace"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2592,6 +2647,9 @@
         "asin"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2847,6 +2905,9 @@
         "keywordList"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   },
   {
@@ -2887,6 +2948,9 @@
         "marketplace"
       ],
       "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
     }
   }
 ]

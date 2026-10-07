@@ -6,8 +6,8 @@ module.exports = {
   name: 'google_trend',
 
   async handle(args, user) {
-    if (!args.marketplace) {
-      const err = new Error('marketplace is required');
+    if (!args.marketplace || !args.keyword) {
+      const err = new Error('marketplace and keyword are required');
       err.code = -32602;
       throw err;
     }

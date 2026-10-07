@@ -90,6 +90,7 @@ function buildSuccess(args, data) {
   const payload = { code: 'OK', message: '成功', data: cleaned };
   return {
     content: [{ type: 'text', text: JSON.stringify(payload) }],
+    structuredContent: payload, // MCP 2025-03-26：供支持结构化输出的客户端直接消费，无需 JSON.parse
     isError: false
   };
 }
