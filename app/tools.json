@@ -2952,5 +2952,17 @@
     "annotations": {
       "readOnlyHint": true
     }
+  },
+  {
+    "name": "user_quota",
+    "description": "查询当前用户的剩余额度：返回剩余积分（credits）与每分钟调用上限（rateLimitQpm）。用于在调用其它数据接口前感知账户余量；额度查询本身不消耗积分、不产生调用记录。鉴权由服务端处理，模型不要传递 API Key。返回字段：credits（剩余积分）、rateLimitQpm（每分钟调用上限）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
   }
 ]

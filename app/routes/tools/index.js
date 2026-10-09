@@ -20,6 +20,7 @@ const tools = [
   require('./productNodeTool'),
   require('./asinSalesTrendTool'),
   require('./categoryFirstTool'),
+  require('./userQuotaTool'),
 ];
 
 module.exports = Object.fromEntries(tools.map((t) => [t.name, t]));
