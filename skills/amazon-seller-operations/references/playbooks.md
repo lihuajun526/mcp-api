@@ -1,503 +1,395 @@
-# 运营场景作业流（Playbooks）
+# 运营场景作业流（Playbooks P1~P27）
 
-> 每个 Playbook = 业务问题 → 工具调用序列 → 判读逻辑 → 输出物。工具名后括号内为关键入参。
-> 通用纪律：**先完成下方前置确认，再执行任何步骤**；默认带 `returnFields` 收敛字段；不编造数据。
-> `ss_market_*` 等 request 包裹型工具（含 `ss_traffic_source`）的入参需放进 `request` 对象。
-> 无数据依赖的工具调用应**并行发起**，减少等待时间。
-
----
-
-## 前置参数确认（所有 Playbook 通用，执行任何步骤前必须完成）
-
-> **每次对话开始时必须执行此检查，42 个工具依赖 marketplace，传错即数据错配，所有分析作废。**
-
-### Step 0-A：确认 marketplace（必问，无一例外）
-
-**触发**：用户未在问题中明确给出站点代码（US/JP/UK/DE 等）时。
-
-**动作**：立即向用户提问，**不得假设，不得默认 US**，在获得答复前不调用任何工具。
-
-**推荐话术**：
-> 请问需要查哪个亚马逊站点的数据？支持：US（美国）/ JP（日本）/ UK（英国）/ DE（德国）/ FR（法国）/ IT（意大利）/ ES（西班牙）/ CA（加拿大）/ IN（印度）/ MX（墨西哥），部分工具还支持 BR / AU / AE / SA。
-
-**常见陷阱**：
-- 用户说"帮我查亚马逊……" → 未指定站点，必须问
-- 用户说"我在美国做" → 不等于分析 US 站，可能在研究 DE 机会，必须问
-- 用户提供了 ASIN（如 B07Z82895W）→ ASIN 不绑定站点，必须问
-- 用户说"查美国的" → 可以推断 US，**但仍需用"美国 US 站，对吗？"二次复述确认**，防止歧义
-
-**例外**：`ss_trademark_country_list`、`ss_trademark_list`、`ss_trademark_stats`、`ss_trademark_detail` 这 4 个商标工具不使用 `marketplace`，改问"要查哪个国家/地区的商标注册？"并用 `office` 参数。
+> 每个 Playbook = 触发 → 调用序列（**同一行 `‖` 连接的调用并行发起**）→ 判读 → 输出。
+> 前置：按 SKILL.md §2 完成最小确认；参数细节查 tools-reference；阈值与公式**只引用** thresholds.md（下文记作 `T§x`）。
+> 通用：带 returnFields 预设（tools-reference §F）；不编造字段；非英语站先翻译关键词；输出带口径行与置信度。
 
 ---
 
-### Step 0-B：确认时间范围（按场景判断）
+## P1. 蓝海选品（从 0 找机会）
 
-**触发**：分析明确涉及时间维度，或用户给出了模糊时间表达时。
+**触发**：帮我找 XX 站的蓝海 / 什么品值得做。
 
-| 用户表达 | 处理方式 |
-|---------|---------|
-| "最近的" / "现在" / "当前" | 使用 API 默认，**明确告知**"最近月份数据可能不完整，若需完整数据可指定上月（如 202509）" |
-| "上个月" | 换算成 yyyyMM 并**复述确认**："上个月即 202509，对吗？" |
-| "今年 X 月" / "X 月份" | 换算后复述，如"8 月即 202508，对吗？" |
-| 跨月对比 | 要求用户确认起止月份，同一分析内保持相同 month |
-| 未提及时间 | 默认最近完整月份，**在输出结论时标注所用月份** |
+1. 定范围：用户给了大类 → `product_node(keyword=类目名)` 拿父 `nodeIdPath`；没给 → `market_research()` 不传 nodeIdPath 看全部大类，挑 2~3 个。
+2. **一次筛子类目**：`market_research(nodeIdPath=父, minAvgUnits, maxGoodsCrn=50, maxBrandCrn=50, maxAmazonSelfProportion=25, minNewProportion=5, minAvgProfit=20, order={field:"avg_units",desc:true}, returnFields=MARKET_SCAN)` → 候选子类目 5~10 个。（`T§2.2`；非 US 站按 `T§1` 缩放销量）
+3. 需求验证（并行）：
+   `aba_research_monthly(departments=[first_category 匹配值], searchModel=3)` ‖ `aba_research_weekly(departments=…, searchModel=4)` ‖ `keyword_research(keywords=候选核心词, returnFields=KW_MARKET)`
+4. 落到商品：`product_research(nodeIdPaths=[候选], availableMonth=12, minUnits, maxRatings=300, order={field:"total_units",desc:true}, returnFields=ASIN_CORE)` → 看"新品能否卖起来"。
+5. 结构快筛（Top 2 候选）：`ss_market_research_statistics` ‖ `ss_market_product_concentration` ‖ `ss_market_price_distribution`。
+6. 趋势：`google_trend(keyword=核心词, monthly=true)`（长尾无数据则跳过并降置信度）。
+7. 商标/利润预检（入围后）：P12 快查品牌词冲突；P21 用售价带 + `fba` 估 GM。
 
-> 数据滞后提醒：SellerDex 数据有约 1~2 个月统计滞后，下结论时优先引用**上一个完整月份**，并在报告中标注。
-
----
-
-### Step 0-C：确认变体口径（选品/竞品/市场分析时）
-
-**触发**：调用 `competitor_lookup` / `product_research` / `asin_competitor` / `ss_keyword_order` 时，默认使用 `variation=N`（含变体）。
-
-- 大多数场景无需询问，直接用默认值 `N`（含变体，销量为父ASIN总量）。
-- 仅当用户明确说"排除变体"/"只看主款"时，切换为 `variation=Y`。
-- 输出时标注"数据口径：含变体（N）"，便于用户知晓。
+**判读**：按 `T§4.1` 机会评分卡打分；否决项优先。
+**输出**：候选赛道评分表（6 维 + 总分 + 置信度）→ Top 1~3 的切入价格带、核心词、代表 ASIN、建议上架时点。
 
 ---
 
-### Step 0-D：确认 topN（ss_market_* 类目体检时）
+## P2. 市场结构体检
 
-**触发**：调用任何 `ss_market_*` 工具前。
+**触发**：这个类目竞争激烈吗 / 定价带怎么定。
 
-- 默认 `topN=10`（取头部前10商品做集中度对比），适用于大多数场景。
-- 若用户说"看头部前20名"或"更大样本"，调整为 `topN=20`。
-- 输出时标注"头部样本：topN=10"。
+`product_node` 拿 `nodeIdPath` 后按档位：
+- **快筛**：`ss_market_research_statistics` ‖ `ss_market_product_concentration` ‖ `ss_market_price_distribution`
+- **标准**（+3）：`ss_market_ratings_count_distribution` ‖ `ss_market_listing_date_distribution` ‖ `ss_market_seller_country_distribution`
+- **深度**（+7）：`ss_market_brand_concentration` ‖ `ss_market_seller_concentration` ‖ `ss_market_seller_type_concentration` ‖ `ss_market_rating_distribution` ‖ `ss_market_listing_trend_distribution` ‖ `ss_market_ebc_distribution` ‖ `ss_market_product_demand_trend`
 
----
+用户要看自己的位置时，在 `ss_market_product_concentration` 传 `asins=[自己]`。
 
-**完成 Step 0-A 至 0-D 后，方可执行以下各 Playbook 的具体步骤。**
-
----
-
-## P1. 蓝海选品（从 0 找机会赛道）
-
-**触发**：帮我找 XX 站点的蓝海类目 / 有什么值得做的新品。
-
-**步骤**
-1. `first_category(marketplace)` — 取站点一级类目；若用户已给类目名，语义匹配出 `category_value`。
-2. `product_node(marketplace, keyword=类目名)` 或 `product_node(nodeIdPath=顶层路径)` — 逐层向下拿到目标 `nodeIdPath`。
-3. `market_research(marketplace, month, nodeIdPath, topNum, newProduct=3, order={field:"avgProfit",desc:true})` — 看子类目健康度（规模/利润率/集中度/新品占比/退货率/自营占比）。
-4. 结构体检（见 P2）— 需要更细的竞争结构时，串联 `ss_market_*`。
-5. `keyword_research(marketplace, keywords=核心词, month, order={field:"supplyDemandRatio",desc:true})` — 从需求词验证需求与竞争。
-6. `aba_research_monthly(marketplace, date, departments=[category_value], searchModel=3)`（持续增长）或 `5`（潜力）— 交叉验证潜力词。
-7. `product_research(marketplace, month, nodeIdPaths=[nodeIdPath], keyword, ...区间, order={field:"total_units",desc:true})` — 落到 ASIN 机会商品。
-8. `google_trend(marketplace, keyword, intervalYear=5, monthly=false)` — 验季节性，判切入时点。
-
-**判读**：需求（searches/purchases）↑ + 竞争（products/adProducts/monopolyClickRate）↓ + 利润（avgProfit/price）合理 + 趋势（growth/yearlyGrowth）↑ + 退货率低 = 优先赛道。
-
-**筛选参考值**（结合类目均值使用）：
-- 月均销量 `avgUnits` ≥ 300；均价 `avgPrice` ≥ $20（高客单）
-- 毛利率 `avgProfit` ≥ 20%；退货率 `returnRatio` < 5%
-- 集中度 `top3ProductSales` < 50%；自营占比 `amazonSelfProportion` < 20%
-
-**输出**：候选赛道排序表 + Top 候选 ASIN + 建议切入词与备货时点。
+**判读**：`T§2.3`；品牌/卖家集中度一定和"同级类目均值"比较。
+**输出**：竞争结构报告（集中度、价格带、评价门槛、新品接受度、内容配置、卖家画像）+ 进入建议 + 标注档位。
 
 ---
 
-## P2. 市场结构体检（类目深度分析）
+## P3. 竞品拆解
 
-**触发**：这个类目竞争激烈吗 / 头部垄断程度如何 / 定价带怎么定。
+**触发**：分析这个 ASIN / 拆解这几个竞品。
 
-**步骤**（先 `product_node` 拿 `nodeIdPath`，再**并行**调用以下工具）
-1. `ss_market_research_statistics(request{marketplace, nodeIdPath, month, topN=10})` — 汇总。
-2. 集中度三件套（并行）：
-   - `ss_market_product_concentration`：商品集中度 = 头部销量 T / 样本销量 A。
-   - `ss_market_brand_concentration`：品牌集中度（含同级类目对比）。
-   - `ss_market_seller_concentration` / `ss_market_seller_type_concentration`：卖家（及 AMZ/FBA/FBM）集中度。
-3. `ss_market_price_distribution` — 价格区间分布、销量占比、平均销量占比、区间评分 → 找差异化定价带。
-4. `ss_market_ratings_count_distribution` + `ss_market_rating_distribution` — 评分数/星级分布 → 判断评价门槛。
-5. `ss_market_listing_date_distribution` + `ss_market_listing_trend_distribution` — 上架时长/时间分布 → 新品接受度与生命周期。
-6. `ss_market_ebc_distribution` — A+/视频内容配置四象限 → 内容投入优先级。
-7. `ss_market_product_demand_trend` — 浏览量、退货率、搜索购买比（与同类目对比）。
-8. `ss_market_seller_country_distribution` — 卖家国籍分布。
-
-**判读**
-- 集中度越高→头部垄断越强、新品生存空间越小；越低越适合新玩家切入。
-- 价格分布中「销量有支撑 + 平均评分偏低」的区间=差异化机会带。
-- 高评分数区间占比大→评价门槛高，需预留测评/广告预算。
-- 新品区间销量占比高→买家接受新品；老品长销占比高→类目稳固、打法成熟。
-- A+/视频配置越全的区间销量占比越高→内容边际回报越大，应优先补齐。
-
-**输出**：类目竞争结构报告（集中度、价格带、评价门槛、生命周期、内容配置、卖家画像）+ 进入建议。
-
----
-
-## P3. 竞品拆解（对标与差异分析）
-
-**触发**：分析某 ASIN / 帮我拆解这几个竞品。
-
-**步骤**
-1. 定竞品：`asin_competitor(marketplace, asin, size=60)` 自动找直接竞品；或 `competitor_lookup(marketplace, keyword=.../brand=..., order={field:"total_units",desc:true})`。
-2. `asin_detail(marketplace, asin)` — 品牌、价格、`bsrId`、`nodeIdPath`、评价、变体、`lqs`（一次一个，多个并行）。
-3. 销量（并行）：`asin_sales_trend`（月度长期、父/子体）+ `asin_prediction`（日粒度短期）。
-4. 流量结构：`traffic_keyword_stat(marketplace, asin)` → `traffic_keyword(marketplace, asin, order={field:"trafficPercentage",desc:true})` 看主力词、自然/广告占比（`naturalRatio`/`adRatio`）。
-5. 关联流量：`traffic_listing_stat(marketplace, asinList=[自己,竞品...])` → `traffic_listing(relations=[数量最大的类型])`。
-6. 词矩阵：`traffic_extend(marketplace, asinList=[多个竞品])` 找多竞品共同争夺的高价值词。
-7. 价格/BSR 历史：`ss_keepa_info(marketplace, asin, dailyLatest=true)` 看历史曲线，识别价格战与排名波动。
+1. 定竞品：`asin_competitor(asin, size=20)` 或用户给定列表。
+2. 并行一轮拿全：
+   `competitor_lookup(asins=[自己+竞品≤40], returnFields=ASIN_CORE)` ‖ `traffic_extend(asinList=[≤20], returnFields=…)` ‖ `traffic_listing_stat(asinList=[…])` ‖ `ss_keyword_order(asins=[≤20], reverseType=M, year, month, conversionType="E,S")`
+3. 逐个深挖 Top 3 竞品（并行）：`asin_sales_trend`（含详情，无需再调 asin_detail）‖ `ss_keepa_info(dailyLatest=true, 近 12 个月)`。
+4. 需要文案对比时才调 `asin_detail`（拿 `title/features/overviews/variationList`）。
 
 **判读**：
-- 竞品靠自然词多（`naturalRatio` > 60%）、广告词少→品牌自然流量强，硬拼广告难；
-- 广告词多（`latest7daysAds` 高）→依赖广告拉流，可打差异化占自然流量。
-- `FBT`/`VAV` 关联多→有捆绑/互补机会。
-- `lqs` 低（< 6）→竞品 Listing 不完善，内容优化可超越。
+- 流量结构 `T§2.5`：竞品 `naturalRatio` 高 → 自然词壁垒强，避免正面硬投；广告词多 → 可用 Listing/自然词抢位。
+- `traffic_extend` 中多个竞品都有排名、你没有的词 = 必补词。
+- 付费关联（SP/BCA）多 = 对手在抢详情页流量，可反向投放其 ASIN。
+- `ss_keepa_info` 价格与 BSR 联动 → 识别降价拉排名、Coupon 节奏。
 
-**输出**：竞品对比表（价格、销量、BSR、评价、利润、流量结构、历史价格）+ 差异化切入点。
+**输出**：竞品对比表（价格、销量、BSR、评价及增速、毛利率、LQS、自然/广告结构、价格历史）+ 共同争夺词 + 3 个差异化切入点。
 
 ---
 
 ## P4. 关键词调研与 Listing 优化
 
-**触发**：给 XX 产品做关键词规划 / 优化标题五点。
+**触发**：做词库 / 写标题五点 / 埋词。
 
-**步骤**
-1. `keyword_miner(marketplace, keywordList=[种子词...], filterRootWord=0, matchType=1)` — 扩长尾词库；用 `minRelevancy=60` 过滤相关性，`minSupplyDemandRatio` 和低 `minProducts` 判竞争，`maxSPR=15` 筛上首页易打词。
-2. `keyword_research(marketplace, keywords=核心词, month)` — 拿核心词市场量级、趋势、关联 ASIN、TOP3 品牌/类目。
-3. `keyword_conversion(marketplace, keyword=核心词, timeType=90D, keywordBidMatchType=exact)` — 转化率、PPC、ACOS，评估商业价值。
-4. `ss_keyword_research_trends(marketplace, keyword)` — 看词的历史趋势，避开衰退词。
-5. 反查对标：`traffic_keyword(marketplace, asin=竞品)` / `ss_keyword_order(marketplace, asins=[竞品], reverseType=M, year=..., month=..., conversionType=E,S)` — 看竞品靠哪些词拿量，对照自己是否收录。
+1. 种子词：用户给 + `traffic_keyword(asin=头部竞品, order={field:"trafficPercentage",desc:true}, size=50)` 提取主力词。非英语站先翻译。
+2. 扩词：`keyword_miner(keywordList=[种子≤200], minRelevancy=60, returnFields=KW_MINER, order={field:"searches",desc:true})`。
+3. 市场与趋势（并行）：`keyword_research(keywords=核心词, returnFields=KW_MARKET)` ‖ `ss_keyword_research_trends(keyword=Top 词)` ‖ `keyword_research(keywords=核心词, marketPeriod="S10,S11,S12")`（筛季节词）。
+4. 收录差距：`traffic_extend(asinList=[自己+竞品])` → 竞品有排名、自己无排名的词。
 
-**判读与分层**
-- **标题核心词**：`searches` ≥ 5000 + `purchaseRate`/`searchConvRate` 高 + `spr` 低 + 竞争可控。
-- **广告词**：`conversionRate`（click-to-buy）高 + `bid` 低于产品利润的 15%。
-- **铺词/长尾**：`wordCount` ≥ 3、`products` 少、`supplyDemandRatio` 高。
-- **埋词优先级**：核心高转化词放标题/五点/A+；长尾词放 Search Terms / 后台。
-- **季节词**：用 `marketPeriod=S11,S12` 等筛旺季词，在旺季前 1 个月上词。
+**分层**：
+- 标题：搜索量 Top + 购买率绿灯 + 与产品强相关（2~3 个）
+- 五点/A+：次核心词与卖点词、场景词
+- Search Terms：长尾（`wordCount` ≥ 3）、同义词、当地语言变体、不放品牌词
+- 季节词：旺季前 4~6 周上线
 
-**输出**：分层关键词表（标题/五点/Search Terms/后台）+ 埋词位置建议 + 「竞品已收录而自己缺失」的词清单。
+**输出**：分层词表（位置/搜索量/购买率/SPR）+ 竞品已收录我缺失的词 + 标题与五点改写示例。
 
 ---
 
 ## P5. 广告投放优化
 
-**触发**：这个词值不值得投 / ACOS 太高怎么办 / 广告词怎么出价。
+**触发**：投哪些词 / 出价多少。
 
-**步骤**
-1. `keyword_conversion(marketplace, keyword/包含词, timeType=WEEK|90D, keywordBidMatchType=exact|phrase|broad)` — `searchConvRate`/`clickConvRate`、`exactPpc/broadPpc/phrasePpc`、`exactAcos`、`exactBudget`、`top3Asins`/`top10Asins`。
-2. `traffic_keyword(marketplace, asin=自己, conversionKeywordTypes=[LOST])` — 转化流失词；`[INVALID]` 找否词候选；`[EXCELLENT]` 找优质词加投。
-3. `ss_keyword_order(marketplace, asins=[自己], reverseType=W, year=..., month=..., week=..., conversionType=L,I)` — 按周看转化流失/无效曝光词。
-4. `traffic_keyword(marketplace, asin=自己, order={field:"latest7daysAds",desc:true}, badges=[ADS])` — 看广告依赖度，`latest7daysAds` 高的词需确认转化。
-5. `keyword_miner(marketplace, keywordList=[现有词...])` / `traffic_extend(marketplace, asinList=[自己,竞品...])` — 拓低 `bid` + 高 `purchaseRate` 的新投放词。
+1. 先算钱：P21 得到 GM、目标 ACOS、**最高可承受 CPC**（`T§3.2`）。
+2. 候选词市场基准：`keyword_conversion(keyword=核心词, timeType=90D, keywordBidMatchType=exact, customAvgProductPrice=售价, returnFields=KW_ADS)`。
+3. 自身词表现（并行）：
+   `traffic_keyword(asin=自己, conversionKeywordTypes=["EXCELLENT"])` ‖ `traffic_keyword(asin=自己, conversionKeywordTypes=["LOST","INVALID"])` ‖ `traffic_keyword(asin=自己, badges=["ADS"], order={field:"latest1daysAds",desc:true})`
+4. 拓词：`traffic_extend(asinList=[自己+竞品], maxSPR=10)` ‖ `keyword_miner(keywordList=[现有词], maxSPR=15)` → 用最高 CPC 过滤。
 
-**判读**：
-- `exactAcos` < 毛利率 → 可维持或加预算、提竞价。
-- `exactAcos` > 毛利率 → 亏损，降竞价或加否词。
-- 词的 `conversionKeywordType=LOST` → 查 Listing/价格/库存后降竞价止损，不要盲目提价。
-- 广告词比例（`adRatio`）持续 > 70% → 说明自然流量严重不足，优先优化 Listing 而非加预算。
-- 新拓词优选：`spr` < 10 + `bid` < $1 + `purchaseRate` > 10%。
+**判读**（`T§3.2`）：
+- `exactPpc.value` ≤ 0.7×最高CPC → 加投；0.7~1.0 → 精准小预算；> 1.0 → 只投长尾或放弃。
+- EXCELLENT → 加预算/提价；LOST → 先查价格/评价/主图，再降价；INVALID → 否定。
+- 自然排名已稳定首页的词 → 降低广告出价，节省预算。
+- 有用户广告报表时：逐词比较"自身 CVR vs 市场 clickConvRate""实际 CPC vs 最高 CPC"。
 
-**输出**：投放词分层（加投/维持/降价/否词）+ 建议竞价区间（参考 `exactPpc.min~max`）+ 否词清单。
+**输出**：投放词分层（加投/维持/降价/否定）+ 每个词的建议出价区间（不超过最高 CPC）+ 否定词清单 + 预算建议。
 
 ---
 
 ## P6. 评论与口碑洞察
 
-**触发**：竞品差评在哪 / 用户最在意什么 / 怎么优化产品。
+1. 并行：`ss_review(asin, starList=[1,2,3], size=100)` ‖ `ss_review(asin, starList=[4,5], size=50)` ‖ `ss_review(asin, typeList=[1,2], size=30)`。
+2. 时间对比（改版/批次问题）：`ss_review(asin, starList=[1,2,3], startTimestamp=近90天)` vs 更早时间窗。
+3. 多竞品：对 Top 3 竞品重复步骤 1，合并归纳。
+4. 星级趋势：`ss_keepa_info` 的评分/评论数序列。
 
-**步骤**
-1. `ss_review(marketplace, asin, starList=[1,2,3])` — 拉中差评，归纳痛点。
-2. `ss_review(marketplace, asin, typeList=[1,2])` — 看图片/视频评论，了解真实使用场景。
-3. `ss_review(marketplace, asin, typeList=[4])` — 看 Vine 评论（早期口碑，代表产品初上市质量）。
-4. `ss_review(marketplace, asin, startTimestamp=近3月起点ms, endTimestamp=now_ms)` — 按时间窗看近期口碑变化（如改版后/节假日后）。
-5. 结合 `asin_detail` 的 `rating`/`ratings` 与 `ss_market_rating_distribution` 判断类目整体口碑水位。
-
-**判读**：
-- 差评集中的功能点 = 产品迭代优先级；出现频率最高的问题必须改。
-- 高频「没有 XX 功能/尺寸不对」= 差异化卖点来源。
-- 若差评来自物流/包装 → 属可快速修正项（不涉及产品开模）。
-- Vine 评论差 = 产品质量问题，须在大批货前解决。
-- 竞品 `rating` < 3.8 = 进入机会，做好产品力可快速超越。
-
-**输出**：差评痛点清单（按频次）+ Listing 卖点/五点改写建议 + 产品迭代清单（优先级排序）。
+**判读**：按主题聚类（质量/尺寸/功能/包装/物流/描述不符），按频次排序；物流包装类 = 快速修复；功能质量类 = 产品迭代；Vine 差评集中 = 量产前必须解决。
+**输出**：痛点 Top 10（频次 + 代表原话）+ 好评卖点 Top 5 + Listing 改写建议 + 产品改良清单。
 
 ---
 
-## P7. 促销与价格监控
+## P7. 价格与促销监控
 
-**触发**：竞品在打价格战吗 / 优惠力度多大 / 历史最低价是多少。
+1. 并行：`ss_asin_detail_with_coupon_trend(asin)` ‖ `ss_keepa_info(asin, dailyLatest=true, 近 6~12 个月)` ‖ `asin_prediction(asin)`。
+2. 多竞品：每个 ASIN 重复步骤 1（`ss_asin_detail_with_coupon_trend` 已含 Coupon 趋势，不再调 `ss_asin_coupon_trend`）。
 
-**步骤**
-1. `ss_asin_coupon_trend(marketplace, asin)` — 原价、优惠类型（金额/百分比）、优惠金额、成交价。
-2. `ss_asin_detail_with_coupon_trend(marketplace, asin)` — 详情 + 优惠趋势一起看（效率更高）。
-3. `ss_keepa_info(marketplace, asin, dailyLatest=true)` — 价格/BSR 历史曲线，识别涨价/降价节点与排名联动。
-4. `asin_sales_trend(marketplace, asin)` / `asin_prediction(marketplace, asin)` — 验证价格变动对销量的影响。
-
-**判读**：
-- 优惠期（coupon）销量明显上行 → 价格弹性高，可计划促销节点。
-- `ss_keepa_info` 显示长期低价 + BSR 稳定 → 低成本壁垒高，慎入；低价 + BSR 波动 → 价格战消耗，不可持续。
-- 竞品节假日/Prime Day 前降价 20%+ → 提前布局促销，不跟则丢流量。
-- 成交价长期低于产品标价的 60% → 竞品可能亏损清库，机会期或陷阱。
-
-**输出**：竞品价格/促销节奏表 + 自身定价与促销时点建议 + 历史最低价参考。
+**判读**：降价/Coupon 当日起 `dailyItemList.sales` 明显上升 = 价格弹性高；长期低价 + BSR 稳 = 成本壁垒；低价 + BSR 波动 = 价格战消耗；大促前 2 周降价 ≥ 15% = 对手备战信号。
+**输出**：价格/促销节奏表（日期、原价、成交价、Coupon、BSR 变化）+ 历史最低价 + 自身定价与促销时点建议。
 
 ---
 
-## P8. 市场/类目评估（进入决策）
+## P8. 类目进入决策
 
-**触发**：XX 类目能做吗 / 这个市场值不值得进入。
+1. `product_node` → `nodeIdPath`。
+2. 并行：`market_research(nodeIdPath=父节点, returnFields=MARKET_SCAN)`（定位目标子类目那一行）‖ P2 标准档 ‖ `product_research(nodeIdPaths=[目标], order={field:"total_units",desc:true}, size=20, returnFields=ASIN_CORE)`。
+3. 门槛与收益：头部 `bsrId` → `bsr_prediction(categoryId, bsr=目标排名)`；核心词 `keyword_conversion` → P21 算 GM 与最高 CPC。
 
-**步骤**
-1. `product_node(marketplace, keyword=类目)` → `nodeIdPath`。
-2. `market_research(marketplace, month, nodeIdPath, topNum=10, newProduct=3)` — 类目整体规模/均价/利润率/集中度/新品占比/退货率/自营占比。
-3. 结构体检（P2）— `ss_market_*` 深挖集中度与分布。
-4. `product_research(marketplace, month, nodeIdPaths=[...], order={field:"total_units",desc:true})` — 看头部实际商品，验证垄断情况。
-5. `bsr_prediction(marketplace, categoryId, bsr=目标排名)` — 估算目标 BSR 对应销量，判断投入产出。
-
-**决策框架**
-| 维度 | 绿灯 | 黄灯 | 红灯 |
-|------|------|------|------|
-| 月均销量 avgUnits | ≥ 500 | 200~500 | < 200 |
-| 毛利率 avgProfit | ≥ 25% | 15~25% | < 15% |
-| 头部集中度 top3ProductSales | < 40% | 40~60% | > 60% |
-| 退货率 returnRatio | < 3% | 3~7% | > 7% |
-| 自营占比 amazonSelfProportion | < 10% | 10~25% | > 25% |
-| 新品接受度 newProportion | ≥ 15% | 8~15% | < 8% |
-
-**输出**：类目评估结论 + 进入门槛（评价数/SPR/广告成本）+ 目标 BSR 与预估销量。
+**判读**：`T§4.1` 评分卡 + 否决项。
+**输出**：做/不做 + 评分卡 + 进入门槛（评价数、SPR、冲首页成本、启动资金粗估）+ 目标 BSR 与对应销量。
 
 ---
 
-## P9. 趋势与时点判断
+## P9. 趋势与时点
 
-**触发**：这个品现在做来得及吗 / 什么时候备货 / 旺季是什么时候。
+1. 并行：`google_trend(keyword, monthly=true, intervalYear=5)` ‖ `ss_aba_research_trend(keyword, timeGranularity=M)` ‖ `ss_keyword_research_trends(keyword)`。
+2. 验证：`asin_sales_trend(asin=头部竞品)`（2~3 个并行）。
+3. 短期：`aba_research_weekly(includeKeywords=词, searchModel=4)`。
 
-**步骤**
-1. `google_trend(marketplace, keyword, intervalYear=5, monthly=true)` — 5年月度曲线，找季节峰值与长期趋势方向（上升/平稳/衰退）。
-2. `aba_research_weekly(marketplace, year/month/week, includeKeywords=词, searchModel=4)` — 短期飙升词，判断近期需求急升。
-3. `ss_aba_research_trend(marketplace, keyword, timeGranularity=M)` — ABA 排名/搜索量趋势（月粒度）。
-4. `ss_keyword_research_trends(marketplace, keyword)` — 关键词趋势佐证，与 ABA 交叉验证。
-5. `asin_sales_trend(marketplace, asin=竞品)` — 竞品月度销量验证季节性（多个竞品并行）。
-
-**判读**：
-- Google Trend 值 > 75（峰值）+ ABA 排名上升 = 旺季确认；备货节点 = 峰值前 2.5~3 个月（含海运周期）。
-- 5年趋势整体斜向上 = 长期增长市场，值得布局；斜向下 = 衰退，谨慎进入。
-- ABA `searchRankGrowthRate` > 50% 连续3周 = 爆款信号，可考虑快速跟品。
-- 词的 `marketPeriod` 返回 S11/S12 = 强季节性，必须提前备货，错过旺季流量损失惨重。
-
-**输出**：季节曲线要点 + 备货/上架时点建议 + 趋势结论（上升/平稳/衰退）。
+**判读**：`T§2.6`；峰谷比 > 2.5 为强季节性，备货时点按 `T§3.4`。
+**输出**：季节曲线要点（峰值月、淡季月、峰谷比）+ 长期方向 + 上架/备货/广告加码时间表。
 
 ---
 
-## P10. 新品/爆款验证
+## P10. 新品 / 爆款验证
 
-**触发**：最近有什么爆款 / 谁在做得好但门槛低 / 跟品还是独立开发。
+1. 飙升词：`aba_research_weekly(departments, searchModel=4, minRankGrowthRate=50)`。
+2. 快速起量新品：`product_research(keyword=飙升词, availableMonth=6, minUnits=300, maxRatings=100, order={field:"total_units_growth",desc:true}, returnFields=ASIN_CORE)`。
+3. 拆打法（并行）：`asin_prediction(Top 3)` ‖ `ss_keyword_order(asins=[Top 3], reverseType=W, year, month, week, conversionType="E")` ‖ `traffic_listing_stat(asinList=[Top 3])`。
+4. 门槛：`keyword_conversion(核心词)` + SPR。
 
-**步骤**
-1. `aba_research_weekly(marketplace, year/month/week, searchModel=4, order={field:"searchRankGrowthRate",desc:true})` — 找近期上升词。
-2. `product_research(marketplace, month, keyword=该词, availableMonth=6, order={field:"total_units",desc:true})` — 筛近 6 个月上架商品，找快速起量新品。
-3. `asin_detail(marketplace, asin)` + `asin_sales_trend`/`asin_prediction`（并行）— 验证单品销量与上架时间。
-4. `traffic_keyword(marketplace, asin=爆品, conversionKeywordTypes=[EXCELLENT])` + `ss_keyword_order(marketplace, asins=[爆品], reverseType=M, year=..., month=...)` — 看它靠哪些词起量，复制打法。
-5. 门槛评估：`asin_detail.ratings`（评价数门槛）、`keyword_conversion.exactPpc`（广告成本）、`keyword_miner.spr`（上首页难度）。
-
-**判读**：
-- 上架 < 3 个月 + 月销量 > 300 + 评价 < 100 = 爆款早期，可快速跟进；
-- 上架 < 6 个月 + 月销量 > 500 + 评价 < 50 = 低门槛高机会，优先布局；
-- 词 `spr` < 10 + `bid` < $1.5 = 广告成本低，易拉流量。
-
-**输出**：爆款案例表（ASIN、上架时间、当前销量、起量词、门槛）+ 可复制要点 + 跟品 vs 独立开发建议。
+**判读**：上架 < 3 个月 + 月销 > 300 + 评价 < 100 = 爆款早期；`ratingsCv`/月销 > 8% 提示可能靠测评（`T§2.4`），复制难度高。
+**输出**：爆款案例表（ASIN、上架天数、月销、评价及增速、起量词、门槛）+ 跟品 vs 差异化开发建议。
 
 ---
 
 ## P11. 流量来源诊断
 
-**触发**：这个 ASIN 流量从哪来 / 自然流量占比多少 / 广告依赖度怎么样。
+1. 并行：`ss_traffic_source(request{marketplace, q=ASIN})` ‖ `traffic_keyword_stat(asin)` ‖ `traffic_listing_stat(asinList=[asin])`。
+2. 明细：`traffic_keyword(asin, order={field:"trafficPercentage",desc:true}, returnFields=TRAFFIC_KW)` ‖ `traffic_listing(asinList=[asin], relations=[数量最多的类型])`。
+3. 某个词的流量去向：`ss_traffic_source(request{marketplace, q=关键词})`。
 
-**步骤**
-1. `ss_traffic_source(request{marketplace, q=ASIN, month})` — 流量来源概览（自然/官方推荐/广告词分布）。
-2. `traffic_keyword_stat(marketplace, asin, month)` → `traffic_keyword(marketplace, asin, order={field:"trafficPercentage",desc:true})` — 拆自然词/广告词/AC词/ER词占比与主力词。
-3. `traffic_listing_stat(marketplace, asinList=[asin])` → `traffic_listing(marketplace, asinList=[asin], relations=[最大量类型])` — 关联流量（免费/付费）结构。
-4. `ss_keyword_order(marketplace, asins=[asin], reverseType=M, year=..., month=...)` — 出单词反查。
-
-**判读**：
-- `naturalRatio` > 60% = 自然流量健康，广告属于加速器；
-- `naturalRatio` < 30% = 严重依赖广告，停广告即掉排名，需系统做自然词优化；
-- 关联流量（FBT/VAV）占比 > 20% = 有捆绑机会，可开 FBT 广告或捆绑报单。
-
-**输出**：自然/广告/关联流量占比 + 流量来源结构 + 优化方向（收词/投放/关联）。
+**判读**：`T§2.5`。
+**输出**：自然/推荐/广告/关联四类流量占比 + 主力词清单 + 优化方向（收词/投放/关联/防守）。
 
 ---
 
-## P12. 品牌与商标合规前置
+## P12. 商标合规
 
-**触发**：这个名字能注册吗 / 会不会侵权 / 帮我查商标。
+1. 确定 office（SKILL §2）；不确定时 `ss_trademark_country_list`。
+2. 并行：`ss_trademark_list(request{text=品牌名, office=[…], niceClass=[产品类别], status=["Registered","Pending"]})` ‖ `ss_trademark_stats(request{office=[…], text=品牌名})`。
+3. 命中项：`ss_trademark_detail(office, brandId)`。
 
-> **注意**：本 Playbook 的 4 个工具均不使用 `marketplace`，改用 `office`（知识产权局代码）。
-> 执行前替换 Step 0-A 问法为："请问要查哪个国家/地区的商标？例如美国（US）、欧盟（EUIPO）、中国（CNIPA）、英国（UKIPO）、日本（JPO）等。"
-
-**步骤**
-1. `ss_trademark_country_list` — 取全部知识产权局（office）代码列表，据此确认用户指定市场的 office 代码。
-2. `ss_trademark_list(request{text=品牌名, office=[确认后的office代码], status=[Registered,Pending], niceClass=[产品对应尼斯分类]})` — 查同名/近似商标。
-3. `ss_trademark_stats(request{office=[确认后的office代码], text=品牌名})` — 按国家统计数量与状态分布，快速判断风险集中国家。
-4. `ss_trademark_detail(office=..., brandId=...)` — 看具体商标详情（权利人/类别/状态/有效期）。
-
-**判读**：
-- 目标类别（尼斯分类）存在 `Registered` 或 `Pending` 同名商标 → 高风险，需改名或规避。
-- 仅在无关类别注册 → 可推进，但建议在目标类别主动确权。
-- 多国已注册 = 全球布局品牌，绕不过去，需完全改名。
-
-**尼斯分类常用参考**：电子产品=9；厨具=21；玩具=28；服装=25；宠物用品=31；家居=20；健康/美容=3,5。
-
-**输出**：商标查重结论（风险等级：高/中/低）+ 建议品牌名/类别 + 后续确权动作。
+**尼斯分类参考**：3 化妆品/清洁 · 5 保健 · 8 手工具 · 9 电子 · 11 灯具/家电 · 18 箱包 · 20 家具 · 21 厨具/家居用品 · 24 纺织 · 25 服装鞋帽 · 28 玩具/运动 · 31 宠物食品 · 35 零售服务。
+**判读**：同类别 Registered/Pending 同名或近似 → 高风险（否决项）；仅其他类别 → 中风险，尽快在目标类别申请；多国注册 → 换名。
+**输出**：风险等级 + 冲突明细 + 建议动作。附声明：不覆盖专利与类目审核。
 
 ---
 
-## P13. 跨站市场选择（哪个国际站值得进入）
+## P13. 跨站市场选择
 
-**触发**：要不要开 DE 站 / 哪个欧洲站最值得进 / 日本站和美国站哪个机会大。
+**前置**：确认候选站点。非英语站先把核心词翻成当地语言（同时保留英文词对照）。
+1. **每个站分别** `product_node(keyword=类目当地语言名或英文名)` 拿各自 `nodeIdPath`（不要推算）。
+2. 每站并行：`market_research(nodeIdPath=该站路径, returnFields=MARKET_SCAN)` ‖ `keyword_research(keywords=当地语言核心词)` ‖ `ss_market_seller_country_distribution(request{…})` ‖ `ss_market_price_distribution(request{…})`。
+3. 趋势：`google_trend(marketplace=各站, keyword=当地语言词)`。
+4. AE/BR/AU/SA 没有 `market_research`/`product_node` → 只做关键词与 Keepa 层面的对比，并说明。
 
-> **特殊说明**：本 Playbook 涉及多个站点同时比较，Step 0-A 的问法改为："请确认您目前的**主站**（用于获取 nodeIdPath），以及想**对比的候选站点**（如 DE、UK、JP 等）？"
-
-**步骤**
-1. 确定产品的 `nodeIdPath`（在**已确认的主站**用 `product_node` 获取，再推算其他候选站点对应路径；不同站点的类目树结构不完全相同）。
-2. **并行**在候选站点（如 US/UK/DE/JP）分别调用：
-   - `market_research(marketplace=目标站, month, nodeIdPath=对应路径, topNum=10)` — 各站规模/均价/集中度/退货率。
-   - `ss_market_research_statistics(request{marketplace=目标站, nodeIdPath=..., month})` — 综合指标。
-3. 需求词验证：`keyword_research(marketplace=目标站, keywords=核心词, month)` — 不同站点搜索量与竞争对比（`keyword_research` 支持14站）。
-4. `ss_market_seller_country_distribution(request{marketplace=目标站, nodeIdPath=...})` — 中国卖家渗透率，判断竞争同质化程度。
-5. `ss_market_price_distribution(request{marketplace=目标站, nodeIdPath=...})` — 定价带差异，判断进入价格策略。
-6. `google_trend(marketplace=各站, keyword=核心词, intervalYear=5, monthly=true)` — 各站市场趋势对比。
-
-**判读**：
-- **规模优先**：US 最大但竞争最激烈；DE/UK 规模第二梯队，中国卖家渗透相对低。
-- **价格带**：欧洲站普遍可接受更高定价（消费者习惯），利润空间可能优于美国。
-- **集中度**：同品类在不同站点集中度差异较大，优先进入集中度 < 40% 的站点。
-- **语言/合规**：DE/FR/IT/ES 需本地语言 Listing；JP 需日文；合规成本纳入核算。
-- **中国卖家占比**：某站点中国卖家占比 < 30% + 搜索量 > 5000 = 蓝海机会。
-
-**输出**：各站点市场对比表（规模、竞争、定价、中国卖家占比、趋势）+ 推荐进入顺序 + 首选站点理由。
+**判读**：体量按 `T§1.2` 校正后比较；价格换算成本币占比；中国卖家占比、集中度、退货率按 `T§2.2/2.3`；语言合规成本（翻译、本地认证、VAT/EPR）计入风险维。
+**输出**：站点对比表 + 各站评分卡 + 推荐进入顺序。
 
 ---
 
-## P14. 新品上线 Launch 策略
+## P14. 新品 Launch
 
-**触发**：新品马上上架了 / 怎么做新品 Launch / 上新计划怎么制定。
+**上架前**
+1. 词库：P4。
+2. 门槛与预算：`keyword_conversion(核心词, customAvgProductPrice=售价)` → 按 `T§3.2` 算最高 CPC 与冲首页成本（SPR × CPA）；`competitor_lookup(asins=[标杆])` 看评价数与 LQS。
+3. 时点：P9，避开旺季尾声上架。
 
-**步骤（Launch 前 30 天）**
-1. 词库建立：
-   - `keyword_miner(marketplace, keywordList=[核心词,种子词], matchType=1)` — 拓展完整词库（建议 200+ 词）。
-   - `keyword_research(marketplace, keywords=核心词)` — 验证主词量级与 TOP3 品牌。
-   - `aba_research_monthly(marketplace, date=上月, departments=[类目], searchModel=1)` — 找热门词补充词库。
-2. 竞争门槛评估：
-   - `keyword_conversion(marketplace, keyword=核心词, timeType=90D, keywordBidMatchType=exact)` — 获取 `exactPpc`（广告竞价参考）、`exactAcos`（类目广告水位）。
-   - `traffic_keyword_stat(marketplace, asin=标杆竞品)` — 了解标杆需要多少流量词支撑。
-   - `asin_detail(marketplace, asin=标杆竞品)` — 对标 `ratings`（需追赶的评价数）、`lqs`（Listing 质量参考）。
-3. 季节时点验证：`google_trend` + `ss_aba_research_trend` 确认上架时点不在旺季尾声。
+**上架后 1~8 周（每周）**
+4. 并行：`asin_prediction(asin=自己)` ‖ `traffic_keyword_stat(asin=自己)` ‖ `ss_keyword_order(asins=[自己], reverseType=W, year, month, week)`。
+5. `traffic_keyword(asin=自己, conversionKeywordTypes=["EXCELLENT"])` → 集中预算。
 
-**步骤（上架第 1~4 周，持续追踪）**
-4. `asin_prediction(marketplace, asin=自己)` — 日粒度 BSR + 预估销量，判断起量节奏。
-5. `traffic_keyword_stat(marketplace, asin=自己)` — 每周检查收录词数增长。
-6. `traffic_keyword(marketplace, asin=自己, conversionKeywordTypes=[EXCELLENT])` — 找最快出单词，集中预算。
-7. `ss_keyword_order(marketplace, asins=[自己], reverseType=W, year=..., month=..., week=..., conversionType=E,S)` — 周粒度出单词反查。
-
-**Launch 资源分配参考**
-- 前 2 周：精准词广告（取 `spr` < 10 的核心词 5~10 个）+ Vine 评论申请。
-- 第 3~4 周：扩展 `conversionKeywordType=EXCELLENT` 词 + 适当开自动广告收集长尾数据。
-- 第 5~8 周：`traffic_keyword` 反查自然收录词，停止已自然排名的广告词，节省预算。
-
-**输出**：Launch 词库（分层）+ 广告计划（预算/词/出价区间）+ 里程碑节点（收录词数/BSR/评价数目标）。
+**节奏**：第 1~2 周 SPR < 10 的精准词 5~10 个 + Vine；第 3~4 周扩 EXCELLENT 词 + 自动广告收词；第 5~8 周自然排名稳定的词降价，转投新词。
+**输出**：分层词库 + 广告计划（词、出价 ≤ 最高 CPC、日预算）+ 周里程碑（收录词数、BSR、评价数）。
 
 ---
 
-## P15. 捆绑 / 变体 / 组合品策略
+## P15. 捆绑 / 变体 / 组合
 
-**触发**：做不做套装 / 哪几个 ASIN 适合捆绑 / 如何做变体组合。
+1. 并行：`traffic_listing_stat(asinList=[核心])` ‖ `traffic_listing(asinList=[核心], relations=["FBT","BAB"])`。
+2. 市场验证：`keyword_research(keywords="套装词, 单品词")` ‖ `product_research(keyword=套装词, returnFields=ASIN_CORE)`。
+3. 竞品套装：`competitor_lookup(asins=[套装竞品])` + 需要变体结构时 `asin_detail`（`variationList`）；`ss_review(starList=[1,2,3])`。
 
-**步骤**
-1. 关联流量分析：
-   - `traffic_listing_stat(marketplace, asinList=[核心ASIN])` — 看哪类关联最多（FBT/BAB/VAV）。
-   - `traffic_listing(marketplace, asinList=[核心ASIN], relations=[FBT,BAB])` — 找「一起购买」的商品列表，这些是天然捆绑候选。
-2. 市场验证：
-   - `product_research(marketplace, month, keyword=组合词, order={field:"total_units",desc:true})` — 看市场上捆绑套装是否已有销量。
-   - `keyword_research(marketplace, keywords=套装核心词)` — 验证套装关键词需求量。
-3. 竞品套装拆解：
-   - `asin_detail(marketplace, asin=套装竞品)` — 看变体结构（`variationList`）、价格策略（单品 vs 套装溢价）。
-   - `ss_review(marketplace, asin=套装竞品, starList=[4,5])` — 好评归纳卖点，`starList=[1,2,3]` 归纳改善点。
-4. 价格策略：`ss_asin_coupon_trend` / `ss_keepa_info` — 对标套装竞品促销节奏与历史价格。
-
-**判读**：
-- FBT 关联 ASIN 与你的主品互补（如耳机+耳机套）= 天然捆绑，用户接受度高。
-- 套装词搜索量 ≥ 单品词的 20% = 有独立市场，值得开发；< 5% = 需求不明确。
-- 套装售价 > 单品之和 × 1.15 = 捆绑溢价合理；< 单品之和 = 靠促销逻辑，需算清楚利润。
-- 变体策略：同类目竞品变体数 > 5 且评价集中在父ASIN = 变体合并有利；变体数多但单个评价少 = 分散风险。
-
-**输出**：推荐捆绑组合 + 定价策略 + 套装词库 + Listing 优化建议（五点突出套装价值）。
+**判读**：套装词搜索量 ≥ 单品词 20% = 有独立需求；套装售价 ≥ 单品之和 × 1.1 且 GM 不降 = 合理；FBT 互补品 = 首选组合。
+**输出**：推荐组合 + 定价与 GM 测算 + 套装词库 + 变体规划。
 
 ---
 
-## P16. ACOS 诊断与广告结构优化（深化 P5）
+## P16. ACOS 诊断（深化 P5）
 
-**触发**：整体 ACOS 偏高但不知道问题在哪 / 广告结构要重建 / 想降 ACOS 但不降销量。
+1. **基线**：P21 算盈亏平衡 ACOS；有用户报表则以实际 ACOS/TACOS 为准，否则用 `keyword_conversion(customAvgProductPrice=售价).exactAcos` 作市场基准。
+2. **词层**：`traffic_keyword(asin=自己, conversionKeywordTypes=["EXCELLENT","STABLE","LOST","INVALID"], size=100)` → 统计各类型流量占比。
+3. **竞争层**：`competitor_lookup(keyword=主词, size=20, returnFields=ASIN_CORE)` ‖ `traffic_extend(asinList=[自己+头部 2~3])`。
+4. **Listing 层**：自己 vs 头部的 `lqs/rating/ratings/badge`（步骤 3 已有）+ `ss_market_ebc_distribution`。
+5. **价格层**：`ss_asin_detail_with_coupon_trend(asin=自己)` ‖ `ss_market_price_distribution`。
 
-**步骤（四层诊断框架）**
+| 根因 | 信号 | 对策 |
+|------|------|------|
+| 投错词 | LOST+INVALID 流量 > 40% | 否定 INVALID，LOST 降价 |
+| 出价过高 | 实际/市场 CPC > 最高 CPC | 按公式降价，转精准 |
+| 转化弱 | 自身 CVR < 市场 clickConvRate；星级/LQS 低于竞品 | 主图/五点/A+/评价优先 |
+| 价格劣势 | 定价位于主销价格带之上且无 Coupon | 调价或加 Coupon |
+| 匹配浪费 | broadAcos ≫ exactAcos | 收紧广泛匹配 |
+| 结构性 | GM 过低，盈亏 ACOS < 市场 ACOS | 降成本或换赛道 |
 
-**第一层：词层面**
-1. `keyword_conversion(marketplace, keyword=广告词, timeType=90D, keywordBidMatchType=exact)` — 获取该词的市场平均 `exactAcos`，判断是高价竞争词还是自身Listing问题。
-2. `traffic_keyword(marketplace, asin=自己, conversionKeywordTypes=[EXCELLENT,STABLE,LOST,INVALID])` — 分层统计各转化类型词的数量与流量占比。
-
-**第二层：竞争层面**
-3. `competitor_lookup(marketplace, keyword=主词, order={field:"total_units",desc:true}, size=20)` — 看头部竞品定价、评价、`lqs`，判断竞争力差距。
-4. `traffic_extend(marketplace, asinList=[自己,头部竞品1,2])` — 找共同争夺的词，评估是否在高竞价词上与强手正面对抗。
-
-**第三层：Listing 层面**
-5. `asin_detail(marketplace, asin=自己)` — 检查 `lqs`（Listing 质量分），与竞品对比。
-6. `ss_market_ebc_distribution(request{marketplace, nodeIdPath=..., topN=10})` — 判断类目内 A+/视频配置是否影响转化。
-
-**第四层：价格层面**
-7. `ss_asin_coupon_trend(marketplace, asin=自己)` + `ss_keepa_info(marketplace, asin=自己)` — 确认价格竞争力，高 ACOS 有时是价格偏高导致 CTR 低。
-8. `ss_market_price_distribution(request{marketplace, nodeIdPath=..., month})` — 确认自身定价是否在主销价格带内。
-
-**根因与对策**
-| 根因 | 诊断信号 | 对策 |
-|------|----------|------|
-| 投放词转化差 | LOST/INVALID词占流量 > 40% | 下线LOST词，否定INVALID词 |
-| Listing 转化率低 | lqs < 竞品均值；评分 < 4.0 | 优化图片/五点/A+/评价 |
-| 价格竞争力不足 | 定价在价格带的高段且销量占比低 | 重新定价或增加coupon |
-| 出价过高 | exactPpc > exactAcos对应健康竞价 | 压低竞价，转精准匹配 |
-| 广泛匹配浪费 | broad词 ACOS >> exact词 | 关闭broad，改phrase/exact |
-
-**输出**：ACOS 诊断报告（词/竞争/Listing/价格四层）+ 优化优先级清单 + 预期 ACOS 改善幅度。
+**输出**：四层诊断 + 根因排序 + 动作清单 + 预期 ACOS 区间。
 
 ---
 
-## P17. 库存规划与 BSR 目标设定
+## P17. 库存规划与 BSR 目标
 
-**触发**：备货多少合适 / 目标 BSR 需要多少销量 / 旺季缺货怎么预防。
+1. 并行：`asin_detail(asin=标杆)`（取 `bsrId`）‖ `asin_sales_trend(asin=自己或竞品)` ‖ `asin_prediction(asin=自己)`。
+2. `bsr_prediction(categoryId=bsrId, bsr=目标排名)` → 目标日销。
+3. 季节：`google_trend(monthly=true)`（竞品历史不足时）。
 
-**步骤**
-1. BSR 目标反推销量：
-   - `asin_detail(marketplace, asin=竞标标杆)` — 获取 `bsrId`（一级类目ID）和 `bsrRank`（当前BSR）。
-   - `bsr_prediction(marketplace, categoryId=bsrId, bsr=目标BSR)` — 获取 `estDailySales` 和 `estMonthSales`，这是目标销量基准。
-2. 季节系数分析：
-   - `asin_sales_trend(marketplace, asin=竞品)` — 拉 12 个月历史销量趋势，计算月度季节系数（旺月/均月）。
-   - `google_trend(marketplace, keyword=核心词, intervalYear=5, monthly=true)` — 验证季节规律，找峰值月份。
-3. 安全库存计算：
-   - `asin_prediction(marketplace, asin=自己)` — 近期日销量估算（用于计算安全天数）。
-   - 结合自身 FBA 补货周期（通常头程 30~45 天 + FBA 处理 3~7 天）。
-
-**计算公式参考**
-```
-月备货量 = bsr_prediction.estMonthSales × 季节系数 × 安全系数(1.2~1.5)
-旺季备货 = 月备货量 × 旺季月数 + 安全库存(30天日销量)
-备货时点 = 旺季开始月份 - 头程周期(月) - 1
-```
-
-**旺季系数参考流程**
-- `asin_sales_trend` 返回的 `parentUnitSales` 按月排列，旺月/全年均值 = 该月季节系数。
-- 若竞品数据不够，用 `google_trend` 的 `items[].value` 归一化后推算。
-
-**判读**：
-- 旺季系数 > 2.5 = 强季节性产品，必须提前 3 个月大量备货，缺货等于放弃旺季。
-- 旺季系数 1.2~1.5 = 弱季节性，安全库存 = 正常月销 × 1.5 即可。
-- FBA 仓储费旺季（10~12月）上涨，需权衡发货时间和仓储成本。
-
-**输出**：月度备货计划表 + 备货节点 + 目标 BSR 对应的月销量 + 旺季安全库存量。
+**计算**：`T§3.3` + `T§3.4`。Q4 入仓限制与仓储费上涨需提前 2 周以上。
+**输出**：月度备货表（需求、补货点、安全库存、发货日期）+ 目标 BSR 对应销量 + 断货风险提示。
 
 ---
 
-## 输出与协作规范
-- **结论先行**：先给判断（做/不做、加投/降价），再给数据。
-- **表格化**：多对象对比一律用表；保留英文指标口径（如 `supplyDemandRatio`）。
-- **标注口径**：站点、月份、变体口径（`variation`）、排序字段、数据来源工具名。
-- **可执行**：每条结论配一个下一步动作（具体到词/ASIN/价格区间/时间节点）。
-- **区分事实与推断**：工具返回值=事实；经验阈值=推断，需显式标注。
-- **量化**：给出具体数字目标，如「建议补齐 A+，因为类目内有A+的商品销量占比达 68%，比无A+高出 2.3 倍」。
+## P18. 卖家 / 店铺画像
+
+1. 盘点：`competitor_lookup(sellerName=卖家名, size=100, order={field:"total_units",desc:true}, returnFields=SELLER_SCAN)`；多个卖家或需叠加条件时用 `product_research(includeSellers="A,B", …)`（`includeSellers` 取值为卖家名还是卖家 ID，以首次返回结果验证）。
+2. 按 `nodeIdPath` 聚合：ASIN 数、类目数、销量集中度、平均评价数、上架时间分布。
+3. Top 5 ASIN：`asin_sales_trend`（并行，含详情）+ `traffic_extend(asinList=[Top 5])`。
+4. 价格策略：`ss_keepa_info(Top 1~2)`。
+
+**判读**：铺货型（ASIN > 100、多类目、评价普遍 < 50）→ 用品质/品牌突破；精品型（< 30 个、1~2 类目、评价 > 500、LQS 高）→ 正面竞争需充足预算；近 6 个月上新密集 = 扩张期。
+**输出**：卖家画像 + Top ASIN 表 + 主力词 + 威胁评估 + 应对策略。（跟卖监控见 P23）
+
+---
+
+## P19. Listing 质量体检
+
+1. 并行：`competitor_lookup(asins=[自己+头部竞品≤40], returnFields=ASIN_CORE)` ‖ `asin_detail(asin=自己)`（文案、`subcategories`）‖ `traffic_keyword_stat(asin=自己)` ‖ `ss_market_ebc_distribution(request{marketplace, nodeIdPath})`。
+2. 词命中：`traffic_keyword(asin=自己, conversionKeywordTypes=["EXCELLENT"])` ‖ `traffic_extend(asinList=[自己+竞品])`（缺失词）。
+3. 口碑：`ss_review(asin=自己, starList=[1,2,3], size=50)` ‖ `ss_review(asin=自己, starList=[4,5], size=30)`。
+
+| 维度 | 指标 | 基准 |
+|------|------|------|
+| 质量分 | `lqs` | ≥ 竞品均值（`T§2.4`） |
+| 评价 | `ratings`、`rating`、`ratingsCv` | `T§2.4` |
+| 徽章 | BS/AC | 至少一个 |
+| 内容 | A+/视频 | 按 `ebc_distribution` 判断回报 |
+| 词覆盖 | EXCELLENT 词数、缺失词数 | `T§2.5` |
+| 文案 | 标题是否含 Top 3 核心词；五点是否回应差评 Top 3 痛点 | — |
+
+**输出**：体检表（6 维红黄绿）+ 按收益排序的优化清单 + 标题/五点改写示例。
+
+---
+
+## P20. 周期监控看板
+
+> 工具本身不能定时执行；输出可直接给自动化任务使用的"调用清单 + 告警规则"，并建议用户保存每期结果用于环比。
+
+| 频率 | 调用 | 告警（`T§2.7`） |
+|------|------|------|
+| 每日 | `asin_prediction(自己+核心竞品)` | BSR ±30% |
+| 每日/隔日 | `ss_keepa_info(自己, dailyLatest=true, 近7天)` | Buy Box 卖家变化、卖家数 ≥ 2、价格异常 |
+| 每周 | `traffic_keyword_stat(自己)` ‖ `ss_keyword_order(asins=[自己+竞品], reverseType=W)` ‖ `aba_research_weekly(departments, searchModel=4)` ‖ `competitor_lookup(asins=[竞品], returnFields=ASIN_LITE)` | 流量词 −15%；竞品新起量词；新飙升词；竞品降价 ≥ 15% |
+| 每月 | `traffic_keyword(自己, month=上月)` vs 本月（P25）‖ `asin_sales_trend(自己)` ‖ `product_research(nodeIdPaths=[类目], availableMonth=3, order={field:"total_units",desc:true}, size=20)` ‖ `ss_market_product_concentration` ‖ `keyword_conversion(核心词, timeType=90D)` ‖ `ss_review(自己, startTimestamp=近30天)` | 核心词掉出首页；新品威胁；集中度变化；星级下降 |
+
+**输出**：日/周/月三层看板 + 本期告警 + 行动清单。
+
+---
+
+## P21. 利润与单位经济测算（新）
+
+**触发**：能赚多少 / 怎么定价 / 最高能出多少广告费。
+
+1. 收集：售价（或目标价）、采购价、头程；缺失时一次性询问，否则按 `T§3.1` 假设并标注。
+2. 平台数据（并行）：`competitor_lookup(asins=[自己或标杆], returnFields=["asin","price","fba","profit","rating","ratings"])` ‖ `ss_keepa_info(asin)`（核对 FBA 费与尺寸档）‖ `market_research(nodeIdPath=父节点)` 取 `returnRatio`。
+3. 广告：`keyword_conversion(核心词 3~5 个, customAvgProductPrice=售价, returnFields=KW_ADS)`。
+4. 计算：`T§3.1` + `T§3.2`；可做 2~3 个售价方案的敏感性对比。
+
+**输出**：
+| 售价 | 到岸成本 | 平台费 | 退货损耗 | GM | 盈亏 ACOS | 最高 CPC | 市场 CPC | 结论 |
+|------|---------|-------|---------|----|----------|---------|---------|------|
++ 定价建议 + 可投词清单（市场 CPC ≤ 最高 CPC）+ 降本方向（如换小号标准尺寸，用 `product_research(dimensionType="SS")` 看同类竞品是否可行）。
+
+---
+
+## P22. 一键 ASIN 体检（新）
+
+**触发**：我的 ASIN 怎么了 / 销量掉了 / 帮我全面看看。
+
+一轮并行：
+`asin_sales_trend(asin)` ‖ `asin_prediction(asin)` ‖ `ss_keepa_info(asin, dailyLatest=true, 近90天)` ‖ `traffic_keyword_stat(asin)` ‖ `traffic_keyword(asin, order={field:"trafficPercentage",desc:true}, size=50, returnFields=TRAFFIC_KW)` ‖ `ss_review(asin, starList=[1,2,3], startTimestamp=近60天)` ‖ `asin_competitor(asin, size=20, returnFields=ASIN_LITE)`
+
+按需第二轮：上月 `traffic_keyword(asin, month=上月)` 对比排名；`ss_market_price_distribution`。
+
+**归因顺序**：断货/Buy Box 丢失（Keepa 卖家与价格）→ 价格变化/竞品降价 → 星级下滑/差评集中 → 核心词排名下滑/流量词减少 → 季节性（同比）→ 新竞品挤压。
+**输出**：`T§4.2` 健康评分 + 销量变化归因（证据链）+ 3 个优先动作。
+
+---
+
+## P23. 跟卖与 Buy Box 监控（新，替代旧版 P18 跟卖逻辑）
+
+**触发**：被跟卖了吗 / 购物车丢了 / 有人低价抢购物车。
+
+1. 并行：`asin_detail(asin)`（`sellers`、`sellerName`、`fulfillment`）‖ `ss_keepa_info(asin, dailyLatest=true, 近30~90天)`（卖家数序列、Buy Box 卖家 ID 历史、Buy Box 价格）。
+2. 批量自查：`competitor_lookup(asins=[自家全部≤40], returnFields=["asin","sellers","sellerName","price"])` → `sellers ≥ 2` 的 ASIN 进入步骤 1。
+
+**判读**：`sellers` ≥ 2 或 Buy Box 卖家 ID 出现非本店 → 跟卖；Buy Box 价格低于自身售价 → 低价跟卖；卖家数短时剧增 → 可能被批量跟卖或 Listing 被改。
+**动作建议**：核实品牌备案与商标（P12）、试购取证、投诉侵权，必要时调整包装与差异化。
+**输出**：跟卖 ASIN 清单（卖家数、开始时间、Buy Box 占用情况、价格）+ 处置步骤。
+
+---
+
+## P24. 抢 Best Seller 标与类目节点优化（新）
+
+**触发**：怎么拿 BS 标 / 放哪个类目更好。
+
+1. `asin_detail(asin=自己)` → `subcategories`（当前小类及排名）、`nodeIdPath`。
+2. 候选节点：`product_node(nodeIdPath=父节点)` 列出兄弟节点；`market_research(nodeIdPath=父节点, returnFields=MARKET_SCAN)` 对比各节点的 `topAvgUnits`、`goodsCrn`。
+3. 每个候选节点的第 1 名门槛（并行）：`competitor_lookup(nodeIdPath=候选, size=20, order={field:"total_units",desc:true}, returnFields=ASIN_LITE)`。
+4. 自身日销：`asin_prediction(asin=自己)`。
+
+**判读**：候选节点第 1 名日销 ≤ 自身日销 × 1.2 且节点与产品真实相关 → 可争取；节点集中度低于同级 → 更易稳定。须遵守亚马逊类目政策，不可放入不相关类目。
+**输出**：候选节点表（节点、第 1 名日销、差距、相关性）+ 推荐节点 + 拿标所需日销与广告计划。
+
+---
+
+## P25. 关键词排名追踪（新）
+
+**触发**：核心词排名涨了还是跌了 / 每月排名报告。
+
+1. 并行：`traffic_keyword(asin=自己, month=本月或不传, size=100, returnFields=TRAFFIC_KW)` ‖ `traffic_keyword(asin=自己, month=上月, size=100, returnFields=TRAFFIC_KW)`。
+2. 指定词：传 `keyword=该词` 过滤。
+3. 竞品同词对比：`traffic_extend(asinList=[自己+竞品])` 的 `relationVariationsItems`。
+
+**判读**：按 `rankPosition`（自然）与 `adPosition`（广告）分别计算变化；新进入的词、掉出前 3 页的词单独列出；自然排名上升且广告位稳定 → 可降广告出价。
+**输出**：排名变动表（词、搜索量、上月→本月自然/广告位、变化）+ 掉词与新词 + 动作。
+
+---
+
+## P26. 大促备战与复盘（新）
+
+**触发**：Prime Day / 黑五 / 网一怎么备 / 大促效果如何。
+
+**备战（大促前 6~8 周）**
+1. 去年同期：`asin_sales_trend(自己+竞品)` 取大促月销量倍数；`google_trend(intervalYear=1)` 看峰值周。
+2. 竞品去年打法：`ss_keepa_info(竞品, 大促前后 30 天时间窗)` → 降价幅度与时点；`ss_asin_detail_with_coupon_trend(竞品)`。
+3. 备货：`T§3.4`，季节系数取大促月实际倍数。
+
+**复盘（大促后 1 周）**
+4. 并行：`asin_prediction(自己+竞品)`（日销、日 BSR、日价格）‖ `ss_keepa_info(自己+竞品, 大促前后)` ‖ `ss_keyword_order(asins=[自己+竞品], reverseType=W, 大促周)`。
+
+**判读**：大促期销量倍数、价格弹性（销量涨幅 / 降价幅度）、大促后 BSR 回落速度（看自然流量是否沉淀）、对手降价深度。
+**输出**：备战清单（备货量、发货日、促销价、广告预算）或复盘报告（倍数、弹性、ROI 估算、明年调整）。
+
+---
+
+## P27. 新品雷达与评论增速异常（新）
+
+**触发**：最近冒出了哪些新品 / 谁在快速起量 / 谁可能在刷评。
+
+1. 新品雷达：`product_research(nodeIdPaths=[类目], availableMonth=3, minUnits=类目 avgUnits, order={field:"total_units",desc:true}, size=60, returnFields=ASIN_CORE)` ‖ `product_research(nodeIdPaths=[类目], badgeNR="Y", size=20)`。
+2. 评论增速：`product_research(nodeIdPaths=[类目], minRatingsCv=50, availableMonth=6, order={field:"total_units",desc:true})`。
+3. 验证可疑 ASIN：`ss_keepa_info`（评论数曲线是否陡增）‖ `ss_review(asin, typeList=[3])`（VP 占比）‖ `ss_review(asin, startTimestamp=近30天)`（内容同质化）。
+
+**判读**：`ratingsCv`/月销 > 8%，或评论数单周陡增且多为短评 → 疑似非自然；新品月销 > 类目均值且评价 < 50 → 真实强势新品，重点研究其关键词（P10 步骤 3）。
+**输出**：新品威胁清单 + 异常评论增速清单（证据，不下违规定论）+ 应对建议。
