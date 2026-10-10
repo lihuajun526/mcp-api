@@ -22,7 +22,7 @@ module.exports = {
     db: Number(process.env.REDIS_DB || 0)
   },
   mcp: {
-    secretKeyHeader: process.env.MCP_SECURITY_SECRET_KEY_HEADER || 'secret-key',
+    secretKeyHeader: process.env.MCP_SECRET_KEY_HEADER || 'secret-key',
     toolsPath: path.join(process.cwd(), 'app', 'tools.json')
   },
   sellerSprite: {
