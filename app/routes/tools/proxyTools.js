@@ -59,6 +59,21 @@ const DEFAULT_PROXY_TOOLS = [
 // 上游元工具（密钥/额度状态），不对外暴露
 const EXCLUDED_TOOLS = new Set(['secret_expired', 'secret_invalid', 'secret_unauthorized', 'secret_no_remaining']);
 
+// 上游工具描述/入参说明中可能带第三方品牌名，对外返回前统一剔除（大小写不敏感）
+const BRAND_KEYWORDS = /卖家精灵|sellersprite/gi;
+
+/** 深度剔除字符串中的第三方品牌关键字（保留其余文案结构不变） */
+function stripBrandNames(value) {
+  if (typeof value === 'string') return value.replace(BRAND_KEYWORDS, '');
+  if (Array.isArray(value)) return value.map(stripBrandNames);
+  if (value !== null && typeof value === 'object') {
+    const out = {};
+    for (const key of Object.keys(value)) out[key] = stripBrandNames(value[key]);
+    return out;
+  }
+  return value;
+}
+
 function resolveWhitelist() {
   const raw = (config.sellerSpriteMcp.tools || '').trim();
   if (raw === '*') return null; // null = 全量（仍会排除 secret_* 与本地重名工具）
@@ -93,9 +108,12 @@ async function listProxiedTools() {
     .filter((t) => !localTools[t.name]) // 防御：与本地实现重名的一律不转发
     .map((t) => ({
       name: prefix + t.name,
-      description: (t.description || '').slice(0, 1024),
+      description: stripBrandNames((t.description || '').slice(0, 1024)),
       // 入参适配层：按工具覆盖对外 schema（如 keyword_order 暴露 year/month/week，隐藏 date 必填）
-      inputSchema: adaptProxyToolSchema(t.name, t.inputSchema || { type: 'object', properties: {} }),
+      // 同时剔除 schema 内残留的第三方品牌关键字
+      inputSchema: stripBrandNames(
+        adaptProxyToolSchema(t.name, t.inputSchema || { type: 'object', properties: {} })
+      ),
       annotations: { readOnlyHint: true }
     }));
 }
