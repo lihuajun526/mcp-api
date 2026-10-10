@@ -116,7 +116,7 @@
     <tbody>
       <tr><td>边界 / 传输</td><td>全站 HTTPS（TLS 1.2+，HSTS）；Nginx 统一入口；隐藏第三方源站细节</td></tr>
       <tr><td>Web 认证</td><td>官网/后台：邮箱+密码登录，密码 Argon2 / bcrypt 存储；会话用短期 JWT（HttpOnly Cookie 或 Authorization Bearer）+ 刷新机制；登录失败次数限制（防暴力破解）</td></tr>
-      <tr><td>API 认证</td><td>MCP / REST 用 <code>X-API-Key</code>；<b>服务端只存 Key 哈希（SHA-256）+ 前缀明文</b>，明文仅创建时展示一次；Key 支持即时停用</td></tr>
+      <tr><td>API 认证</td><td>MCP / REST 用 <code>secret-key</code>；<b>服务端只存 Key 哈希（SHA-256）+ 前缀明文</b>，明文仅创建时展示一次；Key 支持即时停用</td></tr>
       <tr><td>授权</td><td>用户侧：只能访问自己的余额/密钥/流水；管理后台：RBAC（超管/运营/财务），敏感操作二次确认</td></tr>
       <tr><td>限流与防滥用</td><td>用户级 5 QPS 滑动窗口；全局 QPS 上限防 DDoS；IP 级粗粒度限流；注册接口加验证码/频控</td></tr>
       <tr><td>输入校验</td><td>JSON Schema 校验 MCP 工具参数；SQL 参数化；输出编码防 XSS</td></tr>

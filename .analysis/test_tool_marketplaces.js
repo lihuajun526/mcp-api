@@ -6,7 +6,7 @@ function call(name, args) {
   return new Promise((resolve) => {
     const payload = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } });
     const req = http.request(
-      { host: '127.0.0.1', port: 18080, path: '/mcp', method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY, 'Content-Length': Buffer.byteLength(payload) } },
+      { host: '127.0.0.1', port: 18080, path: '/mcp', method: 'POST', headers: { 'Content-Type': 'application/json', 'secret-key': KEY, 'Content-Length': Buffer.byteLength(payload) } },
       (res) => {
         let d = '';
         res.on('data', (c) => (d += c));

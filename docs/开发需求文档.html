@@ -113,7 +113,7 @@
     <thead><tr><th>角色</th><th>说明</th><th>关键诉求</th></tr></thead>
     <tbody>
       <tr><td>跨境卖家（注册用户）</td><td>平台付费用户</td><td>注册/登录、创建管理 API Key、充值购买积分、查看用量与消耗、导出明细</td></tr>
-      <tr><td>大模型 / AI Agent</td><td>MCP Client</td><td>通过 <code>/mcp</code> 端点自动发现并调用工具，X-API-Key 鉴权</td></tr>
+      <tr><td>大模型 / AI Agent</td><td>MCP Client</td><td>通过 <code>/mcp</code> 端点自动发现并调用工具，secret-key 鉴权</td></tr>
       <tr><td>系统集成方</td><td>REST 调用方</td><td>通过 <code>/api/v1/mcp/*</code> HTTP 接口集成</td></tr>
       <tr><td>管理员</td><td>平台运营人员</td><td>用户管理、QPS 配额调整、接口定价维护、第三方账号会话池维护、订单与充值管理、用量统计</td></tr>
     </tbody>
@@ -169,7 +169,7 @@
       <tr><td>F-17</td><td>MCP 协议端点 <code>/mcp</code></td><td>JSON-RPC 2.0，支持 <code>initialize</code> / <code>tools/list</code> / <code>tools/call</code>，支持 SSE 流式响应</td></tr>
       <tr><td>F-18</td><td>HTTP API 端点 <code>/api/v1/mcp/*</code></td><td>与 MCP 共享同一套网关逻辑的 RESTful 接口</td></tr>
       <tr><td>F-19</td><td>工具注册表 <code>tools.json</code></td><td>集中维护 MCP 工具定义（名称/描述/JSON Schema 参数），新增工具免发版</td></tr>
-      <tr><td>F-20</td><td>API Key 认证</td><td>校验 <code>X-API-Key</code>，关联 <code>user_account</code>，未激活/非法 Key 拒绝</td></tr>
+      <tr><td>F-20</td><td>API Key 认证</td><td>校验 <code>secret-key</code>，关联 <code>user_account</code>，未激活/非法 Key 拒绝</td></tr>
       <tr><td>F-21</td><td>限流</td><td>Redis 滑动窗口（ZSET），默认 5 QPS/用户，可按会员等级调整；超限返回 429</td></tr>
       <tr><td>F-22</td><td>缓存</td><td>键 = provider + 接口 + 参数归一化哈希（ASIN 大小写/顺序归一化，分页参数不参与）；命中即返回，不扣点不调第三方；TTL 默认 300s</td></tr>
       <tr><td>F-23</td><td>扣点计费</td><td>按 <code>api_endpoint_pricing</code> 扣减余额并写 <code>usage_record</code>，事务保证一致性；余额不足拒绝</td></tr>

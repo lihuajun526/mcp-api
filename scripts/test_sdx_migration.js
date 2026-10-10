@@ -111,9 +111,9 @@ function assert(cond, msg) {
     console.log('\n[5] HTTP 路由');
     const list = await httpJson('POST', '/mcp', {}, { jsonrpc: '2.0', id: 1, method: 'tools/list' });
     assert(list.status === 200 && Array.isArray(list.body.result.tools), `tools/list 返回 ${list.body.result.tools.length} 个工具`);
-    const okCat = await httpJson('GET', '/api/v1/mcp/category/first?marketplace=US', { 'X-API-Key': PLAIN });
+    const okCat = await httpJson('GET', '/api/v1/mcp/category/first?marketplace=US', { 'secret-key': PLAIN });
     assert(okCat.status === 200 && okCat.body.success === true, '带合法密钥访问受保护接口成功');
-    const badCat = await httpJson('GET', '/api/v1/mcp/category/first?marketplace=US', { 'X-API-Key': 'sk_live_bogus' });
+    const badCat = await httpJson('GET', '/api/v1/mcp/category/first?marketplace=US', { 'secret-key': 'sk_live_bogus' });
     assert(badCat.status === 401, '非法密钥访问受保护接口返回 401');
 
     console.log('\n全部测试通过 ✅');

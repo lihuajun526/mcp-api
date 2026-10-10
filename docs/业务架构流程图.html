@@ -194,7 +194,7 @@
     <div class="layer-body">
       <div class="node c-coral">
         <h4>① API Key 认证</h4>
-        <p>校验 X-API-Key，查询 user_account，未激活 / 非法 Key 直接拒绝</p>
+        <p>校验 secret-key，查询 user_account，未激活 / 非法 Key 直接拒绝</p>
         <span class="tag">鉴权</span>
       </div>
       <div class="node c-coral">
@@ -267,7 +267,7 @@
         <tr>
           <td><span class="step">2</span></td>
           <td class="code">认证</td>
-          <td>读取 X-API-Key → 查询 user_account（状态必须为 ACTIVE）<span class="flag pass">未过即拒绝</span></td>
+          <td>读取 secret-key → 查询 user_account（状态必须为 ACTIVE）<span class="flag pass">未过即拒绝</span></td>
         </tr>
         <tr>
           <td><span class="step">3</span></td>

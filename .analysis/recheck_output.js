@@ -8,7 +8,7 @@ function call(name, args) {
     const p = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } });
     const q = http.request(
       { host: '127.0.0.1', port: 18080, path: '/mcp', method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY, 'Content-Length': Buffer.byteLength(p) } },
+        headers: { 'Content-Type': 'application/json', 'secret-key': KEY, 'Content-Length': Buffer.byteLength(p) } },
       (res) => { let d = ''; res.on('data', (c) => (d += c)); res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve({ raw: d.slice(0, 200) }); } }); }
     );
     q.on('error', (e) => resolve({ error: e.message }));

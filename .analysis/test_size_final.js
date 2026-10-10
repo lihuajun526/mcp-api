@@ -11,7 +11,7 @@ function call(name, args) {
         port: 18080,
         path: '/mcp',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY, 'Content-Length': Buffer.byteLength(p) }
+        headers: { 'Content-Type': 'application/json', 'secret-key': KEY, 'Content-Length': Buffer.byteLength(p) }
       },
       (res) => {
         let d = '';

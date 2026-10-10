@@ -75,7 +75,7 @@ router.post('/mcp', async (req, res) => {
     }
 
     if (method === 'tools/call') {
-      const apiKey = req.header(config.mcp.apiKeyHeader);
+      const apiKey = req.header(config.mcp.secretKeyHeader);
       if (!apiKey) {
         return res.json(fail(id, -32001, 'missing API key'));
       }
