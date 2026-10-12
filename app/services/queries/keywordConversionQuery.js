@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformKeywordConversionResponse } = require('../../transformers/keywordConversionTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'keyword_conversion';
@@ -36,8 +37,10 @@ async function queryKeywordConversion(user, params) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchKeywordConversion(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchKeywordConversion(params, session);
+  });
 
   // 第三方返回格式: { code, message, data: { pager: { items, ... } } }
   const pager = raw && raw.data && raw.data.pager ? raw.data.pager : (raw && raw.data ? raw.data : raw);

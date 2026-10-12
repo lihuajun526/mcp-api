@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformGoogleTrendResponse } = require('../../transformers/googleTrendTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'google_trend';
@@ -39,8 +40,10 @@ async function queryGoogleTrend(user, params) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchGoogleTrend(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchGoogleTrend(params, session);
+  });
 
   const rawData = raw && raw.data ? raw.data : raw;
   const transformed = sanitizeInternalFields(transformGoogleTrendResponse(rawData, params));

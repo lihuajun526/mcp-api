@@ -19,7 +19,7 @@ name: Pack & Deploy (3 nodes)
 
 on:
   push:
-    branches: [main, master, dev]
+    branches: [main]
     paths-ignore:
       - '**.md'
       - 'docs/**'

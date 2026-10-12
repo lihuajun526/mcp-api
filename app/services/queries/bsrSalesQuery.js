@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformBsrSalesResponse } = require('../../transformers/bsrSalesTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'bsr_prediction';
@@ -43,8 +44,10 @@ async function queryBsrSales(user, params) {
     return cached;
   }
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchBsrSales(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchBsrSales(params, session);
+  });
   const transformed = sanitizeInternalFields(transformBsrSalesResponse(raw, params));
 
   const pricing = await billingService.getPricing(ENDPOINT_CODE);

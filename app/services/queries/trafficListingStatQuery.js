@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformTrafficListingStatResponse } = require('../../transformers/trafficListingStatTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'traffic_listing_stat';
@@ -36,8 +37,10 @@ async function queryTrafficListingStat(user, params) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchTrafficListingStat(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchTrafficListingStat(params, session);
+  });
 
   const rawData = raw && raw.data ? raw.data : raw;
   const transformed = sanitizeInternalFields(transformTrafficListingStatResponse(rawData, params));

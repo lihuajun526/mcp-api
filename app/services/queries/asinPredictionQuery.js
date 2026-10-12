@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformAsinPredictionResponse } = require('../../transformers/asinPredictionTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'asin_prediction';
@@ -42,8 +43,10 @@ async function queryAsinPrediction(user, params) {
     return cached;
   }
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinPrediction(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchAsinPrediction(params, session);
+  });
   const transformed = sanitizeInternalFields(transformAsinPredictionResponse(raw, params));
 
   const pricing = await billingService.getPricing(ENDPOINT_CODE);

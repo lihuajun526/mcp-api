@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformTrafficExtendResponse } = require('../../transformers/trafficExtendTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'traffic_extend';
@@ -38,8 +39,10 @@ async function queryTrafficExtend(user, params) {
     return cached;
   }
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchTrafficExtend(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchTrafficExtend(params, session);
+  });
 
   const rawData = raw && raw.data ? raw.data : raw;
   const transformed = sanitizeInternalFields(transformTrafficExtendResponse(rawData, params));

@@ -27,5 +27,6 @@ CREATE TABLE IF NOT EXISTS amz_category (
     leaf TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
-    INDEX idx_amz_category_parent (site, market_id, parent_node_id)
+    INDEX idx_amz_category_parent (site, market_id, parent_node_id),
+    INDEX idx_amz_category_site_parent (site, parent_node_id, products)
 );

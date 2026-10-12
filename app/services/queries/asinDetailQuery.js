@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformAsinDetailResponse } = require('../../transformers/asinDetailTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'asin_detail';
@@ -48,8 +49,10 @@ async function queryAsinDetail(user, params) {
     return cached;
   }
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinDetail(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchAsinDetail(params, session);
+  });
   const transformed = sanitizeInternalFields(transformAsinDetailResponse(raw));
   if (transformed && !transformed.marketplace) {
     transformed.marketplace = params.marketplace;

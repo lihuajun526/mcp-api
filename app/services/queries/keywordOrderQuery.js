@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformKeywordOrderResponse } = require('../../transformers/keywordOrderTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'keyword_order';
@@ -32,8 +33,10 @@ async function queryKeywordOrder(user, params) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const html = await fetchKeywordOrder(params, session);
+  const html = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchKeywordOrder(params, session);
+  });
   const transformed = sanitizeInternalFields(transformKeywordOrderResponse(html, params));
 
   const pricing = await billingService.getPricing(ENDPOINT_CODE);

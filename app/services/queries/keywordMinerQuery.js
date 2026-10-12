@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformKeywordMinerResponse } = require('../../transformers/keywordMinerTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'keyword_miner';
@@ -38,8 +39,10 @@ async function queryKeywordMiner(user, params) {
     return cached;
   }
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchKeywordMiner(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchKeywordMiner(params, session);
+  });
 
   // 第三方返回格式: { code, message, data: { page, size, total, items } }
   const rawData = raw && raw.data ? raw.data : raw;

@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformCompetitionResponse } = require('../../transformers/competitionTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'competitor_lookup';
@@ -32,8 +33,10 @@ async function queryCompetingLookup(user, request) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, request);
   if (cached) return cached;
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchCompetingLookup(request, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchCompetingLookup(request, session);
+  });
   const transformed = sanitizeInternalFields(transformCompetitionResponse(raw, request));
 
   const pricing = await billingService.getPricing(ENDPOINT_CODE);

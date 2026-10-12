@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformCompetitionResponse } = require('../../transformers/competitionTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'asin_competitor';
@@ -32,8 +33,10 @@ async function queryAsinCompetitor(user, params) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const raw = await fetchAsinCompetitor(params, session);
+  const raw = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchAsinCompetitor(params, session);
+  });
   // 官方 /api/62 返回结构为数组（非分页信封），仅取 items 字段
   const paged = transformCompetitionResponse(raw, params);
   const transformed = sanitizeInternalFields(paged.items || []);

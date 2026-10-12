@@ -5,6 +5,7 @@ const cacheService = require('../cacheService');
 const billingService = require('../billingService');
 const sessionService = require('../sessionService');
 const { transformMarketResearchResponse } = require('../../transformers/marketResearchTransformer');
+const { retryOnUpstreamError } = require('../../utils/retry');
 
 const PROVIDER = 'SELLERSPRITE';
 const ENDPOINT_CODE = 'market_research';
@@ -35,8 +36,10 @@ async function queryMarketResearch(user, params) {
   const cached = await cacheService.get(PROVIDER, ENDPOINT_CODE, params);
   if (cached) return cached;
 
-  const session = await sessionService.pickSession(PROVIDER);
-  const html = await fetchMarketResearch(params, session);
+  const html = await retryOnUpstreamError(async () => {
+    const session = await sessionService.pickSession(PROVIDER);
+    return fetchMarketResearch(params, session);
+  });
   const transformed = sanitizeInternalFields(transformMarketResearchResponse(html, params));
 
   const pricing = await billingService.getPricing(ENDPOINT_CODE);
