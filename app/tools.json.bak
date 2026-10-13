@@ -1,0 +1,2968 @@
+[
+  {
+    "name": "competitor_lookup",
+    "description": "查竞品列表：按关键词、品牌名、卖家名或 ASIN 列表精准锁定一批商品，返回其销量、销额、BSR、利润、评分等完整数据。与 product_research 的区别：本工具是「已知目标→查这批商品的具体数据」，适合竞品监控、验证某个词/品牌下有哪些产品；product_research 是「不知道目标→用多维度条件（价格区间、利润率、增长率等）从海量商品中筛选机会」，适合选品发现。本工具支持按卖家名（sellerName）筛选，product_research 不支持。keyword/brand/asins 均可选，至少提供一个筛选条件，或仅指定市场查询全量数据。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages/hasNextPage、items(asin/brand/brandUrl/imageUrl/title/parent/nodeId/nodeIdPath/nodeLabelPath/bsrId/bsr/bsrCr/bsrCv/units/unitsGr/amzUnit/amzSales/revenue/price/primePrice/profit/fba/ratings/ratingsRate/rating/ratingsCv/ratingDelta/lqs/availableDate/fulfillment/variations/sellers/sellerId/sellerName/sellerNation/badge{bestSeller,amazonChoice,newRelease,ebc,video}/weight/dimension/dimensionsType/pkgDimensions/pkgDimensionType/pkgWeight/sku/subcategories)。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ]
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，格式 yyyyMM，例如 202507；不填表示最近月份"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "关键词，例如 desk lamp"
+        },
+        "brand": {
+          "type": "string",
+          "description": "品牌名称，例如 Apple"
+        },
+        "sellerName": {
+          "type": "string",
+          "description": "卖家名称，例如 Amazon"
+        },
+        "asins": {
+          "type": "array",
+          "description": "ASIN 列表，最多 40 个，例如 [\"B0GYPQ75WH\"]；也兼容传入单个 ASIN 字符串（自动转为数组）",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "maxItems": 40
+        },
+        "nodeIdPath": {
+          "type": "string",
+          "description": "类目节点 id 字符串，例如 172282:281407，通过 product_node 工具获取"
+        },
+        "variation": {
+          "type": "string",
+          "description": "是否包含变体：N=含变体（默认），Y=不含变体",
+          "enum": [
+            "N",
+            "Y"
+          ]
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，仅支持 20/60/100，默认 60",
+          "enum": [
+            20,
+            60,
+            100
+          ],
+          "default": 60
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 total_units；可选：total_units、amz_unit、total_amount、bsr_rank、price、rating、ratings、profit、reviews_rate、available_date、total_units_growth、total_amount_growth、reviews_increasement、bsr_rank_cv、bsr_rank_cr"
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序（默认），false=升序"
+            }
+          }
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"units\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "asin_competitor",
+    "description": "查单个 ASIN 的直接竞品：输入一个 ASIN，系统自动识别与其竞争关系最强的竞品列表，返回每个竞品的销量、销额、BSR、评分、利润等数据。与 competitor_lookup 的区别：本工具以「这个ASIN的竞品是谁」为视角，系统自动计算竞争关系，无需用户指定筛选条件，适合快速定位竞争对手；competitor_lookup 需要用户提供关键词/品牌/ASIN 等筛选条件来圈定查询范围。鉴权由服务端处理，模型不要传递 API Key。data 直接返回竞品对象数组（最多 size 条），字段包含 asin/brand/brandUrl/imageUrl/title/parent/nodeId/nodeIdPath/nodeLabelPath/bsr/bsrCr/bsrCv/units/unitsGr/amzUnit/amzSales/revenue/price/primePrice/profit/fba/ratings/ratingsRate/rating/ratingsCv/ratingDelta/fulfillment/sellers/sellerId/sellerName/sellerNation/badge{bestSeller,amazonChoice,newRelease,ebc,video}/weight/dimension/subcategories。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ]
+        },
+        "asin": {
+          "type": "string",
+          "description": "目标 Amazon ASIN，例如 B07Z82895W",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "size": {
+          "type": "integer",
+          "description": "返回竞品数量，可选 20/60/100，默认 60",
+          "enum": [
+            20,
+            60,
+            100
+          ],
+          "default": 60
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"units\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "product_research",
+    "description": "多维度选品：在不确定具体竞品时，通过设置销量、销额、增长率、价格、利润率、BSR、评分、配送方式、卖家国籍、尺寸重量等条件，从全量商品中过滤出符合条件的产品机会。与 competitor_lookup 的区别：本工具是「设条件→发现商品」的探索型工具，适合选品时寻找市场机会；competitor_lookup 是「给目标→查这批商品的数据」的查询型工具，适合监控已知竞品。与 market_research 的区别：本工具返回的是具体 ASIN 级商品数据；market_research 返回的是子类目级市场概况（均值/占比）。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages、items(asin/brand/brandUrl/imageUrl/title/parent/nodeId/nodeIdPath/nodeLabelPath/bsrId/bsr/bsrCr/bsrCv/units/unitsGr/amzUnit/amzSales/revenue/price/primePrice/profit/fba/ratings/ratingsRate/rating/ratingsCv/ratingDelta/lqs/availableDate/fulfillment/variations/sellers/sellerId/sellerName/sellerNation/badge{bestSeller,amazonChoice,newRelease,ebc,video}/weight/dimension/dimensionsType/pkgDimensions/pkgDimensionType/pkgWeight/sku/subcategories)。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ]
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，格式 yyyyMM，例如 202507；不填表示最近月份"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "关键词，例如 N95"
+        },
+        "matchType": {
+          "type": "integer",
+          "description": "关键词匹配方式：1=词组，2=模糊（默认），3=精准",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除关键词，例如 portable"
+        },
+        "includeBrands": {
+          "type": "string",
+          "description": "包含品牌（逗号分隔）"
+        },
+        "excludeBrands": {
+          "type": "string",
+          "description": "排除品牌（逗号分隔）"
+        },
+        "includeSellers": {
+          "type": "string",
+          "description": "包含卖家（逗号分隔）"
+        },
+        "excludeSellers": {
+          "type": "string",
+          "description": "排除卖家（逗号分隔）"
+        },
+        "nodeIdPaths": {
+          "type": "array",
+          "description": "类目节点 id 字符串列表，通过 product_node 工具获取",
+          "items": {
+            "type": "string"
+          }
+        },
+        "filterSub": {
+          "type": "string",
+          "description": "是否筛选子类目：Y=是；仅在指定类目时才生效（官方为 String，默认不传）",
+          "enum": [
+            "Y"
+          ]
+        },
+        "variation": {
+          "type": "string",
+          "description": "是否包含变体：N=含变体（默认），Y=不含变体",
+          "enum": [
+            "N",
+            "Y"
+          ]
+        },
+        "fulfillment": {
+          "type": "string",
+          "description": "配送方式，多个用逗号分隔，例如 AMZ,FBA,FBM"
+        },
+        "sellerNation": {
+          "type": "string",
+          "description": "卖家所属地，多个用逗号分隔，例如 US,CN"
+        },
+        "dimensionType": {
+          "type": "string",
+          "description": "尺寸类型，多个用逗号分隔。可选值：SS（小号标准尺寸）、LS（大号标准尺寸）、SB（小号大件）、LB（大号大件）、ELO（超大尺寸0-50磅）、EL5O（超大尺寸50-70磅）、EL7O（超大尺寸70-150磅）、EL15O（超大尺寸150磅以上）、O（其他尺寸）"
+        },
+        "weightUnit": {
+          "type": "string",
+          "description": "重量单位：g（默认）、lb、oz、kg",
+          "enum": [
+            "g",
+            "lb",
+            "oz",
+            "kg"
+          ]
+        },
+        "badgeBS": {
+          "type": "string",
+          "description": "是否要求 Best Seller 标识：Y=是",
+          "enum": [
+            "Y"
+          ]
+        },
+        "badgeAC": {
+          "type": "string",
+          "description": "是否要求 Amazon's Choice 标识：Y=是",
+          "enum": [
+            "Y"
+          ]
+        },
+        "badgeNR": {
+          "type": "string",
+          "description": "是否要求 New Release 标识：Y=是",
+          "enum": [
+            "Y"
+          ]
+        },
+        "availableMonth": {
+          "type": "integer",
+          "description": "上架月数筛选，例如 6 表示近 6 个月内上架"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，仅支持 20/60/100，默认 60",
+          "enum": [
+            20,
+            60,
+            100
+          ],
+          "default": 60
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 total_units；可选：total_units、amz_unit、total_amount、bsr_rank、price、profit、rating、ratings、fba、lqs、available_date、total_units_growth、total_amount_growth、bsr_rank_cv、bsr_rank_cr"
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序（默认），false=升序"
+            }
+          }
+        },
+        "minPrice": {
+          "type": "number",
+          "description": "最低价格"
+        },
+        "maxPrice": {
+          "type": "number",
+          "description": "最高价格"
+        },
+        "minRating": {
+          "type": "number",
+          "description": "最低评分值"
+        },
+        "maxRating": {
+          "type": "number",
+          "description": "最高评分值"
+        },
+        "minRatings": {
+          "type": "integer",
+          "description": "最低评分数"
+        },
+        "maxRatings": {
+          "type": "integer",
+          "description": "最高评分数"
+        },
+        "minRatingsCv": {
+          "type": "integer",
+          "description": "最低月新增评分数"
+        },
+        "maxRatingsCv": {
+          "type": "integer",
+          "description": "最高月新增评分数"
+        },
+        "minSellers": {
+          "type": "integer",
+          "description": "最小卖家数"
+        },
+        "maxSellers": {
+          "type": "integer",
+          "description": "最大卖家数"
+        },
+        "minProfit": {
+          "type": "number",
+          "description": "最小毛利率(%)"
+        },
+        "maxProfit": {
+          "type": "number",
+          "description": "最大毛利率(%)"
+        },
+        "minBsr": {
+          "type": "integer",
+          "description": "大类 BSR 最高排名（最小值）"
+        },
+        "maxBsr": {
+          "type": "integer",
+          "description": "大类 BSR 最低排名（最大值）"
+        },
+        "minBsrCv": {
+          "type": "integer",
+          "description": "BSR 最低增长数"
+        },
+        "maxBsrCv": {
+          "type": "integer",
+          "description": "BSR 最高增长数"
+        },
+        "minBsrCr": {
+          "type": "number",
+          "description": "BSR 最低增长率(%)"
+        },
+        "maxBsrCr": {
+          "type": "number",
+          "description": "BSR 最高增长率(%)"
+        },
+        "minUnits": {
+          "type": "integer",
+          "description": "最低月销量（父体）"
+        },
+        "maxUnits": {
+          "type": "integer",
+          "description": "最高月销量（父体）"
+        },
+        "minAmzUnit": {
+          "type": "integer",
+          "description": "最低月子体销量"
+        },
+        "maxAmzUnit": {
+          "type": "integer",
+          "description": "最高月子体销量"
+        },
+        "minRevenue": {
+          "type": "number",
+          "description": "最低月销售额"
+        },
+        "maxRevenue": {
+          "type": "number",
+          "description": "最高月销售额"
+        },
+        "minRevenueCr": {
+          "type": "number",
+          "description": "月销售额最低增长率(%)"
+        },
+        "maxRevenueCr": {
+          "type": "number",
+          "description": "月销售额最高增长率(%)"
+        },
+        "minUnitsCr": {
+          "type": "number",
+          "description": "月销量最低增长率(%)"
+        },
+        "maxUnitsCr": {
+          "type": "number",
+          "description": "月销量最高增长率(%)"
+        },
+        "minWeights": {
+          "type": "number",
+          "description": "最小重量（依 weightUnit）"
+        },
+        "maxWeights": {
+          "type": "number",
+          "description": "最大重量（依 weightUnit）"
+        },
+        "minVariations": {
+          "type": "integer",
+          "description": "最低变体数"
+        },
+        "maxVariations": {
+          "type": "integer",
+          "description": "最高变体数"
+        },
+        "minSubBsrRank": {
+          "type": "integer",
+          "description": "最小子类排名（filterSub=Y 时生效）"
+        },
+        "maxSubBsrRank": {
+          "type": "integer",
+          "description": "最大子类排名（filterSub=Y 时生效）"
+        },
+        "minFba": {
+          "type": "number",
+          "description": "FBA 最低运费"
+        },
+        "maxFba": {
+          "type": "number",
+          "description": "FBA 最高运费"
+        },
+        "minLqs": {
+          "type": "number",
+          "description": "最低 Listing 质量分"
+        },
+        "maxLqs": {
+          "type": "number",
+          "description": "最高 Listing 质量分"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"units\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "asin_detail",
+    "description": "查询单个 ASIN 的完整商品详情。仅当用户明确需要某 ASIN 的详情时调用；一次仅支持一个 ASIN。调用前必须确认 marketplace 与 asin 都已提供，若缺失请先追问。鉴权由服务端处理，模型不要传递 API Key。提示：返回的 bsrId 字段（一级类目数字ID）可直接用于 bsr_prediction 工具；nodeIdPath 可用于 product_node / product_research / competitor_lookup 工具。data 直接返回该 ASIN 的对象（不再分页），字段包含 asin/asinUrl/availableDate/badge{bestSeller,amazonChoice,newRelease,ebc,video}/brand/brandUrl/bsrId/bsrLabel/bsrRank/createdTime/subcategories/dimensions/firstRatingDate/imageUrl/zoomImageUrl/lqs/nodeId/nodeIdPath/nodeLabelPath/nodeLabelPathLocale/parent/price/primePrice/deliveryPrice/coupon/questions/rating/ratings/reviews/variantRatings/variantReviews/sellerId/sellerName/fulfillment/sellers/skuList/marketplace/title/features/overviews/updatedTime/variationList/variations/weight。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "asin": {
+          "type": "string",
+          "description": "Amazon ASIN，长度通常为 10，例如 B08GHW4TBS",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"price\",\"title\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "traffic_keyword",
+    "description": "ASIN流量词反查：查询该 ASIN 在近30天内进入过亚马逊前台搜索结果前3页的所有搜索流量词，返回关键词的月搜索量、商品数、购买量、购买率、PPC 竞价、曝光位置、自然/广告排名、流量占比及自然/广告流量分布等数据。当用户需要分析某 ASIN 的流量来源关键词、挖掘竞品词时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、asin、total、stats、items(keyword/keywordCn/searches/products/purchases/purchaseRate/bid/bidMax/bidMin/badges/rankPosition/adPosition/searchesRank/latest1daysAds/latest7daysAds/latest30daysAds/supplyDemandRatio/trafficPercentage/trafficKeywordType/conversionKeywordType/calculatedWeeklySearches/impressions/clicks/updatedTime/naturalRatio/adRatio 等)。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "asin": {
+          "type": "string",
+          "description": "Amazon ASIN，长度通常为 10，例如 B07Z82895W",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "keyword": {
+          "type": "string",
+          "description": "关键词过滤，例如 phone stand"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ]
+        },
+        "month": {
+          "type": "string",
+          "description": "历史月份，格式 yyyyMM，例如 202308；不传默认最近30天"
+        },
+        "badges": {
+          "type": "array",
+          "description": "关键词类型过滤，可选值：NATURAL_SEARCHING（自然搜索）、AMAZON_CHOICE、EDITORIAL_RECOMMENDATIONS、FOUR_STAR、SPONSOR_BRAND、SPONSOR_VIDEO、HIGHLY_RATED、ADS",
+          "items": {
+            "type": "string",
+            "enum": [
+              "NATURAL_SEARCHING",
+              "AMAZON_CHOICE",
+              "EDITORIAL_RECOMMENDATIONS",
+              "FOUR_STAR",
+              "SPONSOR_BRAND",
+              "SPONSOR_VIDEO",
+              "HIGHLY_RATED",
+              "ADS"
+            ]
+          }
+        },
+        "trafficKeywordTypes": {
+          "type": "array",
+          "description": "流量占比类型过滤，可选值：PRIMARY（主要流量词）、PRECISE（精准流量词）、PRECISE_LONG_TAIL（长尾流量词）；留空表示全部",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PRIMARY",
+              "PRECISE",
+              "PRECISE_LONG_TAIL"
+            ]
+          }
+        },
+        "conversionKeywordTypes": {
+          "type": "array",
+          "description": "流量转化类型过滤，可选值：EXCELLENT（转化优质词）、STABLE（转化平稳词）、LOST（转化流失词）、INVALID（无效曝光词）；留空表示全部",
+          "items": {
+            "type": "string",
+            "enum": [
+              "EXCELLENT",
+              "STABLE",
+              "LOST",
+              "INVALID"
+            ]
+          }
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 rankPosition；可选：rankPosition、adPosition、createdTime、searchesRank、searches、purchases、purchaseRate、products、supplyDemandRatio、latest1daysAds、bid、trafficPercentage",
+              "enum": [
+                "rankPosition",
+                "adPosition",
+                "createdTime",
+                "searchesRank",
+                "searches",
+                "purchases",
+                "purchaseRate",
+                "products",
+                "supplyDemandRatio",
+                "latest1daysAds",
+                "bid",
+                "trafficPercentage"
+              ]
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序，false=升序（默认 false）"
+            }
+          }
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searches\",\"purchases\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "asin_prediction",
+    "description": "ASIN销量预测：根据亚马逊 ASIN 返回每日 BSR 排名与预估日销量、日销售额、日均价，以及月度汇总数据。当用户需要查看某 ASIN 最近一段时间的日颗粒度销售数据，或快速估算当前月销量时调用。与 asin_sales_trend 的区别：本工具提供按天记录的细粒度数据（日BSR+日销量），适合分析短期波动；asin_sales_trend 提供按月聚合的更长周期历史趋势，并区分父体/子体销量，适合分析长期趋势和季节性。鉴权由服务端处理，模型不要传递 API Key。返回结构：asinDetail{asin/title/brand/availableDate/category/categoryId/imageUrl/ratings/rating}、dailyItemList[{date/bsr/sales/amount/price}]（日度数据）、monthItemList[{date/sales/amount/price}]（月度汇总）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "asin": {
+          "type": "string",
+          "description": "Amazon ASIN，长度通常为 10，例如 B0BDRKG478",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"asinDetail\",\"dailyItemList\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "keyword_research",
+    "description": "关键词选品：根据关键词从亚马逊站内搜索词出发挖掘细分赛道，发现高需求、低竞争的产品机会。返回关键词的月搜索量、点击量、展示量、月购买量、购买率、商品数、需供比、增长率、同比增长、近3个月增长、PPC出价、均价、评分数、评分值等数据，以及关联 ASIN、点击前三 ASIN、TOP3 品牌/类目。支持按月份、类目、各类筛选条件过滤。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、page、size、pages、total、order、items(keywords/searches/clicks/impressions/purchases/growth/purchaseRate/products/supplyDemandRatio/avgPrice/avgRatings/avgRating/bid/bidMin/bidMax/araClickRate/araShareRate/goodsValue/marketPeriod/keywordCn/brands/categories/relationAsinList/araAsinList 等)。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "SA",
+            "AE"
+          ]
+        },
+        "keywords": {
+          "type": "string",
+          "description": "必填，关键词，例如 N95"
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除的关键字，例如 portable"
+        },
+        "month": {
+          "type": "string",
+          "description": "筛选日期，格式 yyyyMM，支持近24个月，例如 202607；留空表示最近月份"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 searches；可选：searches（搜索量）、purchases（购买量）、purchaseRate（购买率）、products（商品数）、growth（增长率）、bid（PPC竞价）、supplyDemandRatio（供需比）、avgPrice（均价）"
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序（默认），false=升序"
+            }
+          }
+        },
+        "supplement": {
+          "type": "string",
+          "description": "是否补充同义扩展词（将输入关键词自动扩展为相关词后一起查询）：N=否，仅查输入词（默认）；Y=是，同时包含系统扩展的同义词",
+          "enum": [
+            "N",
+            "Y"
+          ]
+        },
+        "minSearches": {
+          "type": "integer",
+          "description": "最小月搜索量",
+          "minimum": 0
+        },
+        "maxSearches": {
+          "type": "integer",
+          "description": "最大月搜索量",
+          "minimum": 0
+        },
+        "minGrowth": {
+          "type": "number",
+          "description": "最小月搜索量增长率（%）"
+        },
+        "maxGrowth": {
+          "type": "number",
+          "description": "最大月搜索量增长率（%）"
+        },
+        "minProducts": {
+          "type": "integer",
+          "description": "最小商品数",
+          "minimum": 0
+        },
+        "maxProducts": {
+          "type": "integer",
+          "description": "最大商品数",
+          "minimum": 0
+        },
+        "minPurchases": {
+          "type": "integer",
+          "description": "最小月购买量",
+          "minimum": 0
+        },
+        "maxPurchases": {
+          "type": "integer",
+          "description": "最大月购买量",
+          "minimum": 0
+        },
+        "minPurchaseRate": {
+          "type": "number",
+          "description": "最小购买率（%）"
+        },
+        "maxPurchaseRate": {
+          "type": "number",
+          "description": "最大购买率（%）"
+        },
+        "withYearlyGrowth": {
+          "type": "boolean",
+          "description": "是否仅新细分市场，默认 false"
+        },
+        "minYearlyGrowth": {
+          "type": "integer",
+          "description": "最小月搜索量同比增长值"
+        },
+        "maxYearlyGrowth": {
+          "type": "integer",
+          "description": "最大月搜索量同比增长值"
+        },
+        "minYearlyGrowthRate": {
+          "type": "number",
+          "description": "最小月搜索量同比增长率（%）"
+        },
+        "maxYearlyGrowthRate": {
+          "type": "number",
+          "description": "最大月搜索量同比增长率（%）"
+        },
+        "minGrowthTrendMin": {
+          "type": "integer",
+          "description": "最小月搜索量近3个月增长值"
+        },
+        "maxGrowthTrendMin": {
+          "type": "integer",
+          "description": "最大月搜索量近3个月增长值"
+        },
+        "minGrowthRateTrendMin": {
+          "type": "number",
+          "description": "最小月搜索量近3个月增长率（%）"
+        },
+        "maxGrowthRateTrendMin": {
+          "type": "number",
+          "description": "最大月搜索量近3个月增长率（%）"
+        },
+        "marketPeriod": {
+          "type": "string",
+          "description": "市场周期/季节性筛选，S1~S12 分别对应 1~12 月旺季，多个用逗号分隔，例如 S1,S2 表示 1 月和 2 月旺季；留空表示不限"
+        },
+        "minAvgPrice": {
+          "type": "number",
+          "description": "最小均价",
+          "minimum": 0
+        },
+        "maxAvgPrice": {
+          "type": "number",
+          "description": "最大均价",
+          "minimum": 0
+        },
+        "minAvgReviews": {
+          "type": "integer",
+          "description": "最小评分数",
+          "minimum": 0
+        },
+        "maxAvgReviews": {
+          "type": "integer",
+          "description": "最大评分数"
+        },
+        "minAvgRating": {
+          "type": "number",
+          "description": "最小评分值"
+        },
+        "maxAvgRating": {
+          "type": "number",
+          "description": "最大评分值"
+        },
+        "minBid": {
+          "type": "number",
+          "description": "最小PPC竞价（$）",
+          "minimum": 0
+        },
+        "maxBid": {
+          "type": "number",
+          "description": "最大PPC竞价（$）"
+        },
+        "minMonopolyClickRate": {
+          "type": "number",
+          "description": "最小点击集中度"
+        },
+        "maxMonopolyClickRate": {
+          "type": "number",
+          "description": "最大点击集中度"
+        },
+        "minGoodsValue": {
+          "type": "number",
+          "description": "最小货流值"
+        },
+        "maxGoodsValue": {
+          "type": "number",
+          "description": "最大货流值"
+        },
+        "minSupplyDemandRatio": {
+          "type": "number",
+          "description": "最小供需比",
+          "minimum": 0
+        },
+        "maxSupplyDemandRatio": {
+          "type": "number",
+          "description": "最大供需比"
+        },
+        "minWordCount": {
+          "type": "integer",
+          "description": "最小单词个数",
+          "minimum": 1
+        },
+        "maxWordCount": {
+          "type": "integer",
+          "description": "最大单词个数"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keywords\",\"searches\",\"purchases\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "keywords"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "traffic_extend",
+    "description": "拓展流量词：批量查询多个 ASIN（最多20个）在近30天内进入亚马逊前台搜索结果前3页的所有搜索流量词，并标注每个关键词在各 ASIN 上的具体排名和流量贡献。与 traffic_keyword 的区别：traffic_keyword 仅查单个 ASIN 的流量词；本工具支持多 ASIN 联合查询，可找出多个竞品共同争夺的高价值词。适用于竞品词矩阵分析、多品联合关键词规划。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages/order、items(keyword/keywordCn/searches/products/purchases/purchaseRate/bid/bidMax/bidMin/searchesRank/latest1daysAds/latest7daysAds/latest30daysAds/supplyDemandRatio/trafficPercentage/avgPrice/avgRatings/avgRating/titleDensity/spr/monopolyClickRate/top3ClickingRate/top3ConversionRate/relationVariationsItems[{asin/trafficPercentage/title/price/reviews/rating}])。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
+          ]
+        },
+        "asinList": {
+          "type": "array",
+          "description": "需要查询的 ASIN 列表，最多20个，例如 [\"B07Z82895W\", \"B08GHW4TBS\"]",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "historyDate": {
+          "type": "string",
+          "description": "历史月份，格式 yyyyMM，例如 202507；不传或传空字符串表示最近30天"
+        },
+        "queryType": {
+          "type": "integer",
+          "description": "查询方式：0 所有变体，1 畅销变体，2 当前变体（默认）",
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，从1开始，默认1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 trafficPercentage；可选：trafficPercentage、relationAsin、searchesRank、searches、purchases、purchaseRate、titleDensity、products、supplyDemandRatio、adProduct、bid、impressions、clicks、totalClickRate、totalConversionRate",
+              "enum": [
+                "trafficPercentage",
+                "relationAsin",
+                "searchesRank",
+                "searches",
+                "purchases",
+                "purchaseRate",
+                "titleDensity",
+                "products",
+                "supplyDemandRatio",
+                "adProduct",
+                "bid",
+                "impressions",
+                "clicks",
+                "totalClickRate",
+                "totalConversionRate"
+              ]
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序（默认），false=升序"
+            }
+          }
+        },
+        "amazonChoice": {
+          "type": "boolean",
+          "description": "仅返回亚马逊推荐词，默认 false"
+        },
+        "includeKeywords": {
+          "type": "array",
+          "description": "包含的词，例如 [\"phone stand\"]",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludeKeywords": {
+          "type": "array",
+          "description": "排除的词，例如 [\"cheap\"]",
+          "items": {
+            "type": "string"
+          }
+        },
+        "minSearches": {
+          "type": "integer",
+          "description": "最小月搜索量",
+          "minimum": 0
+        },
+        "maxSearches": {
+          "type": "integer",
+          "description": "最大月搜索量",
+          "minimum": 0
+        },
+        "minSearchRank": {
+          "type": "integer",
+          "description": "最小搜索排名",
+          "minimum": 1
+        },
+        "maxSearchRank": {
+          "type": "integer",
+          "description": "最大搜索排名",
+          "minimum": 1
+        },
+        "minPurchases": {
+          "type": "integer",
+          "description": "最小月购买量",
+          "minimum": 0
+        },
+        "maxPurchases": {
+          "type": "integer",
+          "description": "最大月购买量",
+          "minimum": 0
+        },
+        "minPurchaseRate": {
+          "type": "number",
+          "description": "最小购买率（0~1）",
+          "minimum": 0
+        },
+        "maxPurchaseRate": {
+          "type": "number",
+          "description": "最大购买率（0~1）"
+        },
+        "minProducts": {
+          "type": "integer",
+          "description": "最小商品数",
+          "minimum": 0
+        },
+        "maxProducts": {
+          "type": "integer",
+          "description": "最大商品数",
+          "minimum": 0
+        },
+        "minSupplyDemandRatio": {
+          "type": "number",
+          "description": "最小供需比",
+          "minimum": 0
+        },
+        "maxSupplyDemandRatio": {
+          "type": "number",
+          "description": "最大供需比"
+        },
+        "minBid": {
+          "type": "number",
+          "description": "最小PPC竞价（$）",
+          "minimum": 0
+        },
+        "maxBid": {
+          "type": "number",
+          "description": "最大PPC竞价（$）"
+        },
+        "minAdProducts": {
+          "type": "integer",
+          "description": "最小广告竞品数",
+          "minimum": 0
+        },
+        "maxAdProducts": {
+          "type": "integer",
+          "description": "最大广告竞品数"
+        },
+        "minAvgPrice": {
+          "type": "number",
+          "description": "最小均价",
+          "minimum": 0
+        },
+        "maxAvgPrice": {
+          "type": "number",
+          "description": "最大均价"
+        },
+        "minWordCount": {
+          "type": "integer",
+          "description": "最小单词个数",
+          "minimum": 1
+        },
+        "maxWordCount": {
+          "type": "integer",
+          "description": "最大单词个数"
+        },
+        "minSPR": {
+          "type": "integer",
+          "description": "最小SPR",
+          "minimum": 0
+        },
+        "maxSPR": {
+          "type": "integer",
+          "description": "最大SPR"
+        },
+        "minTitleDensity": {
+          "type": "integer",
+          "description": "最小标题密度",
+          "minimum": 0
+        },
+        "maxTitleDensity": {
+          "type": "integer",
+          "description": "最大标题密度"
+        },
+        "minMonopolyClickRate": {
+          "type": "number",
+          "description": "最小点击集中度",
+          "minimum": 0
+        },
+        "maxMonopolyClickRate": {
+          "type": "number",
+          "description": "最大点击集中度"
+        },
+        "minTrafficPercentage": {
+          "type": "number",
+          "description": "最小流量占比",
+          "minimum": 0
+        },
+        "maxTrafficPercentage": {
+          "type": "number",
+          "description": "最大流量占比"
+        },
+        "minConversionRate": {
+          "type": "number",
+          "description": "最小转化率",
+          "minimum": 0
+        },
+        "maxConversionRate": {
+          "type": "number",
+          "description": "最大转化率"
+        },
+        "minCompetitors": {
+          "type": "integer",
+          "description": "最小ASIN竞品数",
+          "minimum": 0
+        },
+        "maxCompetitors": {
+          "type": "integer",
+          "description": "最大ASIN竞品数"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searches\",\"trafficPercentage\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asinList"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "bsr_prediction",
+    "description": "BSR销量预测：根据亚马逊一级类目节点ID(categoryId)与Best Sellers Rank(bsr)预测商品日均销量、月均销量以及不同排名的日均销量分布。当用户需要估算某个BSR排名对应的销量时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、bsr、categoryLabel、estDailySales、estMonthSales、categoryId、itemList[{bsr,estDailySales,estMonthSales}] 等。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "亚马逊一级类目数字ID，通过 asin_detail 返回的 bsrId 字段或 product_node 工具获取，例如 2619525011",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "bsr": {
+          "type": "integer",
+          "description": "Best Sellers Rank 排名，例如 1",
+          "minimum": 1
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"bsr\",\"estDailySales\",\"estMonthSales\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "categoryId",
+        "bsr"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "google_trend",
+    "description": "谷歌趋势：查询关键词在 Google Trends 上近5年（或近1年）的搜索热度趋势，按周（或月）聚合。适用于判断关键词的季节性规律、长期增衰趋势，辅助选品时机决策。支持谷歌网页搜索或谷歌购物搜索两种来源。鉴权由服务端处理，模型不要传递 API Key。返回字段：marketplace、keyword、link（Google Trends 原始链接）、range{week/month/quarter/half/year/threeYear/all}（各时段热度均值，0~100）、items[{time（毫秒时间戳）/value（热度值0~100）}]。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
+          ]
+        },
+        "keyword": {
+          "type": "string",
+          "description": "要查询的关键词，例如 iphone stand"
+        },
+        "googleProp": {
+          "type": "string",
+          "description": "搜索类型：web=谷歌网页搜索（默认），shoppingCart=谷歌购物搜索",
+          "enum": [
+            "web",
+            "shoppingCart"
+          ]
+        },
+        "monthly": {
+          "type": "boolean",
+          "description": "是否按月聚合（false=按周，默认 false）"
+        },
+        "intervalYear": {
+          "type": "integer",
+          "description": "查询时间范围（年）：1=近1年，5=近5年（默认）",
+          "enum": [
+            1,
+            5
+          ]
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"range\",\"items\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "keyword"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "keyword_conversion",
+    "description": "关键字转化率：查询亚马逊关键词的搜索转化率、点击转化率、PPC竞价、CPA、预算、ACOS等广告相关数据。适用于评估关键词的商业价值和广告投放效率，选择广告投放词、分析投放成本。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages、items(keyword/keywordCn/searches/clicks/purchases/searchConvRate（搜索转化率）/clickConvRate（点击转化率）/clickingRate（前三点击占比）/conversionRate（前三转化占比）/phraseCount/phrasePpc{value/min/max}/exactPpc/broadPpc/phraseCpa/exactCpa/broadCpa/avgProductPrice/phraseBudget/exactBudget/broadBudget/phraseAcos/exactAcos/broadAcos/top3Asins[{asin/clickRate/conversionRate}]/top10Asins[{asin/keyword/asinPrice/asinReviews/asinRating/rankPage/position}])。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 9 站：US/JP/UK/DE/FR/IT/ES/CA/IN",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN"
+          ]
+        },
+        "keyword": {
+          "type": "string",
+          "description": "要查询的关键词，例如 lunch box"
+        },
+        "timeType": {
+          "type": "string",
+          "description": "时间周期：WEEK=近7天（默认），90D=近90天",
+          "enum": [
+            "WEEK",
+            "90D"
+          ]
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，默认 50，仅支持 20/50/100",
+          "enum": [
+            20,
+            50,
+            100
+          ]
+        },
+        "keywordBidMatchType": {
+          "type": "string",
+          "description": "PPC竞价模式：phrase=词组匹配，exact=精准匹配（默认），broad=广泛匹配",
+          "enum": [
+            "phrase",
+            "exact",
+            "broad"
+          ]
+        },
+        "matchType": {
+          "type": "integer",
+          "description": "包含词匹配方式：0=词组匹配，1=广泛匹配（默认）",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "includeKeywords": {
+          "type": "array",
+          "description": "包含词过滤",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludeKeywords": {
+          "type": "array",
+          "description": "排除词过滤",
+          "items": {
+            "type": "string"
+          }
+        },
+        "customAvgProductPrice": {
+          "type": "number",
+          "description": "自定义商品均价（用于计算预算/ACOS）",
+          "minimum": 0
+        },
+        "minSearches": {
+          "type": "integer",
+          "description": "最小月搜索量",
+          "minimum": 0
+        },
+        "maxSearches": {
+          "type": "integer",
+          "description": "最大月搜索量"
+        },
+        "minClicks": {
+          "type": "integer",
+          "description": "最小点击量",
+          "minimum": 0
+        },
+        "maxClicks": {
+          "type": "integer",
+          "description": "最大点击量"
+        },
+        "minPurchases": {
+          "type": "integer",
+          "description": "最小购买量",
+          "minimum": 0
+        },
+        "maxPurchases": {
+          "type": "integer",
+          "description": "最大购买量"
+        },
+        "minSearchConvRate": {
+          "type": "number",
+          "description": "最小搜索转化率",
+          "minimum": 0
+        },
+        "maxSearchConvRate": {
+          "type": "number",
+          "description": "最大搜索转化率"
+        },
+        "minClickConvRate": {
+          "type": "number",
+          "description": "最小点击转化率",
+          "minimum": 0
+        },
+        "maxClickConvRate": {
+          "type": "number",
+          "description": "最大点击转化率"
+        },
+        "minPpc": {
+          "type": "number",
+          "description": "最小PPC竞价($)",
+          "minimum": 0
+        },
+        "maxPpc": {
+          "type": "number",
+          "description": "最大PPC竞价($)"
+        },
+        "minCpa": {
+          "type": "number",
+          "description": "最小CPA($)",
+          "minimum": 0
+        },
+        "maxCpa": {
+          "type": "number",
+          "description": "最大CPA($)"
+        },
+        "minProductPrice": {
+          "type": "number",
+          "description": "最小商品均价($)",
+          "minimum": 0
+        },
+        "maxProductPrice": {
+          "type": "number",
+          "description": "最大商品均价($)"
+        },
+        "minAcos": {
+          "type": "number",
+          "description": "最小ACOS",
+          "minimum": 0
+        },
+        "maxAcos": {
+          "type": "number",
+          "description": "最大ACOS"
+        },
+        "minClickingRate": {
+          "type": "number",
+          "description": "最小前三ASIN点击占比",
+          "minimum": 0
+        },
+        "maxClickingRate": {
+          "type": "number",
+          "description": "最大前三ASIN点击占比"
+        },
+        "minConversionRate": {
+          "type": "number",
+          "description": "最小前三ASIN转化占比",
+          "minimum": 0
+        },
+        "maxConversionRate": {
+          "type": "number",
+          "description": "最大前三ASIN转化占比"
+        },
+        "minPhraseCount": {
+          "type": "integer",
+          "description": "最小词组数",
+          "minimum": 0
+        },
+        "maxPhraseCount": {
+          "type": "integer",
+          "description": "最大词组数"
+        },
+        "minBudget": {
+          "type": "number",
+          "description": "最小广告预算($)",
+          "minimum": 0
+        },
+        "maxBudget": {
+          "type": "number",
+          "description": "最大广告预算($)"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searchConvRate\",\"clickConvRate\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "keyword"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "aba_research_weekly",
+    "description": "ABA数据选品-按周：基于亚马逊 ABA（Amazon Brand Analytics）的周维度数据，发现趋势关键词和潜力赛道。与按月版本的区别：本工具用周为单位，可看近1/4/12周的排名变化（w1/w4/w12SearchRank），适合追踪短期爆款趋势；aba_research_monthly 用月为单位，适合分析中长期规律。支持按类目、关键词、排名范围、搜索量、点击量、曝光量、转化率等多维度筛选。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages/hasNextPage/order、items(keyword/keywordCn/departments/searchRank（ABA搜索排名）/searchRankCv（排名变化量）/searchRankCr（排名变化率）/searches/purchases/purchaseRate/clicks/impressions/searchRankGrowthValue/searchRankGrowthRate/w1SearchRank/w1RankGrowthValue/w1RankGrowthRate/w4SearchRank/w4RankGrowthValue/w4RankGrowthRate/w12SearchRank/w12RankGrowthValue/w12RankGrowthRate/bid/bidMax/bidMin/cvsShareRate/clickShareRate/titleDensityExact/cprExact/top3Brands[{brand/clickRate/conversionRate}]/top3AsinDtoList[{asin/clickRate/conversionRate}])。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "SA",
+            "AE"
+          ]
+        },
+        "year": {
+          "type": "integer",
+          "description": "查询年份，例如 2026；需与 month、week 同时提供，缺省则查询最近一周"
+        },
+        "month": {
+          "type": "integer",
+          "description": "查询月份（1-12），例如 9；需与 year、week 同时提供"
+        },
+        "week": {
+          "type": "integer",
+          "description": "该月第几周（1-5），例如 4；系统会换算为该月第 week 个周六的日期（2026年9月第4周 → 20260926），无需自行计算"
+        },
+        "departments": {
+          "type": "array",
+          "description": "类目过滤，可选、可多选。取值须先调用 first_category 获取该站点全部一级类目，再按用户语义从 category_name / category_name_cn 匹配出对应 category_value 后传入，例如 [\"automotive\",\"baby-products\"]",
+          "items": {
+            "type": "string",
+            "description": "一级类目值（category_value），来自 first_category 的返回"
+          }
+        },
+        "includeKeywords": {
+          "type": "string",
+          "description": "包含的关键词"
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除的关键词"
+        },
+        "exactFlag": {
+          "type": "boolean",
+          "description": "是否精确匹配关键词，默认 false"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，可选 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 searchfrequencyrank；可选：searchfrequencyrank（ABA搜索频率排名）、searches（搜索量）、clicks（点击量）、impressions（展示量）等"
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序（默认），false=升序"
+            }
+          }
+        },
+        "searchModel": {
+          "type": "integer",
+          "description": "搜索模式：1=热门市场（默认）、2=异动市场、3=持续增长市场、4=快速飙升市场、5=潜力市场、6=长尾市场",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "rankGrowthValue": {
+          "type": "number",
+          "description": "排名增长值筛选"
+        },
+        "rankGrowthRate": {
+          "type": "number",
+          "description": "排名增长率筛选"
+        },
+        "minRankGrowthRate": {
+          "type": "number",
+          "description": "最小排名增长率"
+        },
+        "maxRankGrowthRate": {
+          "type": "number",
+          "description": "最大排名增长率"
+        },
+        "minSearchRank": {
+          "type": "integer",
+          "description": "最小ABA搜索排名",
+          "minimum": 1
+        },
+        "maxSearchRank": {
+          "type": "integer",
+          "description": "最大ABA搜索排名"
+        },
+        "minSearches": {
+          "type": "integer",
+          "description": "最小搜索量",
+          "minimum": 0
+        },
+        "maxSearches": {
+          "type": "integer",
+          "description": "最大搜索量"
+        },
+        "minMonopolyClickRate": {
+          "type": "number",
+          "description": "最小点击集中度",
+          "minimum": 0
+        },
+        "maxMonopolyClickRate": {
+          "type": "number",
+          "description": "最大点击集中度"
+        },
+        "minConversionRate": {
+          "type": "number",
+          "description": "最小转化率",
+          "minimum": 0
+        },
+        "maxConversionRate": {
+          "type": "number",
+          "description": "最大转化率"
+        },
+        "minWordCount": {
+          "type": "integer",
+          "description": "最小词数",
+          "minimum": 1
+        },
+        "maxWordCount": {
+          "type": "integer",
+          "description": "最大词数"
+        },
+        "minSPR": {
+          "type": "integer",
+          "description": "最小SPR",
+          "minimum": 0
+        },
+        "maxSPR": {
+          "type": "integer",
+          "description": "最大SPR"
+        },
+        "minTitleDensity": {
+          "type": "integer",
+          "description": "最小标题密度",
+          "minimum": 0
+        },
+        "maxTitleDensity": {
+          "type": "integer",
+          "description": "最大标题密度"
+        },
+        "minClicks": {
+          "type": "integer",
+          "description": "最小点击量",
+          "minimum": 0
+        },
+        "maxClicks": {
+          "type": "integer",
+          "description": "最大点击量"
+        },
+        "minImpressions": {
+          "type": "integer",
+          "description": "最小曝光量",
+          "minimum": 0
+        },
+        "maxImpressions": {
+          "type": "integer",
+          "description": "最大曝光量"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searchRank\",\"searches\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "aba_research_monthly",
+    "description": "ABA数据选品-按月：基于亚马逊 ABA（Amazon Brand Analytics）的月维度数据，发现稳定需求关键词和潜力赛道。与按周版本的区别：本工具用月为单位（date 参数格式 yyyyMM），适合分析中长期关键词规律和月度季节性波动；aba_research_weekly 以周为单位，适合追踪短期爆款趋势。支持按类目、关键词、排名范围、搜索量、点击量、曝光量、转化率等多维度筛选。鉴权由服务端处理，模型不要传递 API Key。返回字段与 aba_research_weekly 一致：page/size/total/pages/hasNextPage/order、items(keyword/keywordCn/departments/searchRank/searchRankCv/searchRankCr/searches/purchases/purchaseRate/clicks/impressions/searchRankGrowthValue/searchRankGrowthRate/bid/bidMax/bidMin/cvsShareRate/clickShareRate/titleDensityExact/cprExact/top3Brands/top3AsinDtoList)。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "SA",
+            "AE"
+          ]
+        },
+        "date": {
+          "type": "string",
+          "description": "查询月份，格式 yyyyMM，例如 202608；留空表示最近30天，系统会换算为上游 table（ara_yyyyMM）"
+        },
+        "departments": {
+          "type": "array",
+          "description": "类目过滤，可选、可多选。取值须先调用 first_category 获取该站点全部一级类目，再按用户语义从 category_name / category_name_cn 匹配出对应 category_value 后传入，例如 [\"automotive\",\"baby-products\"]",
+          "items": {
+            "type": "string",
+            "description": "一级类目值（category_value），来自 first_category 的返回"
+          }
+        },
+        "includeKeywords": {
+          "type": "string",
+          "description": "包含的关键词"
+        },
+        "excludeKeywords": {
+          "type": "string",
+          "description": "排除的关键词"
+        },
+        "exactFlag": {
+          "type": "boolean",
+          "description": "是否精确匹配关键词，默认 false"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，可选 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ],
+          "default": 50
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 searchfrequencyrank；可选：searchfrequencyrank（ABA搜索频率排名）、searches（搜索量）、clicks（点击量）、impressions（展示量）等"
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序（默认），false=升序"
+            }
+          }
+        },
+        "searchModel": {
+          "type": "integer",
+          "description": "搜索模式：1=热门市场（默认）、2=异动市场、3=持续增长市场、4=快速飙升市场、5=潜力市场、6=长尾市场",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "minRankGrowthRate": {
+          "type": "number",
+          "description": "最小排名增长率"
+        },
+        "maxRankGrowthRate": {
+          "type": "number",
+          "description": "最大排名增长率"
+        },
+        "minSearchRank": {
+          "type": "integer",
+          "description": "最小ABA搜索排名",
+          "minimum": 1
+        },
+        "maxSearchRank": {
+          "type": "integer",
+          "description": "最大ABA搜索排名"
+        },
+        "minSearches": {
+          "type": "integer",
+          "description": "最小搜索量",
+          "minimum": 0
+        },
+        "maxSearches": {
+          "type": "integer",
+          "description": "最大搜索量"
+        },
+        "minMonopolyClickRate": {
+          "type": "number",
+          "description": "最小点击集中度",
+          "minimum": 0
+        },
+        "maxMonopolyClickRate": {
+          "type": "number",
+          "description": "最大点击集中度"
+        },
+        "minConversionRate": {
+          "type": "number",
+          "description": "最小转化率",
+          "minimum": 0
+        },
+        "maxConversionRate": {
+          "type": "number",
+          "description": "最大转化率"
+        },
+        "minWordCount": {
+          "type": "integer",
+          "description": "最小词数",
+          "minimum": 1
+        },
+        "maxWordCount": {
+          "type": "integer",
+          "description": "最大词数"
+        },
+        "minSPR": {
+          "type": "integer",
+          "description": "最小SPR",
+          "minimum": 0
+        },
+        "maxSPR": {
+          "type": "integer",
+          "description": "最大SPR"
+        },
+        "minTitleDensity": {
+          "type": "integer",
+          "description": "最小标题密度",
+          "minimum": 0
+        },
+        "maxTitleDensity": {
+          "type": "integer",
+          "description": "最大标题密度"
+        },
+        "minClicks": {
+          "type": "integer",
+          "description": "最小点击量",
+          "minimum": 0
+        },
+        "maxClicks": {
+          "type": "integer",
+          "description": "最大点击量"
+        },
+        "minImpressions": {
+          "type": "integer",
+          "description": "最小曝光量",
+          "minimum": 0
+        },
+        "maxImpressions": {
+          "type": "integer",
+          "description": "最大曝光量"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searchRank\",\"searches\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "traffic_keyword_stat",
+    "description": "流量词统计概览：查询指定 ASIN 的流量词数量分布（只返回统计数，不返回关键词列表）。建议在调用 traffic_keyword 之前先调用本工具，了解该 ASIN 的流量词规模和各类型占比（自然词/广告词/AC词/ER词等），再决定是否需要分页获取详情。当用户问「这个商品有多少个流量词」「自然流量词和广告词各占多少」时直接用本工具，无需再调 traffic_keyword。鉴权由服务端处理，模型不要传递 API Key。返回字段：marketplace/asin/keywords（总流量词数）/ranks（自然排名词数）/ads（广告词数）/calcTime/badgeCount{ns（自然搜索词数）/ac（亚马逊推荐词数）/er（编辑推荐词数）/fs（四星词数）/hr（高评分词数）/sb（品牌广告词数）/sv（视频广告词数）/ad（SP广告词数）}。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
+          ]
+        },
+        "asin": {
+          "type": "string",
+          "description": "Amazon ASIN，例如 B07Z82895W",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，严格 yyyyMM 格式（6位数字），例如 202605；不填默认最新数据"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keywords\",\"ranks\",\"ads\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "traffic_listing_stat",
+    "description": "关联流量统计概览：查询一组 ASIN 的关联流量数量分布（只返回各类型的数量统计，不返回具体关联商品列表）。建议在调用 traffic_listing 之前先调用本工具，了解各关联类型（VAV/FBT/BAB/AVP/BAV/MIB/MIE/COB/SP/FSA/BCA/CSI）的数量，再针对数量最多或最有价值的类型调用 traffic_listing 获取详细商品数据。当用户问「这批ASIN有多少关联流量」「哪种关联类型最多」时直接用本工具。鉴权由服务端处理，模型不要传递 API Key。返回字段：marketplace/asin（代表性ASIN）/relations（总关联流量数）/freeRelations（免费关联数）/paidRelations（付费关联数）/calcTime/items[{relation（关联类型名）/count（该类型数量）}]。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 12 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU"
+          ]
+        },
+        "asinList": {
+          "type": "array",
+          "description": "需要查询的 ASIN 列表，例如 [\"B098T9ZFB5\", \"B09JW5FNVX\"]",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"relations\",\"freeRelations\",\"paidRelations\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asinList"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "traffic_listing",
+    "description": "关联流量商品列表：分页查询一组 ASIN 的关联流量来源商品详情，返回每条关联商品的 ASIN、标题、价格、销量、BSR、评分、品牌、配送方式等。relations 参数指定要查询的关联类型（枚举值大写：VAV/FBT/BAB/AVP/BAV/MIB/MIE/COB/SP/FSA/BCA/CSI），不传则返回全部类型。典型工作流：先调 traffic_listing_stat 获取各类型数量概览，再选择数量最大的类型调本工具获取商品详情。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages/order、items(asin/title/price/units/revenue/bsr/ratings/rating/fulfillment/brand/sellerNation/badge{bestSeller/amazonChoice/newRelease/ebc/video})。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 12 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU"
+          ]
+        },
+        "asinList": {
+          "type": "array",
+          "description": "需要查询的 ASIN 列表，例如 [\"B098T9ZFB5\", \"B09JW5FNVX\"]",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "relations": {
+          "type": "array",
+          "description": "关联类型列表：VAV（看了又看）、CSI（相似产品）、AVP（看了还看）、BAV（看了却买）、MIB（捆绑销售）、FBT（组合购买）、MIE（更多相关）、BAB（买了又买）、COB（品牌推荐）、SP（商品广告）、FSA（四星产品）、BCA（品牌广告）；传空数组表示查询全部类型",
+          "items": {
+            "type": "string",
+            "enum": [
+              "VAV",
+              "CSI",
+              "AVP",
+              "BAV",
+              "MIB",
+              "FBT",
+              "MIE",
+              "BAB",
+              "COB",
+              "SP",
+              "FSA",
+              "BCA"
+            ]
+          }
+        },
+        "variations": {
+          "type": "boolean",
+          "description": "是否包含变体，默认 true"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，从 1 开始，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ]
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段：relationCount（关联Asin数，默认）、createdTime（引流时间）",
+              "enum": [
+                "relationCount",
+                "createdTime"
+              ]
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "是否降序，默认 true"
+            }
+          }
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"title\",\"price\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asinList"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "market_research",
+    "description": "选市场/细分类目分析：按子类目维度查询市场概况，返回每个细分类目的月总销量、月均销量/销售额、均价、均BSR、均利润率、FBA/AMZ/FBM占比、商品/品牌/卖家集中度、新品占比、退货率等市场级聚合指标。与 product_research 的区别：本工具的粒度是「类目」，一条记录代表一个细分类目的整体情况，适合判断一个市场赛道是否值得进入；product_research 的粒度是「ASIN」，适合发现具体商品机会。不传 nodeIdPath 时返回所有大类的概况，传入 nodeIdPath 后返回该类目下各子类目的数据。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/total/pages/order、items(nodeId/nodeIdPath/nodeLabelName/nodeLabelLocale/nodeLabelPath/nodeLabelPathLocale/ranking/topProducts/brands/sellers/totalUnits/totalRevenue/avgUnits/avgRevenue/avgPrice/avgRatings/avgRating/avgBsr/avgSellers/avgProfit/ebcProportion/amazonSelfProportion/fbaProportion/fbmProportion/sellerNation/returnRatio/avgReturnRatio/searchToPurchaseRatio/top3ProductSales/top5ProductSales/top10ProductSales/top20ProductSales)。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ]
+        },
+        "month": {
+          "type": "string",
+          "description": "查询月份，格式 yyyyMM，例如 202507；不填默认最近30天"
+        },
+        "nodeIdPath": {
+          "type": "string",
+          "description": "类目节点 ID 路径，例如 172282:281407，不填则查询全部大类"
+        },
+        "departmentKeyword": {
+          "type": "string",
+          "description": "类目关键词过滤，例如 Electronics:Accessories & Supplies"
+        },
+        "topNum": {
+          "type": "integer",
+          "description": "头部 Listing 样本数量，默认 10",
+          "minimum": 1
+        },
+        "newProduct": {
+          "type": "integer",
+          "description": "新品定义（月数），例如 3 表示 3 个月内上架为新品，默认 3",
+          "enum": [
+            1,
+            3,
+            6,
+            12
+          ]
+        },
+        "sellerLocation": {
+          "type": "string",
+          "description": "卖家所属地过滤，多个用逗号分隔，例如 US,GB"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，从 1 开始，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，仅支持 20/50/100，默认 50",
+          "enum": [
+            20,
+            50,
+            100
+          ]
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，例如 total_sales、avg_revenue、avg_units、avg_bsr、avg_price、avg_rating、return_rate、new_product_count"
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "是否降序，默认 true"
+            }
+          }
+        },
+        "minAvgUnits": {
+          "type": "number",
+          "description": "最低月均销量"
+        },
+        "maxAvgUnits": {
+          "type": "number",
+          "description": "最高月均销量"
+        },
+        "minAvgRevenue": {
+          "type": "number",
+          "description": "最低月均销售额"
+        },
+        "maxAvgRevenue": {
+          "type": "number",
+          "description": "最高月均销售额"
+        },
+        "minAvgRatings": {
+          "type": "number",
+          "description": "最低平均评分数"
+        },
+        "maxAvgRatings": {
+          "type": "number",
+          "description": "最高平均评分数"
+        },
+        "minAvgRating": {
+          "type": "number",
+          "description": "最低平均评分值"
+        },
+        "maxAvgRating": {
+          "type": "number",
+          "description": "最高平均评分值"
+        },
+        "minAvgBsr": {
+          "type": "number",
+          "description": "最低平均BSR排名"
+        },
+        "maxAvgBsr": {
+          "type": "number",
+          "description": "最高平均BSR排名"
+        },
+        "minAvgPrice": {
+          "type": "number",
+          "description": "最低平均价格"
+        },
+        "maxAvgPrice": {
+          "type": "number",
+          "description": "最高平均价格"
+        },
+        "minWeight": {
+          "type": "number",
+          "description": "最低重量"
+        },
+        "maxWeight": {
+          "type": "number",
+          "description": "最高重量"
+        },
+        "minVolume": {
+          "type": "number",
+          "description": "最低体积"
+        },
+        "maxVolume": {
+          "type": "number",
+          "description": "最高体积"
+        },
+        "minAvgProfit": {
+          "type": "number",
+          "description": "最低平均毛利率"
+        },
+        "maxAvgProfit": {
+          "type": "number",
+          "description": "最高平均毛利率"
+        },
+        "minTopAvgUnits": {
+          "type": "number",
+          "description": "最低头部月均销量"
+        },
+        "maxTopAvgUnits": {
+          "type": "number",
+          "description": "最高头部月均销量"
+        },
+        "minTopAvgRevenue": {
+          "type": "number",
+          "description": "最低头部月均销售额"
+        },
+        "maxTopAvgRevenue": {
+          "type": "number",
+          "description": "最高头部月均销售额"
+        },
+        "minTopAvgBsr": {
+          "type": "number",
+          "description": "最低头部平均BSR"
+        },
+        "maxTopAvgBsr": {
+          "type": "number",
+          "description": "最高头部平均BSR"
+        },
+        "minGoodsCount": {
+          "type": "integer",
+          "description": "最低商品数量"
+        },
+        "maxGoodsCount": {
+          "type": "integer",
+          "description": "最高商品数量"
+        },
+        "minBrands": {
+          "type": "integer",
+          "description": "最小品牌数量"
+        },
+        "maxBrands": {
+          "type": "integer",
+          "description": "最大品牌数量"
+        },
+        "minSellers": {
+          "type": "integer",
+          "description": "最小卖家数量"
+        },
+        "maxSellers": {
+          "type": "integer",
+          "description": "最大卖家数量"
+        },
+        "minAvgSellers": {
+          "type": "number",
+          "description": "最小平均卖家数量"
+        },
+        "maxAvgSellers": {
+          "type": "number",
+          "description": "最大平均卖家数量"
+        },
+        "minGoodsCrn": {
+          "type": "number",
+          "description": "最小商品集中度"
+        },
+        "maxGoodsCrn": {
+          "type": "number",
+          "description": "最大商品集中度"
+        },
+        "minBrandCrn": {
+          "type": "number",
+          "description": "最小品牌集中度"
+        },
+        "maxBrandCrn": {
+          "type": "number",
+          "description": "最大品牌集中度"
+        },
+        "minSellerCrn": {
+          "type": "number",
+          "description": "最小卖家集中度"
+        },
+        "maxSellerCrn": {
+          "type": "number",
+          "description": "最大卖家集中度"
+        },
+        "minEbcProportion": {
+          "type": "number",
+          "description": "最小 A+数量占比"
+        },
+        "maxEbcProportion": {
+          "type": "number",
+          "description": "最大 A+数量占比"
+        },
+        "minFbaProportion": {
+          "type": "number",
+          "description": "最小 FBA 占比"
+        },
+        "maxFbaProportion": {
+          "type": "number",
+          "description": "最大 FBA 占比"
+        },
+        "minFbmProportion": {
+          "type": "number",
+          "description": "最小 FBM 占比"
+        },
+        "maxFbmProportion": {
+          "type": "number",
+          "description": "最大 FBM 占比"
+        },
+        "minAmazonSelfProportion": {
+          "type": "number",
+          "description": "最小 Amazon 自营占比"
+        },
+        "maxAmazonSelfProportion": {
+          "type": "number",
+          "description": "最大 Amazon 自营占比"
+        },
+        "minNewProportion": {
+          "type": "number",
+          "description": "最小新品数量占比"
+        },
+        "maxNewProportion": {
+          "type": "number",
+          "description": "最大新品数量占比"
+        },
+        "minNewCount": {
+          "type": "integer",
+          "description": "最小新品数量"
+        },
+        "maxNewCount": {
+          "type": "integer",
+          "description": "最大新品数量"
+        },
+        "minNewAvgRatings": {
+          "type": "number",
+          "description": "最小新品平均评分数"
+        },
+        "maxNewAvgRatings": {
+          "type": "number",
+          "description": "最大新品平均评分数"
+        },
+        "minNewAvgPrice": {
+          "type": "number",
+          "description": "最小新品平均价格"
+        },
+        "maxNewAvgPrice": {
+          "type": "number",
+          "description": "最大新品平均价格"
+        },
+        "minNewAvgRating": {
+          "type": "number",
+          "description": "最小新品平均星级"
+        },
+        "maxNewAvgRating": {
+          "type": "number",
+          "description": "最大新品平均星级"
+        },
+        "minNewAvgUnits": {
+          "type": "number",
+          "description": "最低新品月均销量"
+        },
+        "maxNewAvgUnits": {
+          "type": "number",
+          "description": "最高新品月均销量"
+        },
+        "minNewAvgRevenue": {
+          "type": "number",
+          "description": "最低新品月均销售额"
+        },
+        "maxNewAvgRevenue": {
+          "type": "number",
+          "description": "最高新品月均销售额"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"nodeLabelPath\",\"totalUnits\",\"avgPrice\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "product_node",
+    "description": "查亚马逊类目节点树：支持两种模式。①浏览子类目：传入 nodeIdPath（如 172282:281407），返回该节点的直接子类目列表，用于逐层向下浏览类目树；②搜索类目：传入 keyword（类目名称或 nodeId 数字），搜索匹配的类目节点。两种模式都返回每个节点的 nodeIdPath（可直接用于 product_research/competitor_lookup/market_research）。不传 nodeIdPath 和 keyword 则返回顶级类目列表。当用户需要获取某类目的 nodeIdPath、浏览类目结构时调用。鉴权由服务端处理，模型不要传递 API Key。返回字段（数组）：nodeIdPath/nodeLabelPath（英文名称路径）/nodeLabelLocale（末级节点中文名）/nodeLabelPathLocale（完整中文路径）/products（该节点下商品数）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ],
+          "minLength": 2,
+          "maxLength": 8
+        },
+        "nodeIdPath": {
+          "type": "string",
+          "description": "类目节点 id 字符串，例如 2619525011:3741271，传入后返回该节点的直接子类目列表"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "搜索关键字，可输入 nodeId 或类目名称，例如 Books 或 4053"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"nodeIdPath\",\"nodeLabelPath\",\"products\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "asin_sales_trend",
+    "description": "查询 ASIN 销量趋势：输入亚马逊站点和 ASIN，返回该 ASIN 的父体/子体月度销量、销售额历史趋势，以及完整商品详情。适用于分析商品的历史销售规律、季节性波动及长期增衰趋势。与 asin_prediction 的区别：本工具返回按月聚合的历史趋势数据（可回溯多个月），并区分父体/子体销量，适合分析长期规律；asin_prediction 提供按天记录的细粒度短期数据，更适合估算当前时点销量。鉴权由服务端处理，模型不要传递 API Key。返回字段：asin（ASIN 对象，包含 asin/asinUrl/marketplace/availableDate/brand/brandUrl/bsrId/bsrLabel/bsrRank/subcategories/createdTime/dimensions/firstRatingDate/imageUrl/zoomImageUrl/lqs/nodeId/nodeIdPath/nodeLabelPath/parent/price/primePrice/deliveryPrice/coupon/rating/ratings/reviews/variantRatings/variantReviews/sellerId/sellerName/fulfillment/sellers/title/updatedTime/variations/weight/skuList/variationList/features/overviews/badge{bestSeller,amazonChoice,newRelease,ebc,video}）、salesTrendPoints（月度趋势点列表，包含 month/price/averagePrice/parentUnitSales/childUnitSales/parentSalesRevenue/childSalesRevenue）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX"
+          ]
+        },
+        "asin": {
+          "type": "string",
+          "description": "目标 Amazon ASIN，例如 B0DXTMS9NF",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"asin\",\"salesTrendPoints\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "asin"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "keyword_miner",
+    "description": "关键词扩词挖掘：以一批种子关键词为起点，扩展出所有包含这些词根的长尾关键词及其数据。与 keyword_research 的区别：keyword_research 是「用一个关键词作为搜索词去查询相关词的市场数据」（输入的词本身出现在搜索结果中）；本工具是「以一批词为种子，挖掘包含这些词的全部衍生词」，适合构建完整关键词词库、找长尾低竞争词。支持最多200个种子词批量输入。返回每个扩展词的搜索量、购买量、购买率、商品数、广告竞品数、供需比、均价、评分数、评分值、PPC竞价、SPR、标题密度、相关度（与种子词的相关性0~100）、ABA排名、点击量、展示量等。鉴权由服务端处理，模型不要传递 API Key。返回字段：page/size/pages/total/order、items(keyword/keywordCn/searches/purchases/purchaseRate/products/adProducts/supplyDemandRatio/monopolyClickRate/avgPrice/avgRatings/avgRating/bid/bidMin/bidMax/spr/titleDensity/wordCount/relevancy/amazonChoice/searchRank/clicks/impressions/cvsShareRate/departments)。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 13 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "AE"
+          ]
+        },
+        "keywordList": {
+          "type": "array",
+          "description": "必填，批量查询关键词列表，例如 [\"phone stand\"]，最多 200 个",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "type": "string"
+          }
+        },
+        "historyDate": {
+          "type": "string",
+          "description": "历史日期，格式 yyyyMM，例如 202201；最近30天不传或传空字符串"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码，默认 1",
+          "minimum": 1
+        },
+        "size": {
+          "type": "integer",
+          "description": "每页条数，默认 50，仅支持 20/50/100",
+          "enum": [
+            20,
+            50,
+            100
+          ]
+        },
+        "order": {
+          "type": "object",
+          "description": "排序设置",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "排序字段，默认 relevancy；可选：relevancy、searchRank、searches、purchases、purchaseRate、impressions、clicks、spr、titleDensity、products、supplyDemandRatio、adProducts、monopolyClickRate、cvsShareRate、bid、avgPrice、avgRatings、avgRating"
+            },
+            "desc": {
+              "type": "boolean",
+              "description": "true=降序（默认），false=升序"
+            }
+          }
+        },
+        "filterRootWord": {
+          "type": "integer",
+          "description": "过滤词根：0=包含所有（默认），1=只包含词根",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "matchType": {
+          "type": "integer",
+          "description": "匹配方式：0=词组匹配，1=广泛匹配（默认）",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "keywordBidMatchType": {
+          "type": "string",
+          "description": "PPC竞价模式：phrase=词组匹配，exact=精准匹配（默认），broad=广泛匹配",
+          "enum": [
+            "phrase",
+            "exact",
+            "broad"
+          ]
+        },
+        "amazonChoice": {
+          "type": "boolean",
+          "description": "仅返回亚马逊推荐词，默认 false"
+        },
+        "includeKeywords": {
+          "type": "array",
+          "description": "包含的词，例如 [\"phone stand\"]",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludeKeywords": {
+          "type": "array",
+          "description": "排除的词，例如 [\"cheap\"]",
+          "items": {
+            "type": "string"
+          }
+        },
+        "minSearch": {
+          "type": "integer",
+          "description": "最小搜索量",
+          "minimum": 0
+        },
+        "maxSearch": {
+          "type": "integer",
+          "description": "最大搜索量"
+        },
+        "minPurchases": {
+          "type": "integer",
+          "description": "最小购买量",
+          "minimum": 0
+        },
+        "maxPurchases": {
+          "type": "integer",
+          "description": "最大购买量"
+        },
+        "minPurchasesRate": {
+          "type": "number",
+          "description": "最小购买率（%）"
+        },
+        "maxPurchasesRate": {
+          "type": "number",
+          "description": "最大购买率（%）"
+        },
+        "minSPR": {
+          "type": "integer",
+          "description": "最小SPR",
+          "minimum": 0
+        },
+        "maxSPR": {
+          "type": "integer",
+          "description": "最大SPR"
+        },
+        "minRelevancy": {
+          "type": "number",
+          "description": "最小相关度（0~100）"
+        },
+        "maxRelevancy": {
+          "type": "number",
+          "description": "最大相关度（0~100）"
+        },
+        "minSearchRank": {
+          "type": "integer",
+          "description": "最小搜索排名",
+          "minimum": 1
+        },
+        "maxSearchRank": {
+          "type": "integer",
+          "description": "最大搜索排名"
+        },
+        "minProducts": {
+          "type": "integer",
+          "description": "最小商品数",
+          "minimum": 0
+        },
+        "maxProducts": {
+          "type": "integer",
+          "description": "最大商品数"
+        },
+        "minSupplyDemandRatio": {
+          "type": "number",
+          "description": "最小供需比",
+          "minimum": 0
+        },
+        "maxSupplyDemandRatio": {
+          "type": "number",
+          "description": "最大供需比"
+        },
+        "minAdProducts": {
+          "type": "integer",
+          "description": "最小广告竞品数",
+          "minimum": 0
+        },
+        "maxAdProducts": {
+          "type": "integer",
+          "description": "最大广告竞品数"
+        },
+        "minMonopolyClickRate": {
+          "type": "number",
+          "description": "最小点击集中度"
+        },
+        "maxMonopolyClickRate": {
+          "type": "number",
+          "description": "最大点击集中度"
+        },
+        "minBid": {
+          "type": "number",
+          "description": "最小PPC竞价（$）",
+          "minimum": 0
+        },
+        "maxBid": {
+          "type": "number",
+          "description": "最大PPC竞价（$）"
+        },
+        "minWordCount": {
+          "type": "integer",
+          "description": "最小单词个数",
+          "minimum": 1
+        },
+        "maxWordCount": {
+          "type": "integer",
+          "description": "最大单词个数"
+        },
+        "minPrice": {
+          "type": "number",
+          "description": "最小均价",
+          "minimum": 0
+        },
+        "maxPrice": {
+          "type": "number",
+          "description": "最大均价"
+        },
+        "minRatings": {
+          "type": "integer",
+          "description": "最小评分数",
+          "minimum": 0
+        },
+        "maxRatings": {
+          "type": "integer",
+          "description": "最大评分数"
+        },
+        "minRating": {
+          "type": "number",
+          "description": "最小评分值"
+        },
+        "maxRating": {
+          "type": "number",
+          "description": "最大评分值"
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"keyword\",\"searches\",\"purchases\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
+        }
+      },
+      "required": [
+        "marketplace",
+        "keywordList"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "first_category",
+    "description": "获取站点一级类目：返回指定亚马逊站点下的全部一级类目（first-level category，即顶层类目）。每条包含原生类目名（category_name）、中文类目名（category_name_cn）和类目值（category_value），均为该站点的一级类目。当用户按类目做选品、选市场、竞品分析等操作且未给出明确类目值时，先调用本工具获取该站点全部一级类目，再由模型根据用户语义从 category_name / category_name_cn 中匹配出对应的 category_value，作为其它工具的类目入参。鉴权由服务端处理，模型不要传递 API Key。返回字段：marketplace（站点）、total（一级类目数量）、items（一级类目列表，含 category_name/category_name_cn/category_value）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "marketplace": {
+          "type": "string",
+          "description": "亚马逊站点，仅支持 14 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX/BR/AU/SA/AE",
+          "enum": [
+            "US",
+            "JP",
+            "UK",
+            "DE",
+            "FR",
+            "IT",
+            "ES",
+            "CA",
+            "IN",
+            "MX",
+            "BR",
+            "AU",
+            "SA",
+            "AE"
+          ]
+        },
+        "returnFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "可选。指定需要返回的字段列表，如 [\"category_name\",\"category_value\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。"
+        }
+      },
+      "required": [
+        "marketplace"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "user_quota",
+    "description": "查询当前用户的剩余额度：返回剩余积分（credits）与每分钟调用上限（rateLimitQpm）。用于在调用其它数据接口前感知账户余量；额度查询本身不消耗积分、不产生调用记录。鉴权由服务端处理，模型不要传递 API Key。返回字段：credits（剩余积分）、rateLimitQpm（每分钟调用上限）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  }
+]

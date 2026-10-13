@@ -4,7 +4,7 @@ const tools = [
   require('./asinCompetitorTool'),
   require('./productResearchTool'),
   require('./bsrSalesTool'),
-  require('./asinPredictionTool'),
+  // require('./asinPredictionTool'), // 已注销，改由代理转发（对外 ss_asin_prediction）
   require('./trafficKeywordTool'),
   require('./keywordResearchTool'),
   require('./keywordMinerTool'),

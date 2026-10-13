@@ -4,8 +4,8 @@
  * 卖家精灵官方 MCP 代理工具。
  *
  * 定位：补齐本地尚未实现的官方能力，以「白名单 + 前缀」方式挂载到 /mcp：
- * - 白名单：只转发本地缺失的工具（默认 25 个差集），避免与本地 20 个工具重复，
- *   防止模型在同名/同义工具间选错路（本地 keyword_order 已注销，改由代理转发）；
+ * - 白名单：只转发本地缺失的工具（默认 26 个差集），避免与本地工具重复，
+ *   防止模型在同名/同义工具间选错路（本地 keyword_order / asin_prediction 已注销，改由代理转发）；
  * - 前缀 ss_：与本地工具命名空间隔离，调用方一眼可辨数据来源；
  * - 信封统一：上游成功响应 {code,message,data} 解包后走本地 buildSuccess 重新包裹，
  *   免费获得内部字段剔除 + returnFields 裁剪（对齐官方 Token 优化行为）；
@@ -29,6 +29,7 @@ const DEFAULT_PROXY_TOOLS = [
   'review',
   'asin_coupon_trend',
   'asin_detail_with_coupon_trend',
+  'asin_prediction', // 原本地实现已注销，改由代理转发（对外 ss_asin_prediction）
   // 关键词/流量维度补充
   'keyword_order', // 原本地实现已注销，改由代理转发（对外 ss_keyword_order）
   'keyword_research_trends',

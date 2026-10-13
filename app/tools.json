@@ -679,54 +679,6 @@
     }
   },
   {
-    "name": "asin_prediction",
-    "description": "ASIN销量预测：根据亚马逊 ASIN 返回每日 BSR 排名与预估日销量、日销售额、日均价，以及月度汇总数据。当用户需要查看某 ASIN 最近一段时间的日颗粒度销售数据，或快速估算当前月销量时调用。与 asin_sales_trend 的区别：本工具提供按天记录的细粒度数据（日BSR+日销量），适合分析短期波动；asin_sales_trend 提供按月聚合的更长周期历史趋势，并区分父体/子体销量，适合分析长期趋势和季节性。鉴权由服务端处理，模型不要传递 API Key。返回结构：asinDetail{asin/title/brand/availableDate/category/categoryId/imageUrl/ratings/rating}、dailyItemList[{date/bsr/sales/amount/price}]（日度数据）、monthItemList[{date/sales/amount/price}]（月度汇总）。",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "marketplace": {
-          "type": "string",
-          "description": "亚马逊站点，仅支持 10 站：US/JP/UK/DE/FR/IT/ES/CA/IN/MX",
-          "enum": [
-            "US",
-            "JP",
-            "UK",
-            "DE",
-            "FR",
-            "IT",
-            "ES",
-            "CA",
-            "IN",
-            "MX"
-          ],
-          "minLength": 2,
-          "maxLength": 8
-        },
-        "asin": {
-          "type": "string",
-          "description": "Amazon ASIN，长度通常为 10，例如 B0BDRKG478",
-          "minLength": 10,
-          "maxLength": 10
-        },
-        "returnFields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "可选。指定需要返回的字段列表，如 [\"asinDetail\",\"dailyItemList\"]，可大幅降低上下文 Token 消耗；不传则返回全部字段。分页信息(page/size/total等)始终保留。"
-        }
-      },
-      "required": [
-        "marketplace",
-        "asin"
-      ],
-      "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
-    }
-  },
-  {
     "name": "keyword_research",
     "description": "关键词选品：根据关键词从亚马逊站内搜索词出发挖掘细分赛道，发现高需求、低竞争的产品机会。返回关键词的月搜索量、点击量、展示量、月购买量、购买率、商品数、需供比、增长率、同比增长、近3个月增长、PPC出价、均价、评分数、评分值等数据，以及关联 ASIN、点击前三 ASIN、TOP3 品牌/类目。支持按月份、类目、各类筛选条件过滤。鉴权由服务端处理，模型不要传递 API Key。返回字段包含 marketplace、page、size、pages、total、order、items(keywords/searches/clicks/impressions/purchases/growth/purchaseRate/products/supplyDemandRatio/avgPrice/avgRatings/avgRating/bid/bidMin/bidMax/araClickRate/araShareRate/goodsValue/marketPeriod/keywordCn/brands/categories/relationAsinList/araAsinList 等)。",
     "inputSchema": {
@@ -2608,7 +2560,7 @@
   },
   {
     "name": "asin_sales_trend",
-    "description": "查询 ASIN 销量趋势：输入亚马逊站点和 ASIN，返回该 ASIN 的父体/子体月度销量、销售额历史趋势，以及完整商品详情。适用于分析商品的历史销售规律、季节性波动及长期增衰趋势。与 asin_prediction 的区别：本工具返回按月聚合的历史趋势数据（可回溯多个月），并区分父体/子体销量，适合分析长期规律；asin_prediction 提供按天记录的细粒度短期数据，更适合估算当前时点销量。鉴权由服务端处理，模型不要传递 API Key。返回字段：asin（ASIN 对象，包含 asin/asinUrl/marketplace/availableDate/brand/brandUrl/bsrId/bsrLabel/bsrRank/subcategories/createdTime/dimensions/firstRatingDate/imageUrl/zoomImageUrl/lqs/nodeId/nodeIdPath/nodeLabelPath/parent/price/primePrice/deliveryPrice/coupon/rating/ratings/reviews/variantRatings/variantReviews/sellerId/sellerName/fulfillment/sellers/title/updatedTime/variations/weight/skuList/variationList/features/overviews/badge{bestSeller,amazonChoice,newRelease,ebc,video}）、salesTrendPoints（月度趋势点列表，包含 month/price/averagePrice/parentUnitSales/childUnitSales/parentSalesRevenue/childSalesRevenue）。",
+    "description": "查询 ASIN 销量趋势：输入亚马逊站点和 ASIN，返回该 ASIN 的父体/子体月度销量、销售额历史趋势，以及完整商品详情。适用于分析商品的历史销售规律、季节性波动及长期增衰趋势。与 ss_asin_prediction 的区别：本工具返回按月聚合的历史趋势数据（可回溯多个月），并区分父体/子体销量，适合分析长期规律；ss_asin_prediction 提供按天记录的细粒度短期数据，更适合估算当前时点销量。鉴权由服务端处理，模型不要传递 API Key。返回字段：asin（ASIN 对象，包含 asin/asinUrl/marketplace/availableDate/brand/brandUrl/bsrId/bsrLabel/bsrRank/subcategories/createdTime/dimensions/firstRatingDate/imageUrl/zoomImageUrl/lqs/nodeId/nodeIdPath/nodeLabelPath/parent/price/primePrice/deliveryPrice/coupon/rating/ratings/reviews/variantRatings/variantReviews/sellerId/sellerName/fulfillment/sellers/title/updatedTime/variations/weight/skuList/variationList/features/overviews/badge{bestSeller,amazonChoice,newRelease,ebc,video}）、salesTrendPoints（月度趋势点列表，包含 month/price/averagePrice/parentUnitSales/childUnitSales/parentSalesRevenue/childSalesRevenue）。",
     "inputSchema": {
       "type": "object",
       "properties": {
