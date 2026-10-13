@@ -26,6 +26,19 @@ on:
       - '.analysis/**'
       - '.workbuddy/**'
   workflow_dispatch:
+    inputs:
+      deploy_tmq01:
+        description: '部署到 tmq01 (43.156.1.37)'
+        type: boolean
+        default: true
+      deploy_tmq02:
+        description: '部署到 tmq02 (43.156.54.160)'
+        type: boolean
+        default: true
+      deploy_tmq03:
+        description: '部署到 tmq03 (43.153.215.155)'
+        type: boolean
+        default: true
 
 concurrency:
   group: deploy-mcp-api-${{ github.ref }}
@@ -93,22 +106,54 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ============================================================
-  # 2. 部署：三台并行上传 → 解压 → 重启 → 健康校验
+  # 2. 生成部署矩阵（手动触发时按输入过滤节点）
+  # ============================================================
+  setup:
+    name: Setup Deploy Matrix
+    runs-on: ubuntu-latest
+    needs: [package]
+    if: ${{ needs.package.result == 'success' }}
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - name: Build host matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            # push 触发时部署全部节点
+            echo 'matrix={"host":["43.156.1.37","43.156.54.160","43.153.215.155"]}' >> "$GITHUB_OUTPUT"
+          else
+            HOSTS=()
+            [ "${{ github.event.inputs.deploy_tmq01 }}" == "true" ] && HOSTS+=("43.156.1.37")
+            [ "${{ github.event.inputs.deploy_tmq02 }}" == "true" ] && HOSTS+=("43.156.54.160")
+            [ "${{ github.event.inputs.deploy_tmq03 }}" == "true" ] && HOSTS+=("43.153.215.155")
+            if [ ${#HOSTS[@]} -eq 0 ]; then
+              echo "::error::未选择任何部署节点，请至少勾选一台服务器。"
+              exit 1
+            fi
+            JSON='{"host":['
+            for i in "${!HOSTS[@]}"; do
+              [ $i -gt 0 ] && JSON+=','
+              JSON+='"'"${HOSTS[$i]}"'"'
+            done
+            JSON+=']}'
+            echo "matrix=$JSON" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ============================================================
+  # 3. 部署：三台并行上传 → 解压 → 重启 → 健康校验
   # ============================================================
   deploy:
     name: Deploy to ${{ matrix.host }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [package]
-    if: ${{ needs.package.result == 'success' }}
+    needs: [setup]
+    if: ${{ needs.setup.result == 'success' }}
 
     strategy:
       fail-fast: false
-      matrix:
-        host:
-          - 43.156.1.37
-          - 43.156.54.160
-          - 43.153.215.155
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
 
     steps:
       - name: Download artifact
