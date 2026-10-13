@@ -26,7 +26,7 @@ async function fetchGoogleTrend(params, session) {
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
-    'user-agent': session.userAgent || config.sellerSprite.userAgent,
+    'user-agent': config.sellerSprite.userAgent,
     'x-requested-with': 'XMLHttpRequest'
   };
 

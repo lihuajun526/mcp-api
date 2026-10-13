@@ -15,11 +15,11 @@ async function fetchTrafficKeyword(params, session) {
   const { marketplace, market, ...payload } = params;
 
   const headers = {
-    accept: session.accept || 'application/json, text/plain, */*',
+    accept: 'application/json, text/plain, */*',
     'accept-language': session.acceptLanguage || 'zh,en;q=0.9',
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || config.sellerSprite.userAgent,
+    'user-agent': config.sellerSprite.userAgent,
     'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"macOS"'

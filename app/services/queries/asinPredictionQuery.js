@@ -22,12 +22,12 @@ async function fetchAsinPrediction(params, session) {
   }
 
   const headers = {
-    accept: session.accept || 'application/json, text/javascript, */*; q=0.01',
+    accept: 'application/json, text/javascript, */*; q=0.01',
     'accept-language': session.acceptLanguage || 'zh,en;q=0.9',
     'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
     'x-requested-with': 'XMLHttpRequest',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || config.sellerSprite.userAgent,
+    'user-agent': config.sellerSprite.userAgent,
     'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"macOS"'
