@@ -21,7 +21,6 @@ function hdrs(s, referer, json) {
     referer: BASE + referer
   };
   if (json) h['content-type'] = 'application/json;charset=UTF-8';
-  if (s.xToken) h['x-token'] = s.xToken;
   return h;
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

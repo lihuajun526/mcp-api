@@ -20,12 +20,16 @@ async function fetchAsinCompetitor(params, session) {
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || config.sellerSprite.userAgent
+    'user-agent': session.userAgent || config.sellerSprite.userAgent,
+    'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"macOS"'
   };
   return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.competingLookupPath}`,
     payload,
-    { headers, timeout: config.sellerSprite.timeoutMs }
+    { headers, timeout: config.sellerSprite.timeoutMs },
+    { onSetCookie: (sc) => sessionService.syncSessionCookie(PROVIDER, session.field, session.cookie, sc) }
   );
 }
 

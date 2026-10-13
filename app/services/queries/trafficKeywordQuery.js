@@ -19,13 +19,17 @@ async function fetchTrafficKeyword(params, session) {
     'accept-language': session.acceptLanguage || 'zh,en;q=0.9',
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
-    'user-agent': session.userAgent || config.sellerSprite.userAgent
+    'user-agent': session.userAgent || config.sellerSprite.userAgent,
+    'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"macOS"'
   };
 
   return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.trafficKeywordPath}?market=${market}`,
     payload,
-    { headers, timeout: config.sellerSprite.timeoutMs }
+    { headers, timeout: config.sellerSprite.timeoutMs },
+    { onSetCookie: (sc) => sessionService.syncSessionCookie(PROVIDER, session.field, session.cookie, sc) }
   );
 }
 

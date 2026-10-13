@@ -19,7 +19,6 @@ function headers(s) {
     'content-type': 'application/json;charset=UTF-8',
     referer: BASE + '/v3/keyword-miner/'
   };
-  if (s.xToken) h['x-token'] = s.xToken;
   return h;
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

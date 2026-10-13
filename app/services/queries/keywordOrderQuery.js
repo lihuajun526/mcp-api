@@ -19,13 +19,19 @@ async function fetchKeywordOrder(params, session) {
     'accept-language': session.acceptLanguage || 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
     cookie: session.cookie || '',
     'user-agent': session.userAgent || config.sellerSprite.userAgent,
-    referer: `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordOrderPath}`
+    // referer: `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordOrderPath}`,
+    'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"macOS"'
   };
 
   return upstreamClient.get(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.keywordOrderPath}`,
     { params: upstreamParams, headers, timeout: config.sellerSprite.timeoutMs },
-    { expectHtml: true }
+    {
+      expectHtml: true,
+      onSetCookie: (sc) => sessionService.syncSessionCookie(PROVIDER, session.field, session.cookie, sc)
+    }
   );
 }
 

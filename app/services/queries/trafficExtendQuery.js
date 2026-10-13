@@ -20,16 +20,17 @@ async function fetchTrafficExtend(params, session) {
     'content-type': 'application/json;charset=UTF-8',
     cookie: session.cookie || '',
     'user-agent': session.userAgent || config.sellerSprite.userAgent,
-    referer: `${config.sellerSprite.baseUrl}/v3/traffic/extend/asin`
+    // referer: `${config.sellerSprite.baseUrl}/v3/traffic/extend/asin`,
+    'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"macOS"'
   };
-  if (session.xToken) {
-    headers['x-token'] = session.xToken;
-  }
 
   return upstreamClient.post(
     `${config.sellerSprite.baseUrl}${config.sellerSprite.trafficExtendPath}`,
     payload,
-    { headers, timeout: config.sellerSprite.timeoutMs }
+    { headers, timeout: config.sellerSprite.timeoutMs },
+    { onSetCookie: (sc) => sessionService.syncSessionCookie(PROVIDER, session.field, session.cookie, sc) }
   );
 }
 

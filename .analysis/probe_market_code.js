@@ -21,7 +21,6 @@ function headers(s, referer, accept) {
     'user-agent': s.userAgent || 'Mozilla/5.0',
     referer: BASE + referer
   };
-  if (s.xToken) h['x-token'] = s.xToken;
   return h;
 }
 

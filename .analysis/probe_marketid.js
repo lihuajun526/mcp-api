@@ -30,7 +30,6 @@ function fingerprint(html) {
     'user-agent': s.userAgent || UA,
     referer: `${BASE}/v2/market-research`
   };
-  if (s.xToken) headers['x-token'] = s.xToken;
 
   const base = {
     nodeIdPath: '', sampleNumber: 1, topn: 10, newReleaseNum: 3, departmentKeyword: '',

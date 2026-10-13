@@ -20,7 +20,6 @@ const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
     cookie: s.cookie || '', 'user-agent': s.userAgent || UA,
     referer: `${BASE}/v2/market-research`
   };
-  if (s.xToken) headers['x-token'] = s.xToken;
 
   const candidates = [1, 3, 4, 5, 6, 7, 35691, 44551, 44571, 771770,
     526970, 28199, 795831, 806440, 328451, 451660, 450010, 421892, 456340,

@@ -111,6 +111,15 @@ async function request(axiosConfig, options) {
   } catch (e) {
     throw wrapAxiosError(e, url);
   }
+
+  // 响应成功后，若有 Set-Cookie 且调用方提供了回调，则 fire-and-forget 异步回写
+  const setCookieHeaders = resp.headers && resp.headers['set-cookie'];
+  if (setCookieHeaders && setCookieHeaders.length && options && options.onSetCookie) {
+    Promise.resolve(options.onSetCookie(setCookieHeaders)).catch((err) => {
+      console.warn('[upstreamClient] syncSessionCookie failed:', err.message);
+    });
+  }
+
   if (options && options.expectHtml) {
     return resp.data;
   }
